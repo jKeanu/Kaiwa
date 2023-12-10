@@ -39,8 +39,8 @@ exports.login = catchAsync(async (req, res, next)=>{
         return next(new AppError('Please provide email and password!', 400));
     }
     const user = await User.findOne({ email }).select('+password');
-    if(!(await user.correctPassword(password, user.password))||!user){
-        next(new AppError('Incorrect password or email', 401))
+    if(!( await user.correctPassword(password, user.password))||!user){
+        return next(new AppError('Incorrect password or email', 401))
     }
     createSendToken(user, 200, res)
 })
@@ -61,7 +61,7 @@ exports.protect = catchAsync(async (req, res, next)=>{
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
   const currentUser = await User.findById(decoded.id)
   if(!currentUser){
-    return next(new AppError('This user no longer exists.', ))
+    return next(new AppError('This user no longer exists.', 404))
   }
   if(currentUser.changedPasswordAfter(decoded.iat)){
     return next(new AppError('This user recently changed password! Please Log in again', 401))
@@ -72,11 +72,11 @@ exports.protect = catchAsync(async (req, res, next)=>{
 
 exports.changePassword = catchAsync(async (req, res, next)=>{
   const currentUser = await User.findById(req.user._id).select('+password')
-  if(!currentUser.correctPassword(res.body.currentPassword, currentUser.password)){
+  if(!(await currentUser.correctPassword(req.body.currentPassword, currentUser.password))){
     return next(new AppError('Incorrect current password.', 401))
   }
   currentUser.password = req.body.password
   currentUser.passwordConfirm = req.body.passwordConfirm
-  currentUser.save()
+  await currentUser.save()
   createSendToken(currentUser, 200, res)
 })

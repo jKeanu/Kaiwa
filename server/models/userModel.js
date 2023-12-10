@@ -2,18 +2,19 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 
-
 const userSchema = new mongoose.Schema({
     username:{
         type:String,
         required:[true, 'Must have a username'],
         unique: true,
         maxlength:[15, 'Only maximum of 15 characters is allowed.'],
-        minlength:[5, 'Only minimum of 5 characters is allowed.']
+        minlength:[4, 'Only minimum of 5 characters is allowed.']
     },
     displayname:{
         type:String,
-        required:[true, 'Must have a display name']
+        required:[true, 'Must have a display name'],
+        maxlength:[10, 'Only maximum of 15 characters is allowed.'],
+        minlength:[1, 'Please provide a display name']
     },
     friendTag:{
         type:String,
@@ -63,8 +64,14 @@ const userSchema = new mongoose.Schema({
     },
     friends:[
         {
-            type:mongoose.Schema.ObjectId,
-            ref:'User'
+            friend:{
+                type:mongoose.Schema.ObjectId,
+                ref:'User'
+            },
+            status: {
+                type:String,
+                enum: ['Pending', 'Accepted', 'Sent']
+            }
         }
     ],
     channels:[
@@ -110,14 +117,11 @@ userSchema.pre('save', function(next){
     next()
 })
 
-userSchema.methods.correctPassword = async function(
-    candidatePassword,
-    userPassword
-  ) {
+userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
     return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-userSchema.methods.changedPasswordAfter = async function(TokenIssued){
+userSchema.methods.changedPasswordAfter = function(TokenIssued){
     //this refers to the current document
     if(this.passwordChangedAt){
         //this expression is converting a JavaScript Date object into Unix timestamp
@@ -129,7 +133,6 @@ userSchema.methods.changedPasswordAfter = async function(TokenIssued){
 }
   
 const User = mongoose.model('User', userSchema)
-
 module.exports = User;
 
 
