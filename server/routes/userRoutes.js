@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('/signup', authController.signup)
 router.post('/login', authController.login)
 router.post('/addfriend', authController.protect, userController.addFriend)
+router.post('/acceptfriend', authController.protect, userController.acceptFriend)
 router.post('/changepassword', authController.protect, authController.changePassword)
 
 

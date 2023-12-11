@@ -56,7 +56,7 @@ const userSchema = new mongoose.Schema({
         type:String,
         require:true,
         validate:{
-            validator:function(val){
+            validator: function(val){
                 return val === this.password
             },
             message:'confirm password is incorrect'
