@@ -70,7 +70,7 @@ const userSchema = new mongoose.Schema({
             },
             status: {
                 type:String,
-                enum: ['Pending', 'Accepted', 'Sent']
+                enum: ['Pending', 'Friend', 'Sent']
             }
         }
     ],
