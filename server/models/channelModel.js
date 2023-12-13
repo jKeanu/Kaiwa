@@ -3,6 +3,10 @@ const validator = require('validator')
 const bcrypt = require('bcryptjs')
 
 const channelSchema = new mongoose.Schema({
+    channelName:{
+        type:String,
+        required:[true, 'Channel must include a name']
+    },
     members:{
         type:[{
             type: mongoose.Schema.ObjectId,

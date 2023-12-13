@@ -66,7 +66,7 @@ const userSchema = new mongoose.Schema({
         {
             friend:{
                 type:mongoose.Schema.ObjectId,
-                ref:'User'
+                ref:'User',
             },
             status: {
                 type:String,
