@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const User = require('../models/userModel')
 const catchAsync = require('../utils/catchAsync')
 const AppError = require('../utils/appError')
+const Channel = require('../models/channelModel')
 
 exports.validateCurrentUser = (req, res, next) => {
     if(req.params.userId !== req.user._id.toString()){
@@ -9,8 +10,6 @@ exports.validateCurrentUser = (req, res, next) => {
     }
     next()
 }
-
-
 
 const findFriendshipStatus = (currentUserId, userCheck, status) => 
     userCheck.friends.find(friend=>
@@ -107,9 +106,18 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
         //Although isSent is used to identify whether the user sent a friend requests, 
         //it's value is the user document.
         isSent.status = req.body.status
+        //Since both users are soon to be friend, we also need a channel on where they could communicate
+        const friendChannel = await Channel.create({
+            members:[req.user._id, acceptUser._id],
+            channelType: 'Friend'
+        })
+        isSent.channel =  friendChannel._id
         await User.updateOne({_id:req.params.userId, 
             'friends.friend': acceptUser._id},
-            {$set: {'friends.$.status':req.body.status}}, 
+            {$set:
+                {'friends.$.status':req.body.status, 
+                'friends.$.channel':friendChannel._id
+            }},
             {session})
         await acceptUser.save({session, validateBeforeSave:false})
         await session.commitTransaction(); 
@@ -157,7 +165,7 @@ exports.removeFriend = catchAsync(async(req, res, next)=>{
             {$pull: {friends:{friend:req.params.userId}}},
             {session}
             )
-        const user = await User.updateOne(
+        await User.updateOne(
             {_id:req.params.userId},
             {$pull: {friends:{friend:removeUser._id}}},
             {session}
@@ -173,4 +181,17 @@ exports.removeFriend = catchAsync(async(req, res, next)=>{
     }finally{
         session.endSession()
     }
+})
+
+
+exports.getUserFriends = catchAsync(async(req, res, next)=>{
+    const user = await User.findById(req.params.userId)
+        .populate({path:'friends.friend', select:'name photo displayname friendTag channels'})
+    if(!user){
+        return next(new AppError("The user does not exists.", 404))
+    }
+    res.status(200).json({
+        status:"success",
+        data: user.friends
+        })
 })

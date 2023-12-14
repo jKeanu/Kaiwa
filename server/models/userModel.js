@@ -3,13 +3,6 @@ const validator = require('validator')
 const bcrypt = require('bcryptjs')
 
 const userSchema = new mongoose.Schema({
-    username:{
-        type:String,
-        required:[true, 'Must have a username'],
-        unique: true,
-        maxlength:[15, 'Only maximum of 15 characters is allowed.'],
-        minlength:[4, 'Only minimum of 5 characters is allowed.']
-    },
     displayname:{
         type:String,
         required:[true, 'Must have a display name'],
@@ -22,7 +15,7 @@ const userSchema = new mongoose.Schema({
         default: ()=>{
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let friendID = '';
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 6; i++) {
                 friendID += characters.charAt(Math.floor(Math.random() * characters.length));
             }
             return friendID;
@@ -30,9 +23,9 @@ const userSchema = new mongoose.Schema({
         validate:{
             //This only works on create and save
             validator: function (value){
-                return value.length === 5;
+                return value.length === 6;
             },
-            message: 'Friend Tag must be exactly 5 characters.'
+            message: 'Friend Tag must be exactly 6 characters.'
         }
     },
     email:{
@@ -42,7 +35,7 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         validate: [validator.isEmail, 'Please provide a valid email']
     },
-    photo:{
+    image:{
         type:String,
         default:'default.jpg'
     },
@@ -62,24 +55,49 @@ const userSchema = new mongoose.Schema({
             message:'confirm password is incorrect'
         }
     },
-    friends:[
+    friends: [
         {
-            friend:{
-                type:mongoose.Schema.ObjectId,
-                ref:'User',
+            friend: {
+                type: mongoose.Schema.ObjectId,
+                ref: 'User',
+                index: true
+            },
+            channel: {
+                type: mongoose.Schema.ObjectId,
+                ref: 'Channel',
+                required: [function() {
+                    return this.status === 'Friend';
+                }, 'A friend channel is required.']
             },
             status: {
-                type:String,
+                type: String,
                 enum: ['Pending', 'Friend', 'Sent']
             }
         }
     ],
-    channels:[
-        {
-            type:mongoose.Schema.ObjectId,
-            ref:'Channel'
+    group:{
+        channel:{
+            type: mongoose.Schema.ObjectId,
+            ref: 'Channel'
         }
-    ],
+    },
+    // channels:[
+    //     {
+    //         channelName:{
+    //             type:String,
+    //             required:true,
+    //         },
+    //         channel:{
+    //             type:mongoose.Schema.ObjectId,
+    //             ref:'Channel'
+    //         },
+    //         image:{
+    //             type:String,
+    //             required: true,
+    //             default:'default.jpg'
+    //         }       
+    //     }
+    // ],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
@@ -95,7 +113,7 @@ const userSchema = new mongoose.Schema({
 //combination of friendTag and username has to be unique
 userSchema.index({friendTag:1, displayname:1}, {unique:true})
 
-
+// pre-save middleware is executed after the validation step
 userSchema.pre('save', async function(next) {
     //by default creating a new document is considered motified
     if (!this.isModified('password')) return next();
