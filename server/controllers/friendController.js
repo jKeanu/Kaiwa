@@ -30,7 +30,7 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
             return next(new AppError("You cannot make a friend request to yourself.", 400))
         }
         //Find the user with the corresponding friendTag and displayname
-        const addUser = await User.findOne({friendTag, displayname})
+        const addUser = await User.findOne({friendTag, displayname}).session(session)
         if(!addUser){
             await session.abortTransaction();
             return next(new AppError(`The user ${displayname} with the provided nameTag cannot be found.`, 404))
@@ -75,7 +75,7 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
         await session.abortTransaction();
         next(new AppError("An error occurred while making a request to the user", 500)) // Use 500 for server errors
     }finally{
-        session.endSession()
+        await session.endSession()
     }
 })
 
@@ -86,7 +86,7 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
     }
     session.startTransaction();
     try{
-        const acceptUser = await User.findById(req.params.friendId)
+        const acceptUser = await User.findById(req.params.friendId).session(session)
         if(!acceptUser){
             await session.abortTransaction(); //Abort the transaction
             return next(new AppError("User does not exists.", 404))
@@ -107,16 +107,18 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
         //it's value is the user document.
         isSent.status = req.body.status
         //Since both users are soon to be friend, we also need a channel on where they could communicate
-        const friendChannel = await Channel.create({
+        const friendChannel = await Channel.create([{
             members:[req.user._id, acceptUser._id],
             channelType: 'Friend'
-        })
-        isSent.channel =  friendChannel._id
+        }],
+        {session})
+        isSent.channel = friendChannel[0]._id
+        console.log(friendChannel[0], '555555555555555555')
         await User.updateOne({_id:req.params.userId, 
             'friends.friend': acceptUser._id},
             {$set:
                 {'friends.$.status':req.body.status, 
-                'friends.$.channel':friendChannel._id
+                'friends.$.channel':friendChannel[0]._id
             }},
             {session})
         await acceptUser.save({session, validateBeforeSave:false})
@@ -129,10 +131,9 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
             await session.abortTransaction();
             next(new AppError("An error occurred while accepting the friend request", 500))
         }finally{
-            session.endSession()
+            await session.endSession()
         }
 })
-
 
 exports.removeFriend = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
@@ -142,7 +143,7 @@ exports.removeFriend = catchAsync(async(req, res, next)=>{
     }
     session.startTransaction();
     try{
-        const removeUser = await User.findById(req.params.friendId)
+        const removeUser = await User.findById(req.params.friendId).session(session)
         if(!removeUser){
             await session.abortTransaction();
             return next(new AppError(`User does not exists.`, 404))
@@ -160,6 +161,7 @@ exports.removeFriend = catchAsync(async(req, res, next)=>{
                 return next(new AppError(`The user did not send you a friend request.`, 400))
             }
         }
+        await Channel.findOneAndDelete({members:[req.user._id, removeUser._id], channelType:'Friend'}).session(session)
         await User.updateOne(
             {_id:removeUser._id},
             {$pull: {friends:{friend:req.params.userId}}},
@@ -179,7 +181,7 @@ exports.removeFriend = catchAsync(async(req, res, next)=>{
         await session.abortTransaction();
         next(new AppError("An error occurred while accepting the friend request", 500))
     }finally{
-        session.endSession()
+        await session.endSession()
     }
 })
 

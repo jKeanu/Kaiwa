@@ -75,29 +75,13 @@ const userSchema = new mongoose.Schema({
             }
         }
     ],
-    group:{
-        channel:{
+    groups:[{
+        channel: {
             type: mongoose.Schema.ObjectId,
             ref: 'Channel'
         }
-    },
-    // channels:[
-    //     {
-    //         channelName:{
-    //             type:String,
-    //             required:true,
-    //         },
-    //         channel:{
-    //             type:mongoose.Schema.ObjectId,
-    //             ref:'Channel'
-    //         },
-    //         image:{
-    //             type:String,
-    //             required: true,
-    //             default:'default.jpg'
-    //         }       
-    //     }
-    // ],
+    }
+    ],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,

@@ -9,6 +9,13 @@ const channelSchema = new mongoose.Schema({
             return this.channelType === 'Group'
         }, 'Group Channel requires a channelName']
     },
+    groupLeader:{
+        type:mongoose.Schema.ObjectId,
+        ref:'User',
+        required:[function(){
+            return this.channelType === 'Group'
+        }, 'Requires a group leader in the group channel.']
+    },
     members:{
         type:[{
             type: mongoose.Schema.ObjectId,
@@ -19,7 +26,7 @@ const channelSchema = new mongoose.Schema({
             validator: function(v) {
                 return v.length >= 2;
             },
-            message: props => `A channel must have at least 2 members, but only ${props.value.length} were provided.`
+            message: "A channel must have at least 2 members"
         }
     },
     channelType: {
@@ -33,7 +40,7 @@ const channelSchema = new mongoose.Schema({
     }],
     channelNumber:{
         type:Number,
-        require:[true, "A channel must have a channel number"],
+        required:[true, "A channel must have a channel number"],
         unique:true,
         default:() => Math.floor(Math.random() * 100)
     },

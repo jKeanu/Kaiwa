@@ -2,10 +2,12 @@ const express = require('express');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController')
 const friendRoute = require('./friendRoutes')
+const groupRoute = require('./groupRoutes')
 
 const router = express.Router();
 
 router.use('/:userId/friends', friendRoute)
+router.use('/:userId/groups', groupRoute)
 
 
 router.post('/signup', authController.signup)
