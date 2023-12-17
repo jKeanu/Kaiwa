@@ -4,12 +4,7 @@ const catchAsync = require('../utils/catchAsync')
 const AppError = require('../utils/appError')
 const Channel = require('../models/channelModel')
 
-exports.validateCurrentUser = (req, res, next) => {
-    if(req.params.userId !== req.user._id.toString()){
-        return next(new AppError("You are not authorized to perform this action", 401))   
-    }
-    next()
-}
+
 
 const findFriendshipStatus = (currentUserId, userCheck, status) => 
     userCheck.friends.find(friend=>
@@ -68,7 +63,7 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
         //new user has been created or we change password.
         await addUser.save({session, validateBeforeSave:false})
         await session.commitTransaction();  // Commit the transaction
-        res.status(200).json({
+        res.status(201).json({
             status:'success'
     })}catch(err){
         console.log('ERROR!!!!', err)
@@ -161,7 +156,10 @@ exports.removeFriend = catchAsync(async(req, res, next)=>{
                 return next(new AppError(`The user did not send you a friend request.`, 400))
             }
         }
-        await Channel.findOneAndDelete({members:[req.user._id, removeUser._id], channelType:'Friend'}).session(session)
+        await Channel.findOneAndDelete(
+            //$all operator matches arrays that contain all the specified elements.
+            {members:{ $all: [req.params.userId, removeUser._id] }, channelType:'Friend'})
+                .session(session)
         await User.updateOne(
             {_id:removeUser._id},
             {$pull: {friends:{friend:req.params.userId}}},

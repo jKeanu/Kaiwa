@@ -16,7 +16,7 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
         //if we don't, it would see the {session} as another entry.
         const newChannel = await Channel.create([{
             channelType: 'Group',
-            groupLeader: req.user._id,
+            groupLeader: req.params.userId,
             channelName: req.body.channelName,
             members: req.body.members,
         }], {session})
@@ -25,17 +25,15 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
             $in: req.body.members
         }},
         {$push:{
-            groups:{
-                channel: newChannel[0]._id
-            }
+            groups:newChannel[0]._id
         }}, {session})
         //check if all users listed has been updated
         if (updateStatus.modifiedCount !== req.body.members.length){
             await session.abortTransaction();
-            return next(new AppError("One or more of the user selected to be a member of the group was invalid and/or do not exists.", 400))
+            return next(new AppError("Failed to create a group channel. One or more of the input is invalid", 400))
         }
         await session.commitTransaction();
-        res.status(200).json({
+        res.status(201).json({
             status:"success"
         })
     }catch(err){
@@ -52,13 +50,13 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
 }
 )
 
-
 exports.getUserGroups = catchAsync(async(req, res, next)=>{
-    const user = await User.findById(req.user._id).populate('groups.channel')
-        .select("channelNumber image channelName channelType")
-    if(!user){
-        return next(new AppError("User does not exists", 404))
-    }
+    //Since we have a middleware that checks if the userId param
+    //is similar to the user that is logged in, we don't need to 
+    //check if the user exists.
+    const user = await User.findById(req.params.userId)
+        .populate({path:'groups', 
+        select:'channelName channelNumber image channelType'})
     res.status(200).json({
         status:"success",
         data:user.groups
@@ -72,3 +70,96 @@ exports.deleteGroup = catchAsync(async(req, res, next)=>{
     }
 })
 
+exports.getGroupMembers = catchAsync(async (req, res, next)=>{
+    const groupChannel = await Channel.findById(req.params.groupId).populate({path:'members', select:'displayname friendTag image'})
+    const currentUser = await User.findById(req.params.userId)
+    if(!groupChannel||groupChannel.channelType!=='Group'){
+        return next(new AppError("Group channel does not exists", 404))
+    }
+    if(!currentUser.groups.includes(groupChannel._id)){
+        return next(new AppError("You are not a member of this group.", 401))
+    }
+    res.status(200).json({
+        status:"success",
+        data:groupChannel.members
+    })
+})
+
+exports.inviteMember = catchAsync(async(req, res, next)=>{
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const groupChannel = await Channel.findById(req.params.groupId).session(session)
+        const user = await User.findById(req.body.userId).session(session)
+        if (!user){
+            await session.abortTransaction()
+            return next(new AppError("User does not exists", 404))
+        }
+        //Check if the logged in user is friends with the user that we're inviting in the group
+        const findStatus = user.friends.find(friend=>
+            friend.friend.toString()===req.params.userId &&
+            friend.status === 'Friend')
+        //If the findStatus does not exists it means that the logges in user is not friends with
+        //the person he/she is inviting.
+        if(!findStatus){
+            await session.abortTransaction()
+            return next(new AppError("Friends with the user is required to invite.", 400))
+        }
+        //Checking if the user that is being invited is already in the group
+        if(groupChannel.members.includes(user._id)){
+            await session.abortTransaction()
+            return next(new AppError("The user is already in the group.", 400))
+        }
+        //pushing the channel into the invited users groups 
+        user.groups.push(groupChannel._id)
+        //updating the group member
+        groupChannel.members.push(user._id)
+        await groupChannel.save({session})
+        await user.save({session, validateBeforeSave:false})
+        await session.commitTransaction();
+        res.status(200).json({
+            status:"success"
+        })
+    }catch(err){
+        console.log('ERROR!!!', err)
+        await session.abortTransaction()
+        next(err)
+    }finally{
+        await session.endSession()
+}
+})
+
+
+exports.leaveGroup = catchAsync(async(req, res, next)=>{
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const user = await User.findById(req.params.userId).session(session)
+        const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"}).session(session)
+        if(!groupChannel){
+            await session.abortTransaction()
+            return next(new AppError("Group channel does not exists", 404))
+        }
+        if(!groupChannel.members.includes(user._id)){
+            await session.abortTransaction()
+            return next(new AppError("You are not a member of this group.", 400))
+        }
+        //remove the group channel from the user's groups
+        user.groups.pull(groupChannel._id)
+        //remove the user from the group's members
+        groupChannel.members.pull(user._id)
+        await user.save({session, validateBeforeSave:false})
+        await groupChannel.save({session})
+        await session.commitTransaction();
+        res.status(200).json({
+            status:"success",
+            data:user.groups
+        })
+    }catch(err){
+        await session.abortTransaction()
+        console.log("ERROR!!!", err)
+        next(new AppError("An error occurred while leaving the group", 500))
+    }finally{
+        await session.endSession()
+    }
+})

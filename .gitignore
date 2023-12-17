@@ -9,3 +9,5 @@ node_modules/
 
 # Ignore .env files in the server directory
 /server/*.env
+
+todo.txt

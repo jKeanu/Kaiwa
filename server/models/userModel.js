@@ -76,12 +76,9 @@ const userSchema = new mongoose.Schema({
         }
     ],
     groups:[{
-        channel: {
             type: mongoose.Schema.ObjectId,
             ref: 'Channel'
-        }
-    }
-    ],
+        }],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,

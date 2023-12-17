@@ -4,6 +4,14 @@ const User = require('../models/userModel')
 const catchAsync = require('../utils/catchAsync')
 const AppError = require('../utils/appError')
 
+
+exports.validateCurrentUser = (req, res, next) => {
+  if(req.params.userId !== req.user._id.toString()){
+      return next(new AppError("You are not authorized to perform this action", 401))   
+  }
+  next()
+}
+
 function signToken(id){
   return jwt.sign({ id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN
