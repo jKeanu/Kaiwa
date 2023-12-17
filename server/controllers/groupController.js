@@ -4,11 +4,20 @@ const catchAsync = require('../utils/catchAsync')
 const AppError = require('../utils/appError')
 const Channel = require('../models/channelModel')
 
+const filterObj = (obj, ...allowedfields)=>{
+    const newObj = {}
+    //Object.keys(obj) this would return an array that contains the keys of the objects
+    Object.keys(obj).forEach(el=>{
+       if (allowedfields.includes(el)) newObj[el] = obj[el]
+    })
+    return newObj
+}
+
 exports.createGroupChannel = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
-        if(!req.body.members.includes(req.params.userId)){
+        if(!req.body.members.includes(req.user._id.toString())){
             await session.abortTransaction();
             return next(new AppError("The creator of the group should be included in the group.", 400))
         }
@@ -16,7 +25,7 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
         //if we don't, it would see the {session} as another entry.
         const newChannel = await Channel.create([{
             channelType: 'Group',
-            groupLeader: req.params.userId,
+            groupLeader: req.user._id,
             channelName: req.body.channelName,
             members: req.body.members,
         }], {session})
@@ -34,7 +43,8 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
         }
         await session.commitTransaction();
         res.status(201).json({
-            status:"success"
+            status:"success",
+            data:newChannel
         })
     }catch(err){
         await session.abortTransaction();
@@ -50,6 +60,21 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
 }
 )
 
+exports.updateGroupDetails = catchAsync(async(req, res, next)=>{
+    //this filters out unwanted field names on the req.body
+    const filteredBBody = filterObj(req.body, 'channelName', 'image')
+    const updatedGroup = await Channel.findByIdAndUpdate(req.params.groupId,
+         filteredBBody, 
+         {new:true, runValidators:true})
+    res.status(200).json({
+        status:'success',
+        data:{
+            group:updatedGroup
+        }
+    })
+})
+
+
 exports.getUserGroups = catchAsync(async(req, res, next)=>{
     //Since we have a middleware that checks if the userId param
     //is similar to the user that is logged in, we don't need to 
@@ -59,20 +84,22 @@ exports.getUserGroups = catchAsync(async(req, res, next)=>{
         select:'channelName channelNumber image channelType'})
     res.status(200).json({
         status:"success",
-        data:user.groups
+        data:{
+            groups:user.groups
+        }
     })
 })
 
 exports.deleteGroup = catchAsync(async(req, res, next)=>{
     const groupChannel =  await Channel.findOne(req.params.channelId)
-    if(req.params.userId!==groupChannel.groupLeader){
+    if(req.user._id!==groupChannel.groupLeader){
         return next(new AppError("You are not authorized to perform this action.", 401))
     }
 })
 
 exports.getGroupMembers = catchAsync(async (req, res, next)=>{
     const groupChannel = await Channel.findById(req.params.groupId).populate({path:'members', select:'displayname friendTag image'})
-    const currentUser = await User.findById(req.params.userId)
+    const currentUser = await User.findById(req.user._id)
     if(!groupChannel||groupChannel.channelType!=='Group'){
         return next(new AppError("Group channel does not exists", 404))
     }
@@ -81,7 +108,9 @@ exports.getGroupMembers = catchAsync(async (req, res, next)=>{
     }
     res.status(200).json({
         status:"success",
-        data:groupChannel.members
+        data:{
+            members:groupChannel.members
+        }
     })
 })
 
@@ -97,7 +126,7 @@ exports.inviteMember = catchAsync(async(req, res, next)=>{
         }
         //Check if the logged in user is friends with the user that we're inviting in the group
         const findStatus = user.friends.find(friend=>
-            friend.friend.toString()===req.params.userId &&
+            friend.friend===req.user._id &&
             friend.status === 'Friend')
         //If the findStatus does not exists it means that the logges in user is not friends with
         //the person he/she is inviting.
@@ -118,7 +147,7 @@ exports.inviteMember = catchAsync(async(req, res, next)=>{
         await user.save({session, validateBeforeSave:false})
         await session.commitTransaction();
         res.status(200).json({
-            status:"success"
+            status:"success",
         })
     }catch(err){
         console.log('ERROR!!!', err)
@@ -134,7 +163,7 @@ exports.leaveGroup = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
-        const user = await User.findById(req.params.userId).session(session)
+        const user = await User.findById(req.user._id).session(session)
         const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"}).session(session)
         if(!groupChannel){
             await session.abortTransaction()
@@ -153,7 +182,9 @@ exports.leaveGroup = catchAsync(async(req, res, next)=>{
         await session.commitTransaction();
         res.status(200).json({
             status:"success",
-            data:user.groups
+            data:{
+                groups:user.groups
+            }
         })
     }catch(err){
         await session.abortTransaction()

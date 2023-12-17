@@ -7,8 +7,6 @@ const groupRoute = require('./groupRoutes')
 const router = express.Router();
 
 router.use('/:userId/friends', friendRoute)
-router.use('/:userId/groups', groupRoute)
-
 
 router.post('/signup', authController.signup)
 router.post('/login', authController.login)
