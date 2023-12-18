@@ -60,9 +60,12 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
 }
 )
 
+
+
 exports.updateGroupDetails = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
-    session.startTransaction();try{
+    session.startTransaction();
+    try{
         const filteredBBody = filterObj(req.body, 'channelName', 'image')
         const updatedGroup = await Channel.findByIdAndUpdate(req.params.groupId,
              filteredBBody, 
@@ -89,11 +92,42 @@ exports.updateGroupDetails = catchAsync(async(req, res, next)=>{
 })
 
 
-
 exports.deleteGroup = catchAsync(async(req, res, next)=>{
-    const groupChannel =  await Channel.findOne(req.params.channelId)
-    if(req.user._id!==groupChannel.groupLeader){
-        return next(new AppError("You are not authorized to perform this action.", 401))
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const groupChannel =  await Channel.findOne({_id:req.params.groupId, channelType:"Group"}).session(session)
+        if(!groupChannel){
+            await session.abortTransaction()
+            return next(new AppError("Group channel does not exists", 404))
+        }
+        //Since everytime we create a group channel we always include the group leader
+        //to the member; we don't need to check if the logged in user is a member.
+        console.log(req.user._id, '-------', groupChannel.groupLeader)
+        if(req.user._id.toString()!==groupChannel.groupLeader.toString()){
+            await session.abortTransaction()
+            return next(new AppError("You are not authorized to perform this action.", 401))
+        }
+        const updateStatus = await User.updateMany({
+            _id:{$in:groupChannel.members}},
+            {$pull:{
+                groups:groupChannel._id
+            }}, {session})
+        if (updateStatus.modifiedCount !== groupChannel.members.length){
+            await session.abortTransaction();
+            return next(new AppError("One or more of the input is invalid", 400))
+        }
+        await Channel.findOneAndDelete({_id:req.params.groupId, channelType:"Group"}).session(session)
+        await session.commitTransaction()
+        res.status(200).json({
+            status:"success"
+        })
+    }catch(err){
+        await session.abortTransaction()
+        console.log('ERROR!!!', err)
+        next(err)
+    }finally{
+        await session.endSession()
     }
 })
 
@@ -165,13 +199,16 @@ exports.inviteMember = catchAsync(async(req, res, next)=>{
 }
 })
 
-
 exports.leaveGroup = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
         const user = await User.findById(req.user._id).session(session)
         const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"}).session(session)
+        if(user._id.toString()===groupChannel.groupLeader.toString()){
+            await session.abortTransaction()
+            return next(new AppError("Assign a new group leader before you leave the group.", 400))
+        }
         if(!groupChannel){
             await session.abortTransaction()
             return next(new AppError("Group channel does not exists", 404))

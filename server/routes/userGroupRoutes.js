@@ -5,7 +5,6 @@ const groupController = require('../controllers/groupController')
 
 const router = express.Router({mergeParams: true});
 
-
 router.use(authController.protect)
 router.use(authController.validateCurrentUser)
 router.route('/:groupId/leave')

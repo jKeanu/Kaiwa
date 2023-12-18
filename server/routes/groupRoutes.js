@@ -12,12 +12,14 @@ router.route('/')
 router.route('/:groupId')
     .get(groupController.getGroupMembers)
     .patch(groupController.updateGroupDetails)
+    .delete(groupController.deleteGroup)
+
+router.route('/:groupId/members')
+    .get(groupController.getGroupMembers)
 
 router.route('/:groupId/invite')
     .patch(groupController.inviteMember)
 
-router.route('/:groupId/leave')
-    .delete(groupController.leaveGroup)
 
 
 module.exports= router
