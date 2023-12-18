@@ -12,8 +12,9 @@ router.route('/')
     .get(friendController.getUserFriends)
     .post(friendController.addFriend)
 
-router.route('/:friendId/unfriend').delete(friendController.removeFriend)
-router.route('/:friendId/decline')
+router.route('/:friendId/unfriend').delete(friendController.unfriend)
+
+router.route('/:friendId/decline').delete(friendController.declineFriend)
 
 router.route('/:friendId/accept').patch(friendController.acceptFriend)
 

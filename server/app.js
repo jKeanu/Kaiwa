@@ -6,6 +6,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const globalHandleError = require('./controllers/errorController')
 const AppError = require('./utils/appError')
 const userRouter = require('./routes/userRoutes');
+const groupRouter = require('./routes/groupRoutes')
 
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(mongoSanitize());
 app.use(express.urlencoded({extended: true, limit: '10kb'}))
 app.use(helmet());
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/groups', groupRouter);
 app.use(globalHandleError)
 
 
