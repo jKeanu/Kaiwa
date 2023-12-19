@@ -10,5 +10,7 @@ router.use(authController.validateCurrentUser)
 router.route('/:groupId/leave')
     .delete(groupController.leaveGroup)
 
+router.patch('/:groupId/changeleader', groupController.changeGroupLeader)
+
 
 module.exports = router
