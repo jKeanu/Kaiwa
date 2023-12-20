@@ -7,6 +7,10 @@ const chatSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref:'User'
     },
+    channel:{
+        type:mongoose.Schema.ObjectId,
+        ref:'Channel'
+    },
     content:{
         type:String,
         required:true

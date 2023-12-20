@@ -5,12 +5,10 @@ const AppError = require('../utils/appError')
 const Channel = require('../models/channelModel')
 
 
-
+//Checking the friendship status with the other user.
 const findFriendshipStatus = (currentUserId, userCheck, status) => 
-    //We need to conver the friend.friend to string since we passed the logged in user id in
-    //string format. Without passing it in a string format, this always returns false.
     userCheck.friends.find(friend=>
-        friend.friend.toString() === currentUserId &&
+        friend.friend.equals(currentUserId) &&
         friend.status === status)
 
 exports.addFriend = catchAsync(async (req, res, next)=>{
@@ -34,17 +32,17 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
         }
         //Check the status of the user that you want to add,
         //i.e, if already added, the status is Pending
-        if(findFriendshipStatus(req.user._id.toString(), addUser, 'Pending')){
+        if(findFriendshipStatus(req.user._id, addUser, 'Pending')){
             await session.abortTransaction();
             return next(new AppError(`You have already sent a friend request to ${displayname}.`, 409))
         }
         //If the other user added you, the status is Sent
-        if(findFriendshipStatus(req.user._id.toString(), addUser, 'Sent')){
+        if(findFriendshipStatus(req.user._id, addUser, 'Sent')){
             await session.abortTransaction();
             return next(new AppError(`${displayname} have sent you a friend request, check the notifaction for more info.`, 409))
         }
         //If already friends with the user, the status is Friend
-        if(findFriendshipStatus(req.user._id.toString(), addUser, 'Friend')){
+        if(findFriendshipStatus(req.user._id, addUser, 'Friend')){
             await session.abortTransaction();
             return next(new AppError(`You are already friends with ${displayname}.`, 409))
         }
@@ -86,13 +84,13 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
             return next(new AppError("User does not exists.", 404))
         }
         //Check if the user is already friends with the other user.
-        if(findFriendshipStatus(req.user._id.toString(), acceptUser, "Friend")){
+        if(findFriendshipStatus(req.user._id, acceptUser, "Friend")){
             await session.abortTransaction();
             return next(new AppError(`You're already friends with ${acceptUser.displayname}.`, 409))       
         }
         //Check if the other user sent the friend request, if the isSent exists, it means the user sent
         //the request.
-        const isSent = findFriendshipStatus(req.user._id.toString(), acceptUser, "Sent")
+        const isSent = findFriendshipStatus(req.user._id, acceptUser, "Sent")
         if(!isSent){
             await session.abortTransaction();
             return next(new AppError(`${acceptUser.displayname} did not send you a friend request.`, 400))
@@ -137,7 +135,7 @@ exports.unfriend = catchAsync(async(req, res, next)=>{
             await session.abortTransaction();
             return next(new AppError(`User does not exists.`, 404))
         }
-        const isFriend = findFriendshipStatus(req.user._id.toString(), removeUser, "Friend")
+        const isFriend = findFriendshipStatus(req.user._id, removeUser, "Friend")
         if(!isFriend){
             await session.abortTransaction();
             return next(new AppError(`You are not friends with ${removeUser.displayname}.`, 400))
@@ -179,7 +177,7 @@ exports.declineFriend = catchAsync(async(req, res, next)=>{
             await session.abortTransaction();
             return next(new AppError(`User does not exists.`, 404))
         }
-        const isRequested = findFriendshipStatus(req.user._id.toString(), removeUser, "Sent")
+        const isRequested = findFriendshipStatus(req.user._id, removeUser, "Sent")
         if(!isRequested){
             await session.abortTransaction();
             return next(new AppError(`${removeUser.displayname} did not send you a friend request.`, 400))

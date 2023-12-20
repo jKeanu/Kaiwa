@@ -1,6 +1,4 @@
 const mongoose = require('mongoose')
-const validator = require('validator')
-const bcrypt = require('bcryptjs')
 
 const channelSchema = new mongoose.Schema({
     channelName:{
@@ -34,10 +32,6 @@ const channelSchema = new mongoose.Schema({
         required:[true, 'A channel must have a type: Group or Friend'],
         enum:['Group', 'Friend']
     },
-    messages:[{
-        type:mongoose.Schema.ObjectId,
-        ref:'Chat'
-    }],
     channelNumber:{
         type:Number,
         required:[true, "A channel must have a channel number"],
@@ -54,9 +48,19 @@ const channelSchema = new mongoose.Schema({
         }
     },
     lastMessage: Date
+},{
+    //each time data is outputed as json we want virtuals to be part of the output
+    toJSON: { virtuals: true},
+    toObject: {virtuals: true}
 })
 
 channelSchema.index({lastMessage:1})
+
+channelSchema.virtual('messages',{
+    ref:'Chat',
+    foreignField: 'channel',
+    localField: '_id'
+})
 
 channelSchema.pre('save', async function(next) {
     if (this.isNew) {
