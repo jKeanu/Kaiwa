@@ -118,7 +118,7 @@ exports.deleteGroup = catchAsync(async (req, res, next)=>{
         //to the member; we don't need to check if the logged in user is a member.
         if(req.user._id.toString()!==groupChannel.groupLeader.toString()){
             await session.abortTransaction()
-            return next(new AppError("You are not authorized to perform this action.", 401))
+            return next(new AppError("You are not permitted to perform this action.", 401))
         }
         const updateStatus = await User.updateMany({
             _id:{$in:groupChannel.members}},
@@ -179,7 +179,7 @@ exports.inviteMember = catchAsync(async (req, res, next)=>{
         //if the current user is not a member of the group
         if(!groupChannel.members.includes(req.user._id.toString())){
             await session.abortTransaction()
-            return next(new AppError("You are not authorized to invite a user to this group", 401))    
+            return next(new AppError("You are not permitted to invite a user to this group", 401))    
         }
         //Check if the logged in user is friends with the user that we're inviting in the group
         const findStatus = user.friends.find(friend=>
@@ -267,7 +267,7 @@ exports.changeGroupLeader =  catchAsync(async (req, res, next) => {
         }
         if (!groupChannel.groupLeader.equals(req.user._id)){
             await session.abortTransaction()
-            return next(new AppError("You are not authorized to perform this action.", 401))
+            return next(new AppError("You are not permitted to perform this action.", 401))
         }
         const findMember = groupChannel.members.find(member=>member.toString()===req.body.userId)
         if(!findMember){
