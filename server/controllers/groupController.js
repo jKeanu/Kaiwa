@@ -14,7 +14,7 @@ const filterObj = (obj, ...allowedfields)=>{
 }
 
 exports.getGroupChannel = catchAsync(async(req, res, next)=>{
-    const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:'Group'})
+    const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:'Group'}).populate('messages')
     if(!groupChannel){
         return next(new AppError('No group Channel with that ID does not exists', 404))
     }
@@ -64,12 +64,8 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
         })
     }catch(err){
         await session.abortTransaction();
-        //we handle this type of error in global error handler middleware
-        if(err.name === 'ValidationError'){
-            next(err)
-        }else{
-            next(new AppError("Failed to create a new Channel, please try again", 500))
-        }
+        //errors in global error handler middleware
+        next(err)
     }finally{
         await session.endSession()
     }}
@@ -118,7 +114,7 @@ exports.deleteGroup = catchAsync(async (req, res, next)=>{
         //to the member; we don't need to check if the logged in user is a member.
         if(req.user._id.toString()!==groupChannel.groupLeader.toString()){
             await session.abortTransaction()
-            return next(new AppError("You are not permitted to perform this action.", 401))
+            return next(new AppError("You are not authorized to perform this action.", 401))
         }
         const updateStatus = await User.updateMany({
             _id:{$in:groupChannel.members}},
@@ -145,7 +141,7 @@ exports.deleteGroup = catchAsync(async (req, res, next)=>{
 
 exports.getGroupMembers = catchAsync(async (req, res, next)=>{
     const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"})
-        .populate({path:'members', select:'displayname friendTag image'})
+        .populate({path:'members', select:'displayName friendTag image'})
     const currentUser = await User.findById(req.user._id)
     if(!groupChannel){
         return next(new AppError("Group channel with that ID does not exists", 404))
@@ -179,7 +175,7 @@ exports.inviteMember = catchAsync(async (req, res, next)=>{
         //if the current user is not a member of the group
         if(!groupChannel.members.includes(req.user._id.toString())){
             await session.abortTransaction()
-            return next(new AppError("You are not permitted to invite a user to this group", 401))    
+            return next(new AppError("You are not authorized to invite a user to this group", 401))    
         }
         //Check if the logged in user is friends with the user that we're inviting in the group
         const findStatus = user.friends.find(friend=>
@@ -267,7 +263,7 @@ exports.changeGroupLeader =  catchAsync(async (req, res, next) => {
         }
         if (!groupChannel.groupLeader.equals(req.user._id)){
             await session.abortTransaction()
-            return next(new AppError("You are not permitted to perform this action.", 401))
+            return next(new AppError("You are not authorized to perform this action.", 401))
         }
         const findMember = groupChannel.members.find(member=>member.toString()===req.body.userId)
         if(!findMember){

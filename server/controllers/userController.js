@@ -16,9 +16,9 @@ exports.updateUser = catchAsync(async(req, res, next)=>{
     if (req.body.password || req.body.passwordConfirm){
         return next(new AppError('This route is not for password updates.', 400))
     }
-    const filteredBody = filterObj(req.body, 'displayname', 'friendTag', 'image')
+    const filteredBody = filterObj(req.body, 'displayName', 'friendTag', 'image')
     //We can run validators since the passwordConfirm validator only works on create or save.
-    const updatedUser = User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
     res.status(200).json({
         status:'success',
         data:{

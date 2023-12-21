@@ -10,6 +10,7 @@ router.use('/messages', chatRoutes)
 
 
 router.use(authController.protect)
+
 router.route('/')
     .post(groupController.createGroupChannel)
 

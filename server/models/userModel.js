@@ -3,7 +3,7 @@ const validator = require('validator')
 const bcrypt = require('bcryptjs')
 
 const userSchema = new mongoose.Schema({
-    displayname:{
+    displayName:{
         type:String,
         required:[true, 'Must have a display name'],
         maxlength:[10, 'Only maximum of 15 characters is allowed.'],
@@ -92,7 +92,7 @@ const userSchema = new mongoose.Schema({
 
 
 //combination of friendTag and username has to be unique
-userSchema.index({friendTag:1, displayname:1}, {unique:true})
+userSchema.index({friendTag:1, displayName:1}, {unique:true})
 
 // pre-save middleware is executed after the validation step
 userSchema.pre('save', async function(next) {

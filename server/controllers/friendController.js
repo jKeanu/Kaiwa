@@ -14,37 +14,37 @@ const findFriendshipStatus = (currentUserId, userCheck, status) =>
 exports.addFriend = catchAsync(async (req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
-    const {friendTag, displayname} = req.body
+    const {friendTag, displayName} = req.body
     try{
-        if(!friendTag || !displayname){
+        if(!friendTag || !displayName){
             await session.abortTransaction(); // Abort the transaction
             return next(new AppError("Please provide both friend tag and the name of the user.", 400))
         }
-        if(friendTag === req.user.friendTag && displayname === req.user.displayname){
+        if(friendTag === req.user.friendTag && displayName === req.user.displayName){
             await session.abortTransaction();
             return next(new AppError("You cannot make a friend request to yourself.", 400))
         }
-        //Find the user with the corresponding friendTag and displayname
-        const addUser = await User.findOne({friendTag, displayname}).session(session)
+        //Find the user with the corresponding friendTag and displayName
+        const addUser = await User.findOne({friendTag, displayName}).session(session)
         if(!addUser){
             await session.abortTransaction();
-            return next(new AppError(`The user ${displayname} with the provided nameTag cannot be found.`, 404))
+            return next(new AppError(`The user ${displayName} with the provided nameTag cannot be found.`, 404))
         }
         //Check the status of the user that you want to add,
         //i.e, if already added, the status is Pending
         if(findFriendshipStatus(req.user._id, addUser, 'Pending')){
             await session.abortTransaction();
-            return next(new AppError(`You have already sent a friend request to ${displayname}.`, 409))
+            return next(new AppError(`You have already sent a friend request to ${displayName}.`, 409))
         }
         //If the other user added you, the status is Sent
         if(findFriendshipStatus(req.user._id, addUser, 'Sent')){
             await session.abortTransaction();
-            return next(new AppError(`${displayname} have sent you a friend request, check the notifaction for more info.`, 409))
+            return next(new AppError(`${displayName} have sent you a friend request, check the notifaction for more info.`, 409))
         }
         //If already friends with the user, the status is Friend
         if(findFriendshipStatus(req.user._id, addUser, 'Friend')){
             await session.abortTransaction();
-            return next(new AppError(`You are already friends with ${displayname}.`, 409))
+            return next(new AppError(`You are already friends with ${displayName}.`, 409))
         }
         //Add a friend request (pending) status to the user
         addUser.friends.push({friend:req.user._id, status:"Pending"})
@@ -68,7 +68,7 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
     })}catch(err){
         console.log('ERROR!!!!', err)
         await session.abortTransaction();
-        next(new AppError("An error occurred while making a request to the user", 500)) // Use 500 for server errors
+        next(err) // Use 500 for server errors
     }finally{
         await session.endSession()
     }
@@ -86,14 +86,14 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
         //Check if the user is already friends with the other user.
         if(findFriendshipStatus(req.user._id, acceptUser, "Friend")){
             await session.abortTransaction();
-            return next(new AppError(`You're already friends with ${acceptUser.displayname}.`, 409))       
+            return next(new AppError(`You're already friends with ${acceptUser.displayName}.`, 409))       
         }
         //Check if the other user sent the friend request, if the isSent exists, it means the user sent
         //the request.
         const isSent = findFriendshipStatus(req.user._id, acceptUser, "Sent")
         if(!isSent){
             await session.abortTransaction();
-            return next(new AppError(`${acceptUser.displayname} did not send you a friend request.`, 400))
+            return next(new AppError(`${acceptUser.displayName} did not send you a friend request.`, 400))
         }
         //Although isSent is used to identify whether the user sent a friend requests, 
         //it's value is the user document.
@@ -120,7 +120,7 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
         )}catch(err){
             console.log('ERROR!!!!', err)
             await session.abortTransaction();
-            next(new AppError("An error occurred while accepting the friend request", 500))
+            next(err)
         }finally{
             await session.endSession()
         }
@@ -138,7 +138,7 @@ exports.unfriend = catchAsync(async(req, res, next)=>{
         const isFriend = findFriendshipStatus(req.user._id, removeUser, "Friend")
         if(!isFriend){
             await session.abortTransaction();
-            return next(new AppError(`You are not friends with ${removeUser.displayname}.`, 400))
+            return next(new AppError(`You are not friends with ${removeUser.displayName}.`, 400))
         }
 
         await Channel.findOneAndDelete(
@@ -162,7 +162,7 @@ exports.unfriend = catchAsync(async(req, res, next)=>{
     }catch(err){
         console.log('ERROR!!!!', err)
         await session.abortTransaction();
-        next(new AppError("An error occurred while unfriending the user", 500))
+        next(err)
     }finally{
         await session.endSession()
     }
@@ -180,7 +180,7 @@ exports.declineFriend = catchAsync(async(req, res, next)=>{
         const isRequested = findFriendshipStatus(req.user._id, removeUser, "Sent")
         if(!isRequested){
             await session.abortTransaction();
-            return next(new AppError(`${removeUser.displayname} did not send you a friend request.`, 400))
+            return next(new AppError(`${removeUser.displayName} did not send you a friend request.`, 400))
         }
         await User.updateOne(
             {_id:removeUser._id},
@@ -199,7 +199,7 @@ exports.declineFriend = catchAsync(async(req, res, next)=>{
     }catch(err){
         console.log('ERROR!!!!', err)
         await session.abortTransaction();
-        next(new AppError("An error occurred while rejecting the friend requests", 500))
+        next(err)
     }finally{
         await session.endSession()
     }
@@ -209,7 +209,7 @@ exports.declineFriend = catchAsync(async(req, res, next)=>{
 
 exports.getUserFriends = catchAsync(async(req, res, next)=>{
     const user = await User.findById(req.user._id)
-        .populate({path:'friends.friend', select:'name photo displayname friendTag channels'})
+        .populate({path:'friends.friend', select:'name photo displayName friendTag channels'})
     if(!user){
         return next(new AppError("The user does not exists.", 404))
     }
