@@ -18,28 +18,34 @@ function signToken(id){
     });
   };
 
-const createSendToken = (user, statusCode, res) => {
-    const token = signToken(user._id);
-    const cookieOptions = {
-      expires: new Date(
-        Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-      ),
-      httpOnly: true
-    };
-    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-  
-    res.cookie('jwt', token, cookieOptions);
-  
-    // Remove password from output
-    user.password = undefined;
-    res.status(statusCode).json({
-      status: 'success',
-      token,
-      data: {
-        user
-      }
-    });
-  };
+
+const createSendToken = (user, statusCode, req, res) => {
+  const token = signToken(user._id);
+
+  res.cookie('jwt', token, {
+    expires: new Date(
+      //Converting days to milliseconds
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    //this means that the cookie cannot be modified or changed by the browser in any way
+    //(receive the cookie, store it and send it automatically along with every requests)
+    httpOnly: true,
+    //req.secure is a property that is true if a given request is sent over HTTPS (secure HTTP)
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+  });
+
+
+  // Remove password from output
+  user.password = undefined;
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user
+    }
+  });
+};
 
 exports.login = catchAsync(async (req, res, next)=>{
     const {email, password} = req.body
@@ -53,12 +59,12 @@ exports.login = catchAsync(async (req, res, next)=>{
     if(!(await user.correctPassword(password, user.password))||!user){
         return next(new AppError('Incorrect password or email', 401))
     }
-    createSendToken(user, 200, res)
+    createSendToken(user, 200, req, res)
 })
 
 exports.signup = catchAsync(async (req, res, next)=>{
     const newUser = await User.create(req.body)
-    createSendToken(newUser, 201, res)
+    createSendToken(newUser, 201, req, res)
 })
 
 exports.protect = catchAsync(async (req, res, next)=>{
@@ -90,5 +96,5 @@ exports.changePassword = catchAsync(async (req, res, next)=>{
   currentUser.password = req.body.password
   currentUser.passwordConfirm = req.body.passwordConfirm
   await currentUser.save()
-  createSendToken(currentUser, 200, res)
+  createSendToken(currentUser, 200, req, res)
 })
