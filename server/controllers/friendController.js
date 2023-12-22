@@ -45,7 +45,7 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
         const addUser = await User.findOne({friendTag, displayName}).session(session)
         if(!addUser){
             await session.abortTransaction();
-            return next(new AppError(`The user ${displayName} cannot be found.`, 404))
+            return next(new AppError(`The user does not exist.`, 404))
         }
         //Check the status of the user that you want to add,
         //i.e, if already added, the status is Pending

@@ -36,7 +36,10 @@ const channelSchema = new mongoose.Schema({
         type:Number,
         required:[true, "A channel must have a channel number"],
         unique:true,
-        default:() => Math.floor(Math.random() * 100)
+        //since we don't want to cause a traffic in the future, everytime
+        //a channel has been created, the channel number would be more than
+        //the previous channel number.
+        default:() => Math.floor(Math.random() * 100) + 1
     },
     image:{
         type:String,
