@@ -11,6 +11,23 @@ const findFriendshipStatus = (currentUserId, userCheck, status) =>
         friend.friend.equals(currentUserId) &&
         friend.status === status)
 
+exports.getFriend = catchAsync(async(req, res, next)=>{
+    const friendUser = await User.findById(req.params.friendId)
+    if(!friendUser){
+        return next(new AppError("User does not exists.", 404))
+    }
+    //Determine if the current user is friend with the other user
+    if(!findFriendshipStatus(req.user._id, friendUser, 'Friend')){
+        return next(new AppError(`You are not friends with the user to perform this action.`, 403))
+    }
+    res.status(200).json({
+        status:"success",
+        data:{
+            friend:friendUser
+        }
+    })
+})
+
 exports.addFriend = catchAsync(async (req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -28,7 +45,7 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
         const addUser = await User.findOne({friendTag, displayName}).session(session)
         if(!addUser){
             await session.abortTransaction();
-            return next(new AppError(`The user ${displayName} with the provided nameTag cannot be found.`, 404))
+            return next(new AppError(`The user ${displayName} cannot be found.`, 404))
         }
         //Check the status of the user that you want to add,
         //i.e, if already added, the status is Pending
@@ -44,7 +61,7 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
         //If already friends with the user, the status is Friend
         if(findFriendshipStatus(req.user._id, addUser, 'Friend')){
             await session.abortTransaction();
-            return next(new AppError(`You are already friends with ${displayName}.`, 409))
+            return next(new AppError(`You are already friends with ${displayName}.`, 403))
         }
         //Add a friend request (pending) status to the user
         addUser.friends.push({friend:req.user._id, status:"Pending"})
@@ -93,7 +110,7 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
         const isSent = findFriendshipStatus(req.user._id, acceptUser, "Sent")
         if(!isSent){
             await session.abortTransaction();
-            return next(new AppError(`${acceptUser.displayName} did not send you a friend request.`, 400))
+            return next(new AppError(`The user did not send you a friend request.`, 400))
         }
         //Although isSent is used to identify whether the user sent a friend requests, 
         //it's value is the user document.
@@ -112,7 +129,7 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
                 'friends.$.channel':friendChannel[0]._id
             }},
             {session})
-        await acceptUser.save({session, validateBeforeSave:false})
+        await acceptUser.save({session, validateBeforeSave:true})
         await session.commitTransaction(); 
         res.status(200).json({
             status:"success"
@@ -138,7 +155,7 @@ exports.unfriend = catchAsync(async(req, res, next)=>{
         const isFriend = findFriendshipStatus(req.user._id, removeUser, "Friend")
         if(!isFriend){
             await session.abortTransaction();
-            return next(new AppError(`You are not friends with ${removeUser.displayName}.`, 400))
+            return next(new AppError(`You are not friends with the user.`, 403))
         }
 
         await Channel.findOneAndDelete(
@@ -180,7 +197,7 @@ exports.declineFriend = catchAsync(async(req, res, next)=>{
         const isRequested = findFriendshipStatus(req.user._id, removeUser, "Sent")
         if(!isRequested){
             await session.abortTransaction();
-            return next(new AppError(`${removeUser.displayName} did not send you a friend request.`, 400))
+            return next(new AppError(`The user did not send you a friend request.`, 400))
         }
         await User.updateOne(
             {_id:removeUser._id},
