@@ -16,14 +16,15 @@ const io = new Server(server, {
 // Manage connections
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
-  socket.on("join_room", (data)=>{
-    socket.join(data)
+  socket.on("join_room", (channelId)=>{
+    socket.join(channelId)
   })
   //Listen for messages
   socket.on('send_message', (data) => {
     //Send a message to all clients connected to a Socket.IO server except the sender.
     socket.to(data.room).emit('receive_message', data.inputMessage);
   });
+  socket.on('')
 });
 
 server.listen(3001, () => {
