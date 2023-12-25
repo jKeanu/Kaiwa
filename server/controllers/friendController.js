@@ -226,7 +226,7 @@ exports.declineFriend = catchAsync(async(req, res, next)=>{
 
 exports.getUserFriends = catchAsync(async(req, res, next)=>{
     const user = await User.findById(req.user._id)
-        .populate({path:'friends.friend', select:'name photo displayName friendTag channels'})
+        .populate({path:'friends.friend', select:'displayName photo friendTag'})
     if(!user){
         return next(new AppError("The user does not exists.", 404))
     }
