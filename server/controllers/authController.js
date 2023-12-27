@@ -29,7 +29,6 @@ function signToken(id){
   
     // Remove password from output
     user.password = undefined;
-  
     res.status(statusCode).json({
       status: 'success',
       token,

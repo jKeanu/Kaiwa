@@ -35,17 +35,29 @@ const getUserIdFromSocket = async (token)=> {
 // Manage connections
 io.on('connection', async (socket) => {
   const userId = getUserIdFromSocket(socket.handshake.query.token)
-  await redisClient.incr(`user:${userId}:connections`)
   const userConnection = await redisClient.incr(`user:${userId}:connections`);
 
   if(userConnection===1){
     await User.findByIdAndUpdate(userId, { status: "online" });
   }
-
-  socket.on("join_room", (channelId)=>{
-    socket.join(channelId)
+  
+  socket.on("join_room", (channelNumber)=>{
+    socket.join(channelNumber)
+  })
+  
+  socket.on('leave_room', (channelNumber)=>{
+    socket.leave(channelNumber)
   })
 
+  //Listen for messages
+  socket.on('send_message', async (data) => {
+    const newMessage = await Chat.create({
+      sender: userId,
+      channel: data.channelId,
+      content: data.inputMessage
+    })
+  socket.to(data.room).emit('receive_message', newMessage);
+  });
   socket.on('disconnect', async ()=>{
     await redisClient.decr(`user:${userId}:connections`, async (err, newCount)=>{
       if (newCount<=0){
@@ -54,11 +66,6 @@ io.on('connection', async (socket) => {
       }
     })
   })
-  //Listen for messages
-  socket.on('send_message', (data) => {
-    //Send a message to all clients connected to a Socket.IO server except the sender.
-    socket.to(data.room).emit('receive_message', data.inputMessage);
-  });
 });
 
 server.listen(3001, () => {
