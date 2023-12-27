@@ -41,6 +41,9 @@ const LoginPage = () => {
                         <input type="password" placeholder="Enter your password" value={password} onChange={e => 
                             setPassword(e.target.value)}  required/>
                         <button type="submit">Log In</button>
+                        <span className='need-an-account-text'>
+                            Need an account? <a className='sign-up-link' href='/signup'>Register</a>
+                        </span>
                     </form>
                 </div>
             </div>
