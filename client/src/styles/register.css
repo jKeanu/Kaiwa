@@ -5,30 +5,26 @@
     --primary-color:rgba(45, 55, 67, 1);
     --secondary-color: rgba(53, 64, 76, 1);
     --white-text: rgba(216, 216, 216, 1);
-    
 }
 
-
-.login-page-container{
+.register-page-container{
     width: 100vw;
     height: 100vh;
     background-color: var(--primary-color);
     display: flex;
     justify-content: center;
     align-items: center;
-    min-width: 60rem;
-
 }
 
-.login-container{
+.register-container{
     background-color:var(--secondary-color);
-    height: 22rem;
+    height: 30rem;
     width: 36rem;
     border-radius: 0.5rem;
     box-shadow: 0 4px 4px rgb(0, 0, 0, 0.25);
 }
 
-.login-header{
+.register-header{
     font-size: 2.5rem;
     font-family: 'Bebas Neue', sans-serif;
     font-weight: 400;
@@ -38,25 +34,26 @@
     margin: 0;
 }
 
-.login-form-container{
+.register-form-container{
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.login-form{
+.register-form{
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.login-form label{
+.register-form label{
     width: 100%;
     color: var(--white-text);
     font-family: 'Bellefair', serif;
+
 }
 
-.login-form input{
+.register-form input{
     width: 25rem;
     height: 2rem;
     background-color: rgba(37, 45, 55, 1);
@@ -68,17 +65,16 @@
     margin-bottom: 0.75rem;
 }
 
-
-.login-form input:focus {
+.register-form input:focus {
     outline: none;
 }
 
-.login-form input::placeholder{
+.register-form input::placeholder{
     font-size: 0.7rem;
     font-family: 'Bellefair', serif;
 }
 
-.login-form button{
+.register-form button{
     background-color: rgba(67, 77, 89, 1);
     color: var(--white-text);
     width: 16rem;
@@ -90,7 +86,7 @@
     font-family: 'Bellefair', serif;
 }
 
-.login-form button:active{
+.register-form button:active{
     background-color: rgb(51, 59, 69);
 }
 
@@ -109,5 +105,23 @@
 }
 
 .register-link:hover{
+    text-decoration: underline;
+}
+
+.already-have-an-account-text{
+    color: var(--white-text);
+    font-size: 0.8rem;
+    font-family: 'Bellefair', serif;
+    margin-top: 0.35rem;
+    display: block;
+    text-align: center;
+}
+
+.log-in-link{
+    text-decoration: none;
+    color: rgb(9,105,171);
+}
+
+.log-in-link:hover{
     text-decoration: underline;
 }
