@@ -10,9 +10,11 @@ router.use('/:userId/groups', userGroupRoute)
 
 router.post('/register', authController.signup)
 router.post('/login', authController.login)
+
 router.use(authController.protect)
 
 router.patch('/updateMe', userController.updateUser)
 router.patch('/changepassword', authController.changePassword)
+router.get('/me', userController.getMe)
 
 module.exports = router

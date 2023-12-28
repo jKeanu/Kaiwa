@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom'
 import '../styles/login.css'
@@ -7,6 +7,14 @@ const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate()
+    const token = localStorage.getItem('token');
+    
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            navigate('/@me');
+        }
+    }, [navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -19,9 +27,8 @@ const LoginPage = () => {
                     password
                 }
             });
-            console.log(res)
             if (res.data.status === "success") {
-                // localStorage.setItem('token', res.data.token)
+                localStorage.setItem('token', res.data.token)
                 navigate('/@me')
             }
         } catch (error) {
