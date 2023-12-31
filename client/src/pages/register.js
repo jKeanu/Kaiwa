@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom'
 import '../styles/register.css'
@@ -24,7 +25,7 @@ const RegisterPage = () => {
             });
             console.log(res)
             if (res.data.status === "success") {
-                // localStorage.setItem('token', res.data.token)
+                localStorage.setItem('token', res.data.token)
                 navigate('/@me')
             }
         } catch (error) {
@@ -41,6 +42,7 @@ const RegisterPage = () => {
             }
         })
     }
+
     return (
         <div className='register-page-container'>
             <div className='register-container'>
@@ -64,7 +66,7 @@ const RegisterPage = () => {
                     </form>
                 </div>
                 <span className='already-have-an-account-text'>
-                    Already have an account? <a className='log-in-link' href='/login'>Log In</a>
+                    Already have an account? <Link className='log-in-link' to="/login">Log In</Link>
                 </span>
             </div>
         </div>

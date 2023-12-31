@@ -82,11 +82,6 @@ const userSchema = new mongoose.Schema({
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
-    active:{
-        type:Boolean,
-        default: true,
-        select:false, //we want to hide this detail to the user
-    }
 })
 
 
@@ -130,7 +125,8 @@ userSchema.methods.changedPasswordAfter = function(TokenIssued){
     }
     return false
 }
-  
+
+
 const User = mongoose.model('User', userSchema)
 module.exports = User;
 

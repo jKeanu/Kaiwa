@@ -50,7 +50,10 @@ const channelSchema = new mongoose.Schema({
             return this.channelType === 'Group'? 'default.jpg' : undefined
         }
     },
-    lastMessage: Date
+    lastMessage: {
+        type:Date,
+        default: Date.now
+    }
 },{
     //each time data is outputed as json we want virtuals to be part of the output
     toJSON: { virtuals: true},

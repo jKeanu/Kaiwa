@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom'
 import '../styles/login.css'
@@ -35,6 +36,8 @@ const LoginPage = () => {
             console.log(error.message)
         }
     };
+
+    
     return (
         <div className='login-page-container'>
             <div className='login-container'>
@@ -51,7 +54,7 @@ const LoginPage = () => {
                     </form>
                 </div>
                 <span className='need-an-account-text'>
-                    Need an account? <a className='register-link' href='/register'>Register</a>
+                    Need an account? <Link className='register-link' to='/register'>Register</Link>
                 </span>
             </div>
         </div>
