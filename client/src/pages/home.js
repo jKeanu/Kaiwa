@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import {useNavigate} from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import io from 'socket.io-client'
 import { jwtDecode } from 'jwt-decode'
 import axios from 'axios';
+import '../styles/rightHome.css'
+import '../styles/home.css'
+import LeftSection from '../components/LeftSection';
+import RightSection from '../components/RightSection';
 
+
+const socket = io.connect("http://localhost:3001");
 const HomePage = ()=>{
     //Get token from local storage
     const token = localStorage.getItem('token');
@@ -85,29 +91,20 @@ const HomePage = ()=>{
 
     return(
         <div className='homepage-container'>
-            <main>
-            <section className='left-section'>
-                <div className='channel-links-container'>
-                {
-                userData
-                ?
-                <ul>
-                    {channels.map(channel=>(
-                        <li key={channel.channelNumber}>
-                        <NavLink className='register-link' to={`${channel.channelNumber}`}>{channel.channelName}</NavLink>
-                        </li>
-                    ))}
-                </ul>
-                :
-                <div>Add a friend</div>
-                    }
-
-                </div>
-                <div>
-                    <button onClick={handleLogout}>LogOut</button>
-                </div>
-            </section>
+            {userData?
+            <main className='homepage'>
+                <LeftSection channels={channels} handleLogout={handleLogout} user={userData}/>
+                <Routes>
+                    <Route index element ></Route>
+                    <Route path=":channelNumber" element={<RightSection socket={socket}/>}></Route>
+                </Routes>
             </main>
+            :
+            <main className='homepage'>
+                <section className=''></section>
+                <section className=''></section>
+            </main>
+            }
         </div>
     )
 
