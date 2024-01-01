@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import '../styles/leftHome.css'
 
 function LeftSection({channels, handleLogout}){

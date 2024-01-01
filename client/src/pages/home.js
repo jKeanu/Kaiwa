@@ -9,7 +9,11 @@ import LeftSection from '../components/LeftSection';
 import RightSection from '../components/RightSection';
 
 
-const socket = io.connect("http://localhost:3001");
+const socket = io.connect("http://localhost:3002", {
+    query:{
+        token: localStorage.getItem('token')
+    }
+});
 const HomePage = ()=>{
     //Get token from local storage
     const token = localStorage.getItem('token');
@@ -88,15 +92,14 @@ const HomePage = ()=>{
         setChannels([]);    
         navigate('/login')
     }
-
     return(
         <div className='homepage-container'>
             {userData?
             <main className='homepage'>
                 <LeftSection channels={channels} handleLogout={handleLogout} user={userData}/>
                 <Routes>
-                    <Route index element ></Route>
-                    <Route path=":channelNumber" element={<RightSection socket={socket}/>}></Route>
+                    <Route index element={<div>asdasd</div>}/>
+                    <Route path="/:channelNumber" element={<RightSection socket={socket} currentUserData={userData}/>}/>
                 </Routes>
             </main>
             :

@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
 const User = require('../models/userModel')
+const Channel = require('../models/channelModel')
 const catchAsync = require('../utils/catchAsync')
 const AppError = require('../utils/appError')
 
@@ -38,5 +38,16 @@ exports.getMe = catchAsync(async(req, res, next)=>{
     res.status(200).json({
         status:"success",
         user:currentUser
+    })
+})
+
+exports.getUserChannel = catchAsync( async(req, res, next)=>{
+    const currentChannel = await Channel.findOne({channelNumber:req.params.channelNumber})
+    if(!currentChannel.members.includes(req.user._id)){
+        return next(new AppError("You are not a member of this group.", 401))   
+    }
+    res.status(200).json({
+        status:'success',
+        channel: currentChannel
     })
 })

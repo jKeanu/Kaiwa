@@ -7,8 +7,6 @@ const router = express.Router();
 
 router.use('/messages', chatRoutes)
 
-
-
 router.use(authController.protect)
 
 router.route('/')

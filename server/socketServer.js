@@ -4,8 +4,9 @@ const Redis = require('redis')
 const http = require('http');
 const { Server } = require('socket.io');
 const {promisify} = require('util')
-const User = require('../models/userModel')
-const Chat = require('../models/chatModel')
+const User = require('./models/userModel')
+const Chat = require('./models/chatModel');
+const Channel = require('./models/channelModel');
 
 
 const app = express();
@@ -40,12 +41,12 @@ io.on('connection', async (socket) => {
   if(userConnection===1){
     await User.findByIdAndUpdate(userId, { status: "online" });
   }
-  
-  socket.on("join_room", (channelNumber)=>{
+
+  socket.on("joinRoom", (channelNumber)=>{
     socket.join(channelNumber)
   })
   
-  socket.on('leave_room', (channelNumber)=>{
+  socket.on('leaveRoom', (channelNumber)=>{
     socket.leave(channelNumber)
   })
 
@@ -54,9 +55,23 @@ io.on('connection', async (socket) => {
     const newMessage = await Chat.create({
       sender: userId,
       channel: data.channelId,
-      content: data.inputMessage
-    })
-  socket.to(data.room).emit('receive_message', newMessage);
+      content: data.inputMessage,
+      time:data.time
+})
+
+  //Update the last message of the channel
+  await Channel.findByIdAndUpdate(
+      {_id:data.channelId},
+      {lastMessage:newMessage.time})
+  //Although the newMessage document consists of sender as a mongoose object id,
+  //we can use spread operator and add a similar key to overwrite it.
+  socket.to(data.channelNumber).emit('receive_message', {
+    ...newMessage,
+    sender:{
+      displayName:data.displayName,
+      image:data.image
+    }
+  });
   });
   socket.on('disconnect', async ()=>{
     await redisClient.decr(`user:${userId}:connections`, async (err, newCount)=>{
@@ -68,7 +83,7 @@ io.on('connection', async (socket) => {
   })
 });
 
-server.listen(3001, () => {
-  console.log('Server is running on http://localhost:3001');
+server.listen(3002, () => {
+  console.log('Server is running on http://localhost:3002');
 });
 

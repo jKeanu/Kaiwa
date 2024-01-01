@@ -75,6 +75,10 @@ const userSchema = new mongoose.Schema({
             }
         }
     ],
+    status:{
+        type:String,
+        enum:['Online', 'Offline']
+    },
     groups:[{
             type: mongoose.Schema.ObjectId,
             ref: 'Channel'

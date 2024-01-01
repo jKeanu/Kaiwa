@@ -3,7 +3,7 @@ const authController = require('../controllers/authController')
 const friendController = require('../controllers/friendController')
 
 
-//The mergeParams enables us to access :userId
+
 const router = express.Router();
 
 router.use(authController.protect)
@@ -11,6 +11,7 @@ router.use(authController.protect)
 router.route('/')
     .get(friendController.getUserFriends)
     .post(friendController.addFriend)
+
 router.route('/:friendId')
     .get(friendController.getFriend)
 

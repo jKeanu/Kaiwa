@@ -36,10 +36,7 @@ const channelSchema = new mongoose.Schema({
         type:Number,
         required:[true, "A channel must have a channel number"],
         unique:true,
-        //since we don't want to cause a traffic in the future, everytime
-        //a channel has been created, the channel number would be more than
-        //the previous channel number.
-        default:() => Math.floor(Math.random() * 100) + 1
+        default:() => Math.floor(Math.random() * 10) + 1
     },
     image:{
         type:String,
@@ -71,7 +68,12 @@ channelSchema.virtual('messages',{
 channelSchema.pre('save', async function(next) {
     if (this.isNew) {
         const highestChannel = await this.constructor.findOne().sort('-channelNumber').exec();
-        this.channelNumber = highestChannel ? highestChannel.channelNumber + this.channelNumber : this.channelNumber;
+        //Since few channels there is a possibility that the channelNumber could collide during validation,
+        //i.e if the channel number of the first channel was 9 and when creating the
+        //second channel during the Math.floor(Math.random() * 10) + 1 you could still get 9, 
+        //which will cause collision (unique). That's why we implemented the first value to 11
+        //Since the expression above produces random integer between 1 and 10.
+        this.channelNumber = highestChannel ? highestChannel.channelNumber + this.channelNumber : 11;
     }
     next();
 });
