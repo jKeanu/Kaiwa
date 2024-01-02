@@ -9,7 +9,7 @@ import LeftSection from '../components/LeftSection';
 import RightSection from '../components/RightSection';
 
 
-const socket = io.connect("http://localhost:3002", {
+const socket = io.connect("http://localhost:3001", {
     query:{
         token: localStorage.getItem('token')
     }
@@ -39,9 +39,10 @@ const HomePage = ()=>{
                 if(res.data.status === 'success'){
                     //Save the logged in user's data to a state
                     setUserData(res.data.user)
+                    let friendChannels = res.data.user.friends.filter(friend => friend.status === 'Friend')
                     //Since the implementation of channels of friend channel is different to group channel is different
                     //we need to change the structure of the friends array to match group array so we could use sort.
-                    const friendChannels = res.data.user.friends.map(friend=>{
+                    friendChannels = friendChannels.map(friend=>{
                         return{
                             ...friend.channel,
                             channelName: friend.friend.displayName,
@@ -99,7 +100,10 @@ const HomePage = ()=>{
                 <LeftSection channels={channels} handleLogout={handleLogout} user={userData}/>
                 <Routes>
                     <Route index element={<div>asdasd</div>}/>
-                    <Route path="/:channelNumber" element={<RightSection socket={socket} currentUserData={userData}/>}/>
+                    <Route path=":channelNumber" element={<RightSection 
+                    socket={socket} 
+                    currentUserData={userData}
+                    token={token}/>}/>
                 </Routes>
             </main>
             :

@@ -1,7 +1,5 @@
-import {useParams} from "react-router-dom"
-import { BrowserRouter as useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode'
 import axios from "axios"
 
 function RightSection({token, socket, currentUserData}){
@@ -10,8 +8,8 @@ function RightSection({token, socket, currentUserData}){
     const {image, displayName} = currentUserData
     const {channelNumber} = useParams();
     const navigate = useNavigate()
-    const [inputMessage, setInputMessage] = useState({});
-    const [messageReceived, setMessageReceived] = useState([]);
+    const [inputMessage, setInputMessage] = useState('');
+    const [messageReceived, setMessageReceived] = useState(['']);
     const [currentChannel, setCurrentChannel] = useState('')
 
     useEffect(()=>{
@@ -34,14 +32,13 @@ function RightSection({token, socket, currentUserData}){
             }
         
         }
-        if (token) {
-            //if there is a token, run the currentUser data fetching function
-            getChannel();
-        } else {
-            //If not, go back to login page
-            navigate('@me');
+        //if there is a token, run the currentUser data fetching function
+        if(token){
+            getChannel()
+        }else{
+            navigate('/')
         }
-    })
+    }, [token, channelNumber, navigate])
 
     useEffect(() => {
         if (socket && channelNumber) {
@@ -57,7 +54,13 @@ function RightSection({token, socket, currentUserData}){
     useEffect(() => {
         if (socket && channelNumber) {
             const handleReceiveMessage = newMessage => {
-                setMessageReceived(prevMessages => [...prevMessages, newMessage]);
+                setMessageReceived(prevMessages => {
+                    if(!prevMessages){
+                        return [newMessage]
+                    }else{
+                        return [...prevMessages, newMessage]
+                    }
+                });
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
@@ -70,39 +73,67 @@ function RightSection({token, socket, currentUserData}){
     const sendMessage = () =>{
         //We also inserted the channelNumber(room) to send the message 
         //to the other members in the channel.
-        socket.emit("send_message", {...inputMessage, channelNumber})
-        //Since in the message that we sent, since the socket only sends
-        //the message to the user besides the sender. That is why, we 
+        socket.emit("send_message", {
+            content:inputMessage,
+            channelId: currentChannel._id,
+            channelNumber,
+            time:Date.now()
+        })
+        console.log(channelNumber, '----')
+        //Since in the message that we sent, the socket only sends
+        //the message to the user besides the sender, we 
         //update the MessageReceived manually.
-        setMessageReceived((prevMessages) => [...prevMessages, inputMessage])
+        setMessageReceived((prevMessages) => {
+            if(!prevMessages){
+                return [
+                    {
+                        content:inputMessage,
+                        sender:{image, displayName
+                    }}]
+            }else{
+                return [...prevMessages,
+                    {
+                        content:inputMessage,
+                        sender:{image, displayName
+                    }}]
+            }
+        })
         setInputMessage({})
     }
 
     return (
         <section className='right-home-section'>
-            {currentChannel?
+            {messageReceived?
             <div>
-                <input 
-                type='text' value={inputMessage} 
-                onChange={(event)=>setInputMessage(
-                {   content:event.target.value,
-                    channelId:currentChannel._id,
-                    time:Date.now(),
-                    sender:{
-                        displayName,
-                        image
-                    }
-                }
-                    )}
-                />
-                <button onClick={sendMessage}>Send</button>
-                {messageReceived.map((m, index)=>{
+                {messageReceived.map((m, index)=>(
                     <div key={index}>{m.content}</div>
-                })}   
+                ))}   
             </div>:
             <div>didn't work</div>}
+
+            <input 
+                type='text' value={inputMessage.content} 
+                onChange={(event)=>setInputMessage(event.target.value)}
+            />
+            <button onClick={sendMessage}>Send</button>
         </section>
     )
 }
 
 export default RightSection
+
+
+
+// <input 
+// type='text' value={inputMessage.content} 
+// onChange={(event)=>setInputMessage(
+// { content:event.target.value,
+//     channelId:currentChannel._id,
+//     time:Date.now(),
+//     sender:{
+//         displayName,
+//         image
+//     }
+// }
+//     )}
+// />
