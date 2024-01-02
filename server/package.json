@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
-    "start:prod": "set NODE_ENV=production&& nodemon server.js",
-    "start:socket": "nodemon socketServer.js"
+    "start:prod": "set NODE_ENV=production&& nodemon server.js"
   },
   "keywords": [],
   "author": "",

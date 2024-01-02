@@ -1,11 +1,9 @@
 const express = require('express');
-const chatRoutes = require('./chatRoutes')
 const authController = require('../controllers/authController')
 const groupController = require('../controllers/groupController')
 
 const router = express.Router();
 
-router.use('/messages', chatRoutes)
 
 router.use(authController.protect)
 

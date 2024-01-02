@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.use(authController.protect)
 
-router.route('/')
+router.route('/:channelNumber')
     .get(channelController.getUserChannel)
 
 

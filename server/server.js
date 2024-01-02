@@ -1,8 +1,15 @@
 const dotenv = require('dotenv')
 const mongoose = require('mongoose')
+const http = require('http')
+const socketServerSetup = require('./socketServer')
 
 dotenv.config({ path: './config.env' });
 const app = require('./app');
+const server = http.createServer(app)
+
+
+//Similar node.js process
+socketServerSetup(server)
 
 
 process.on('uncaughtException', err=>{
@@ -18,14 +25,14 @@ const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSW
 mongoose.connect(DB, {}).then(()=>console.log('DB connection successful')).catch(err=>console.log(err))
 
 
-const port = process.env.PORT || 3000;
-const server = app.listen(port, () => {
+const port = process.env.PORT || 3001;
+const httpServer=server.listen(port, () => {
     console.log(`App running on port ${port}...`); 
   });
 
   process.on('unhandledRejection', err=>{
   console.log(`UNHANDLED REJECTION! Shutting down...` ) 
-  server.close(()=>{
+  httpServer.close(()=>{
     //0 for success, 1 for uncaught exception
     //1 is usually used here
     process.exit(1)
@@ -35,7 +42,7 @@ const server = app.listen(port, () => {
 
 process.on('SIGTERM', () => {
   console.log('SIGTERM RECEIVED. Shutting down gracefully');
-  server.close(() => {
+  httpServer.close(() => {
     console.log(' Process terminated!');
   });
 });

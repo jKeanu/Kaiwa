@@ -15,7 +15,6 @@ const userGroupRouter = require('./routes/userGroupRoutes')
 const userChannelRouter = require('./routes/userChannelRoutes')
 
 const app = express();
-
 // app.enable('trust proxy');
 
 app.use(cors())
@@ -31,13 +30,13 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Limit requests from same API
-const limiter = rateLimit({
-    max: 100,
-    //millisecond to  hour
-    windowMs: 60*60*1000 ,
-    message: 'Too many request from this IP, please try again in an hour'
-})
-app.use('/api',limiter);
+// const limiter = rateLimit({
+//     max: 100,
+//     //millisecond to  hour
+//     windowMs: 60*60*1000 ,
+//     message: 'Too many request from this IP, please try again in an hour'
+// })
+// app.use('/api',limiter);
 app.use(express.json({limit:'10kb'}));
 app.use(express.urlencoded({extended: true, limit: '10kb'}))
 
