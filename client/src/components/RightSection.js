@@ -9,7 +9,7 @@ function RightSection({token, socket, currentUserData}){
     const {channelNumber} = useParams();
     const navigate = useNavigate()
     const [inputMessage, setInputMessage] = useState('');
-    const [messageReceived, setMessageReceived] = useState(['']);
+    const [messageReceived, setMessageReceived] = useState([]);
     const [currentChannel, setCurrentChannel] = useState('')
 
     useEffect(()=>{
@@ -77,9 +77,10 @@ function RightSection({token, socket, currentUserData}){
             content:inputMessage,
             channelId: currentChannel._id,
             channelNumber,
-            time:Date.now()
+            time:Date.now(),
+            displayName,
+            image
         })
-        console.log(channelNumber, '----')
         //Since in the message that we sent, the socket only sends
         //the message to the user besides the sender, we 
         //update the MessageReceived manually.
@@ -88,52 +89,38 @@ function RightSection({token, socket, currentUserData}){
                 return [
                     {
                         content:inputMessage,
-                        sender:{image, displayName
+                        sender:{
+                            image, displayName
                     }}]
             }else{
                 return [...prevMessages,
                     {
                         content:inputMessage,
-                        sender:{image, displayName
+                        sender:{
+                            image, displayName
                     }}]
             }
         })
-        setInputMessage({})
+        setInputMessage('')
     }
-
     return (
         <section className='right-home-section'>
             {messageReceived?
             <div>
                 {messageReceived.map((m, index)=>(
-                    <div key={index}>{m.content}</div>
+                    <div key={index}>{m.sender.displayName}{m.content}</div>
                 ))}   
             </div>:
             <div>didn't work</div>}
 
             <input 
-                type='text' value={inputMessage.content} 
+                type='text' value={inputMessage} 
                 onChange={(event)=>setInputMessage(event.target.value)}
             />
-            <button onClick={sendMessage}>Send</button>
+            <button onClick={sendMessage} disabled={inputMessage.trim()===''}>Send</button>
         </section>
     )
 }
 
 export default RightSection
 
-
-
-// <input 
-// type='text' value={inputMessage.content} 
-// onChange={(event)=>setInputMessage(
-// { content:event.target.value,
-//     channelId:currentChannel._id,
-//     time:Date.now(),
-//     sender:{
-//         displayName,
-//         image
-//     }
-// }
-//     )}
-// />
