@@ -121,10 +121,10 @@ exports.deleteGroup = catchAsync(async (req, res, next)=>{
             {$pull:{
                 groups:groupChannel._id
             }}, {session})
-        // if (updateStatus.modifiedCount !== groupChannel.members.length){
-        //     await session.abortTransaction();
-        //     return next(new AppError("One or more of the input is invalid", 400))
-        // }
+        if (updateStatus.modifiedCount !== groupChannel.members.length){
+            await session.abortTransaction();
+            return next(new AppError("One or more of the input is invalid", 400))
+        }
         await Channel.findOneAndDelete({_id:req.params.groupId, channelType:"Group"}).session(session)
         await session.commitTransaction()
         res.status(200).json({

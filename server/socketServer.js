@@ -5,7 +5,6 @@ const {promisify} = require('util')
 const User = require('./models/userModel')
 const Chat = require('./models/chatModel');
 const Channel = require('./models/channelModel');
-const { type } = require('os');
 
 
 const redisClient = Redis.createClient();
@@ -22,7 +21,6 @@ const getUserIdFromSocket = async (token)=> {
 }
 
 // Manage connections
-
 module.exports = (httpServer) =>{
   const io = new Server(httpServer, {
     cors: {
@@ -33,7 +31,6 @@ module.exports = (httpServer) =>{
 
   io.on('connection', async (socket) => {
     const userId = await getUserIdFromSocket(socket.handshake.query.token)
-    
     redisClient.incr(`user:${userId}:connections`, (err, newCount) => {
       if (!err) {
         if (newCount === 1) {
@@ -59,7 +56,7 @@ module.exports = (httpServer) =>{
   
     //Listen for messages
     socket.on('send_message', async (data) => {
-      const newMessage = await Chat.create({
+    const newMessage = await Chat.create({
         sender: userId,
         channel: data.channelId,
         content: data.content,
@@ -80,6 +77,7 @@ module.exports = (httpServer) =>{
         image:data.image
       }
     }
+    console.log(senderInfo,'----')
     socket.to(data.channelNumber).emit('receive_message', senderInfo);
     });
     socket.on('disconnect', async ()=>{
