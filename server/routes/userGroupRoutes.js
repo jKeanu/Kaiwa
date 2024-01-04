@@ -1,12 +1,12 @@
-const express = require('express');
-const authController = require('../controllers/authController')
-const groupController = require('../controllers/groupController')
+import express from 'express';
+import * as authController from '../controllers/authController.js';
+import * as groupController from '../controllers/groupController.js';
 
-const router = express.Router({mergeParams: true});
+const router = express.Router({ mergeParams: true });
 
-router.use(authController.protect)
+router.use(authController.protect);
+
 router.route('/:groupId/leave')
-    .delete(groupController.leaveGroup)
+    .delete(groupController.leaveGroup);
 
-
-module.exports = router
+export default router;

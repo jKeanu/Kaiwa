@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose';
 
 const channelSchema = new mongoose.Schema({
     channelName:{
@@ -80,6 +80,6 @@ channelSchema.pre('save', async function(next) {
 
 
 const Channel = mongoose.model('Channel', channelSchema)
-module.exports = Channel;
 
+export default Channel
   

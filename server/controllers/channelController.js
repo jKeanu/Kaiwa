@@ -1,9 +1,9 @@
-const catchAsync = require('../utils/catchAsync')
-const AppError = require('../utils/appError')
-const Channel = require('../models/channelModel')
-const Chat = require('../models/chatModel')
+import catchAsync from '../utils/catchAsync.js';
+import AppError from '../utils/appError.js';
+import Channel from '../models/channelModel.js';
+import Chat from '../models/chatModel.js';
 
-exports.getUserChannel = catchAsync(async(req, res, next)=>{
+export const getUserChannel = catchAsync(async(req, res, next)=>{
     let currentChannel = await Channel.findOne({channelNumber:req.params.channelNumber})
         .populate({path:'members', select:'image displayName'})
     if (!currentChannel) {

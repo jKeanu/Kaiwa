@@ -1,14 +1,12 @@
-const express = require('express');
-const authController = require('../controllers/authController')
-const channelController = require('../controllers/channelController')
-
+import express from 'express';
+import * as authController from '../controllers/authController.js';
+import * as channelController from '../controllers/channelController.js';
 
 const router = express.Router();
 
-router.use(authController.protect)
+router.use(authController.protect);
 
 router.route('/:channelNumber')
-    .get(channelController.getUserChannel)
+    .get(channelController.getUserChannel);
 
-
-module.exports = router
+export default router;

@@ -1,31 +1,28 @@
-const express = require('express');
-const authController = require('../controllers/authController')
-const groupController = require('../controllers/groupController')
+import express from 'express';
+import * as authController from '../controllers/authController.js';
+import * as groupController from '../controllers/groupController.js';
 
 const router = express.Router();
 
-
-router.use(authController.protect)
+router.use(authController.protect);
 
 router.route('/')
-    .post(groupController.createGroupChannel)
+    .post(groupController.createGroupChannel);
 
 router.route('/:groupId')
     .get(groupController.getGroupChannel)
-    .delete(groupController.deleteGroup)
+    .delete(groupController.deleteGroup);
 
 router.route('/:groupId/update')
-    .patch(groupController.updateGroupDetails)
+    .patch(groupController.updateGroupDetails);
 
 router.route('/:groupId/members')
-    .get(groupController.getGroupMembers)
+    .get(groupController.getGroupMembers);
 
 router.route('/:groupId/invite')
-    .patch(groupController.inviteMember)
+    .patch(groupController.inviteMember);
 
 router.route('/:groupId/changeleader')
-    .patch(groupController.changeGroupLeader)
+    .patch(groupController.changeGroupLeader);
 
-
-
-module.exports= router
+export default router;

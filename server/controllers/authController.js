@@ -1,9 +1,8 @@
-const jwt = require('jsonwebtoken')
-const {promisify} = require('util')
-const User = require('../models/userModel')
-const catchAsync = require('../utils/catchAsync')
-const AppError = require('../utils/appError')
-
+import jwt from 'jsonwebtoken';
+import { promisify } from 'util';
+import User from '../models/userModel.js';
+import catchAsync from '../utils/catchAsync.js';
+import AppError from '../utils/appError.js';
 
 function signToken(id){
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -26,7 +25,7 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 
-exports.login = catchAsync(async (req, res, next)=>{
+export const login = catchAsync(async (req, res, next)=>{
     const {email, password} = req.body
     if (!email || !password) {
         return next(new AppError('Please provide email and password!', 400));
@@ -41,12 +40,12 @@ exports.login = catchAsync(async (req, res, next)=>{
     createSendToken(user, 200, req, res)
 })
 
-exports.signup = catchAsync(async (req, res, next)=>{
+export const signup = catchAsync(async (req, res, next)=>{
     const newUser = await User.create(req.body)
     createSendToken(newUser, 201, req, res)
 })
 
-exports.protect = catchAsync(async (req, res, next)=>{
+export const protect = catchAsync(async (req, res, next)=>{
   let token;
   if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
     token = req.headers.authorization.split(' ')[1]
@@ -67,7 +66,7 @@ exports.protect = catchAsync(async (req, res, next)=>{
   next()
 })
 
-exports.changePassword = catchAsync(async (req, res, next)=>{
+export const changePassword = catchAsync(async (req, res, next)=>{
   const currentUser = await User.findById(req.user._id).select('+password')
   if(!(await currentUser.correctPassword(req.body.currentPassword, currentUser.password))){
     return next(new AppError('Incorrect current password.', 401))

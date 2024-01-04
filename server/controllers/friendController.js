@@ -1,8 +1,8 @@
-const mongoose = require('mongoose')
-const User = require('../models/userModel')
-const catchAsync = require('../utils/catchAsync')
-const AppError = require('../utils/appError')
-const Channel = require('../models/channelModel')
+import mongoose from 'mongoose';
+import User from '../models/userModel.js';
+import catchAsync from '../utils/catchAsync.js';
+import AppError from '../utils/appError.js';
+import Channel from '../models/channelModel.js';
 
 
 //Checking the friendship status with the other user.
@@ -11,7 +11,7 @@ const findFriendshipStatus = (currentUserId, userCheck, status) =>
         friend.friend.equals(currentUserId) &&
         friend.status === status)
 
-exports.getFriend = catchAsync(async(req, res, next)=>{
+export const getFriend = catchAsync(async(req, res, next)=>{
     const friendUser = await User.findById(req.params.friendId)
     if(!friendUser){
         return next(new AppError("User does not exists.", 404))
@@ -28,7 +28,7 @@ exports.getFriend = catchAsync(async(req, res, next)=>{
     })
 })
 
-exports.addFriend = catchAsync(async (req, res, next)=>{
+export const addFriend = catchAsync(async (req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     const {friendTag, displayName} = req.body
@@ -91,7 +91,7 @@ exports.addFriend = catchAsync(async (req, res, next)=>{
     }
 })
 
-exports.acceptFriend = catchAsync(async (req, res, next)=>{
+export const acceptFriend = catchAsync(async (req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
@@ -143,7 +143,7 @@ exports.acceptFriend = catchAsync(async (req, res, next)=>{
         }
 })
 
-exports.unfriend = catchAsync(async(req, res, next)=>{
+export const unfriend = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
@@ -185,7 +185,7 @@ exports.unfriend = catchAsync(async(req, res, next)=>{
     }
 })
 
-exports.declineFriend = catchAsync(async(req, res, next)=>{
+export const declineFriend = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
@@ -224,7 +224,7 @@ exports.declineFriend = catchAsync(async(req, res, next)=>{
 
 
 
-exports.getUserFriends = catchAsync(async(req, res, next)=>{
+export const getUserFriends = catchAsync(async(req, res, next)=>{
     const user = await User.findById(req.user._id)
         .populate({path:'friends.friend', select:'displayName photo friendTag'})
     if(!user){

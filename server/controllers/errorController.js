@@ -1,4 +1,4 @@
-const AppError = require('../utils/appError')
+import AppError from '../utils/appError.js';
 
 const handleCastErrorDB = err =>{
     //err.value is the value we passed in the /:id, while the err.path is where we are trying to match 
@@ -20,9 +20,12 @@ const handleDuplicateFieldsDB = err => {
 
 
 const handleValidationErrorDB = err => {
-const errors = Object.values(err.errors).map(el => el.message);
-const message = `Invalid input data. ${errors.join('. ')}`;
-return new AppError(message, 400);
+    if(Object.keys(err.errors).includes("members")||Object.keys(err.errors).includes("members.1")){
+        return new AppError("Invalid Input", 400)
+    }
+    const errors = Object.values(err.errors).map(el => el.message);
+    const message = `Invalid input data. ${errors.join('. ')}`;
+    return new AppError(message, 400);
 };
 
 const handleJWTError = () =>
@@ -42,6 +45,7 @@ const sendErrorDev=(err, req, res) => {
 
 const sendErrorProd=(err, req, res)=>{
     //If err.isOperational returned true, it means that we handled the error using AppError.
+    console.log(err.isOperational, '-----------')
     if(err.isOperational){
         return res.status(err.statusCode).json({
             status:err.status,
@@ -57,7 +61,7 @@ const sendErrorProd=(err, req, res)=>{
 }
 
 
-module.exports = (err, req, res, next) =>{
+export default function globalHandleError(err, req, res, next){
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
     if (process.env.NODE_ENV === 'development'){

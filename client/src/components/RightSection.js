@@ -25,6 +25,7 @@ function RightSection({token, socket, currentUserData}){
                 if(res.data.status==='success'){
                     setCurrentChannel(res.data.channel)
                     setMessageReceived(res.data.channel.messages)
+                    console.log(messageReceived, '----ssd')
                 }
             }
             catch(err){

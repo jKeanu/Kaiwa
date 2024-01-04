@@ -1,6 +1,4 @@
-const mongoose = require('mongoose')
-const validator = require('validator')
-const bcrypt = require('bcryptjs')
+import mongoose from 'mongoose';
 
 const chatSchema = new mongoose.Schema({
     sender:{
@@ -24,6 +22,7 @@ const chatSchema = new mongoose.Schema({
 chatSchema.index({time:-1})
 
 const Chat = mongoose.model('Chat', chatSchema)
-module.exports = Chat;
+
+export default Chat;
 
   

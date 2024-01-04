@@ -97,10 +97,10 @@ const HomePage = ()=>{
         <div className='homepage-container'>
             {userData?
             <main className='homepage'>
-                <LeftSection channels={channels} handleLogout={handleLogout} user={userData}/>
+                <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                 <Routes>
                     <Route index element={<div>asdasd</div>}/>
-                    <Route path=":channelNumber" element={<RightSection 
+                    <Route path="channels/:channelNumber" element={<RightSection 
                     socket={socket} 
                     currentUserData={userData}
                     token={token}/>}/>

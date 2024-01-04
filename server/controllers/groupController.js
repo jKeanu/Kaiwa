@@ -1,8 +1,8 @@
-const mongoose = require('mongoose')
-const User = require('../models/userModel')
-const catchAsync = require('../utils/catchAsync')
-const AppError = require('../utils/appError')
-const Channel = require('../models/channelModel')
+import mongoose from 'mongoose';
+import User from '../models/userModel.js';
+import catchAsync from '../utils/catchAsync.js';
+import AppError from '../utils/appError.js';
+import Channel from '../models/channelModel.js';
 
 const filterObj = (obj, ...allowedfields)=>{
     const newObj = {}
@@ -13,7 +13,7 @@ const filterObj = (obj, ...allowedfields)=>{
     return newObj
 }
 
-exports.getGroupChannel = catchAsync(async(req, res, next)=>{
+export const getGroupChannel = catchAsync(async(req, res, next)=>{
     const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:'Group'}).populate('messages')
     if(!groupChannel){
         return next(new AppError('No group Channel with that ID does not exists', 404))
@@ -29,7 +29,7 @@ exports.getGroupChannel = catchAsync(async(req, res, next)=>{
     })
 })
 
-exports.createGroupChannel = catchAsync(async(req, res, next)=>{
+export const createGroupChannel = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
@@ -71,11 +71,11 @@ exports.createGroupChannel = catchAsync(async(req, res, next)=>{
     }}
 )
 
-exports.updateGroupDetails = catchAsync( async(req, res, next)=>{
+export const updateGroupDetails = catchAsync( async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
-        const filteredBBody = filterObj(req.body, 'channelName', 'image')
+        const filteredBBody = filterObj(req.body, 'channelName')
         const updatedGroup = await Channel.findByIdAndUpdate(req.params.groupId,
              filteredBBody, 
              {new:true, runValidators:true, session})
@@ -101,7 +101,7 @@ exports.updateGroupDetails = catchAsync( async(req, res, next)=>{
 })
 
 
-exports.deleteGroup = catchAsync(async (req, res, next)=>{
+export const deleteGroup = catchAsync(async (req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
@@ -139,7 +139,7 @@ exports.deleteGroup = catchAsync(async (req, res, next)=>{
     }
 })
 
-exports.getGroupMembers = catchAsync(async (req, res, next)=>{
+export const getGroupMembers = catchAsync(async (req, res, next)=>{
     const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"})
         .populate({path:'members', select:'displayName friendTag image'})
     const currentUser = await User.findById(req.user._id)
@@ -158,7 +158,7 @@ exports.getGroupMembers = catchAsync(async (req, res, next)=>{
 })
 
 
-exports.inviteMember = catchAsync(async (req, res, next)=>{
+export const inviteMember = catchAsync(async (req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
@@ -211,7 +211,7 @@ exports.inviteMember = catchAsync(async (req, res, next)=>{
 }
 })
 
-exports.leaveGroup = catchAsync(async (req, res, next)=>{
+export const leaveGroup = catchAsync(async (req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
@@ -252,7 +252,7 @@ exports.leaveGroup = catchAsync(async (req, res, next)=>{
 })
 
 
-exports.changeGroupLeader =  catchAsync(async (req, res, next) => {
+export const changeGroupLeader =  catchAsync(async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try{

@@ -1,11 +1,12 @@
 {
+  "type": "module",
   "name": "server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
-    "start:prod": "set NODE_ENV=production&& nodemon server.js"
+    "start:prod": "NODE_ENV=production nodemon server.js"
   },
   "keywords": [],
   "author": "",
