@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import {useNavigate} from 'react-router-dom'
-import '../styles/login.css'
+import {useNavigate} from 'react-router-dom';
+import { AuthStatus } from '../types/generalTypes';
+import { AxiosResponse } from 'axios';
+import { loginUser } from '../services/apiService';
+
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
     const navigate = useNavigate()
-    const token = localStorage.getItem('token');
     
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -17,23 +19,23 @@ const LoginPage = () => {
         }
     }, [navigate]);
 
-    const handleLogin = async (e) => {
+    const handleLogin = async (e:FormEvent<HTMLFormElement>):Promise<void> => {
         e.preventDefault();
         try {
-            const res = await axios({
-                method: 'POST',
-                url: 'http://localhost:3001/api/v1/users/login',
-                data:{
-                    email,
-                    password
-                }
-            });
+            const res:AxiosResponse<AuthStatus> = await loginUser(email, password);
             if (res.data.status === "success") {
                 localStorage.setItem('token', res.data.token)
                 navigate('/@me')
             }
-        } catch (error) {
-            console.log(error.message)
+        } catch (error: unknown) { 
+            if (axios.isAxiosError(error)) { // Type guard for AxiosError
+                // Now you can safely assume error is of type AxiosError
+                console.log(error.message);
+            } else if (error instanceof Error) {
+                console.log(error.message);
+            } else {
+                console.error('An unknown error occurred:', error);
+            }
         }
     };
 

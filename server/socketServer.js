@@ -16,6 +16,7 @@ const getUserIdFromSocket = async (token) => {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
     return decoded.id;
   } catch (error) {
+    console.log(error)
     return null;
   }
 };
@@ -41,7 +42,7 @@ export default (httpServer) => {
             }
           });
         }
-      } else {
+      }else {
         console.error('Error incrementing connection count in Redis:', err);
       }
     });
@@ -58,28 +59,25 @@ export default (httpServer) => {
     socket.on('send_message', async (data) => {
       const newMessage = await Chat.create({
         sender: userId,
-        channel: data.channelId,
+        channel: data.channel,
         content: data.content,
         time: data.time,
       });
-      console.log(userId,'----------')
       // Update the last message of the channel
+      console.log(data,' ---------------------------- 123123123')
       await Channel.findByIdAndUpdate(
-        { _id: data.channelId },
+        { _id: data.channel },
         { lastMessage: data.time }
       );
 
       // Although the newMessage document consists of sender as a mongoose object id,
       // we can use spread operator and add a similar key to overwrite it.
       const senderInfo = {
-        time: newMessage.time,
-        content: newMessage.content,
-        sender: {
-          displayName: data.displayName,
-          image: data.image,
-        },
+        time: data.time,
+        content: data.content,
+        channel:data.channel,
+        sender: data.sender,
       };
-
       socket.to(data.channelNumber).emit('receive_message', senderInfo);
     });
 

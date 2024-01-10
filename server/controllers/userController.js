@@ -44,23 +44,36 @@ export const uploadProfileImage = upload.single('profileImage')
 
 export const resizeUserPhoto = catchAsync(async (req, res, next) => {
     if (!req.file) return next();
-    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-    //.buffer is the raw binary data of the uploaded image file,
-    await sharp(req.file.buffer)
-      .resize(500, 500)
-      .toFormat('jpeg')
-      .jpeg({ quality: 90 })
-      .toFile(`public/img/users/${req.file.filename}`);
-  
+    req.file.filename = `user-${req.user.id}.jpeg`;
+    //buffer is the raw binary data of the uploaded image file,
+
+    const buffer = await sharp(req.file.buffer)
+        .resize({height:500, width:500, fit:"contain"})
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toBuffer()
+
+    const params = {
+        Bucket: process.env.BUCKET_NAME,
+        Key: req.file.filename,
+        Body: buffer,
+        ContentType: req.file.mimetype,
+    }
+
+    const command = new PutObjectCommand(params)
+    await s3.send(command)
     next();
 });
-
 
 export const updateUser = catchAsync(async(req, res, next)=>{
     if (req.body.password || req.body.passwordConfirm){
         return next(new AppError('This route is not for password updates.', 400))
     }
-    const filteredBody = filterObj(req.body, 'displayName', 'friendTag', 'image')
+
+    const filteredBody = filterObj(req.body, 'displayName', 'friendTag')
+    if(req.file){
+        filteredBody.photo = req.file.filename
+    }
     //We can run validators since the passwordConfirm validator only works on create or save.
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
     res.status(200).json({
@@ -74,10 +87,10 @@ export const updateUser = catchAsync(async(req, res, next)=>{
 export const getMe = catchAsync(async(req, res, next)=>{
     //Since we only need to populate the group and friend channel when getting
     //the current logged information, we can just populate all of them here.
-    const currentUser = await User.findById(req.user._id)
-    .populate({path:'friends.friend', select:'displayName friendTag image'})
+    const currentUser = await User.findById(req.user._id).select('-__v')
+    .populate({path:'friends.friend', select:'displayName friendTag photo'})
     .populate({path:'friends.channel', select:'channelNumber lastMessage'})
-    .populate({path:'groups', select:'channelNumber lastMessage channelName'});
+    .populate({path:'groups', select:'channelNumber lastMessage channelName photo'});
 
     res.status(200).json({
         status:"success",

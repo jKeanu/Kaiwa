@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
 import { NavLink} from 'react-router-dom';
-import '../styles/leftHome.css'
+import {LeftSectionProps} from '../types/generalTypes';
 
-function LeftSection({channels, handleLogout, currentUserData}){
-    const {displayName, friendTag, image} = currentUserData
-    console.log(image, '-------')
+export const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, currentUserData})=>{
+    const {displayName, friendTag, photo} = currentUserData
     return(
     <section className='left-home-section'>
             <div className='channel-list-container'>
@@ -12,7 +10,7 @@ function LeftSection({channels, handleLogout, currentUserData}){
                     {channels.map(channel=>(
                         <li className='channel-link-container' key={channel.channelNumber}>
                             <NavLink className='channel-link' to={`channels/${channel.channelNumber}`}>
-                                <img alt='' src={`../img/${channel.image}`} />
+                                <img className='channel-photo'src={`/img/${channel.photo}`} alt=''/>
                                 <span className='channel-name'>{channel.channelName}</span>
                             </NavLink>
                         </li>
@@ -21,7 +19,7 @@ function LeftSection({channels, handleLogout, currentUserData}){
             </div>
             <div className='user-info-container'>
                 <div className='user-info'>
-                    <img className='user-info-img' alt='' src={`../img/${image}`}/>
+                    <img className='user-info-photo' alt='' src={`/img/${photo}`}/>
                     <div className='user-info-text'>
                         <span className='display-name-info'>{displayName}</span>
                         <span className='friend-tag-info'>#{friendTag}</span>

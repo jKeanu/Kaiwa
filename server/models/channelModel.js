@@ -38,7 +38,7 @@ const channelSchema = new mongoose.Schema({
         unique:true,
         default:() => Math.floor(Math.random() * 10) + 1
     },
-    image:{
+    photo:{
         type:String,
         required:function(){
             return this.channelType==='Group'

@@ -141,7 +141,7 @@ export const deleteGroup = catchAsync(async (req, res, next)=>{
 
 export const getGroupMembers = catchAsync(async (req, res, next)=>{
     const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"})
-        .populate({path:'members', select:'displayName friendTag image'})
+        .populate({path:'members', select:'displayName friendTag photo'})
     const currentUser = await User.findById(req.user._id)
     if(!groupChannel){
         return next(new AppError("Group channel with that ID does not exists", 404))

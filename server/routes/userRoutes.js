@@ -9,7 +9,11 @@ router.post('/login', authController.login);
 
 router.use(authController.protect);
 
-router.patch('/updateMe', userController.updateUser);
+router.patch('/updateMe',
+    userController.uploadProfileImage,
+    userController.resizeUserPhoto,
+    userController.updateUser);
+    
 router.patch('/changepassword', authController.changePassword);
 router.get('/me', userController.getMe);
 

@@ -1,31 +1,29 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
-import axios from "axios"
+import { ChannelDataStatus, ChannelMessage, CurrentChannel, RightSectionProps } from "../types/generalTypes";
+import { getCurrentChannel } from "../services/apiService";
+import { AxiosResponse } from "axios";
 
-function RightSection({token, socket, currentUserData}){
+
+export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUserData})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
-    const {image, displayName} = currentUserData
+    const {photo, displayName, _id} = currentUserData
     const {channelNumber} = useParams();
     const navigate = useNavigate()
-    const [inputMessage, setInputMessage] = useState('');
-    const [messageReceived, setMessageReceived] = useState([]);
-    const [currentChannel, setCurrentChannel] = useState('')
+    const [inputMessage, setInputMessage] = useState<string>('');
+    const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
+    const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
 
     useEffect(()=>{
         async function getChannel(){
             try{
-                const res = await axios({
-                    headers:{
-                        'Authorization': `Bearer ${token}`
-                    },
-                    method: 'GET',
-                    url: `http://localhost:3001/api/v1/channels/${channelNumber}`
-                })
+                const res:AxiosResponse<ChannelDataStatus> = await getCurrentChannel(token, channelNumber)
                 if(res.data.status==='success'){
                     setCurrentChannel(res.data.channel)
-                    setMessageReceived(res.data.channel.messages)
-                    console.log(messageReceived, '----ssd')
+                    if(res.data.channel.messages){
+                        setMessageReceived(res.data.channel.messages)
+                    }
                 }
             }
             catch(err){
@@ -54,19 +52,22 @@ function RightSection({token, socket, currentUserData}){
 
     useEffect(() => {
         if (socket && channelNumber) {
-            const handleReceiveMessage = newMessage => {
+            const handleReceiveMessage= (newMessage: ChannelMessage)  => {
                 setMessageReceived(prevMessages => {
-                    if(!prevMessages){
-                        return [newMessage]
-                    }else{
-                        return [...prevMessages, newMessage]
-                    }
+                    // If prevMessages is undefined, initialize it as an array with newMessage
+                    // Otherwise, append newMessage to it
+                    return [...prevMessages, newMessage];
                 });
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
             // Cleanup function to remove the listener
-            return () => socket.removeListener('receive_message', handleReceiveMessage);
+            //We explicitly declare the return type of the cleanup function so
+            //ts could understand that we're not trying to return anything from the cleanup func.
+            const cleanup = ():void  =>{
+                socket.removeListener('receive_message', handleReceiveMessage);
+            }
+            return cleanup
         }
     }, [socket, channelNumber]);
 
@@ -74,33 +75,30 @@ function RightSection({token, socket, currentUserData}){
     const sendMessage = () =>{
         //We also inserted the channelNumber(room) to send the message 
         //to the other members in the channel.
-        socket.emit("send_message", {
+
+        //----------------------------------------
+        if(!socket){
+            return
+        }
+        if(!currentChannel){
+            return navigate('/')
+        }
+        const messageContents:ChannelMessage = {
             content:inputMessage,
-            channelId: currentChannel._id,
-            channelNumber,
-            time:Date.now(),
-            displayName,
-            image
+            channel:currentChannel._id,
+            time: Date.now(),
+            sender:{
+                photo, displayName, _id:_id
+        }}
+        socket.emit("send_message", {
+            ...messageContents,
+            channelNumber
         })
         //Since in the message that we sent, the socket only sends
         //the message to the user besides the sender, we 
         //update the MessageReceived manually.
         setMessageReceived((prevMessages) => {
-            if(!prevMessages){
-                return [
-                    {
-                        content:inputMessage,
-                        sender:{
-                            image, displayName
-                    }}]
-            }else{
-                return [...prevMessages,
-                    {
-                        content:inputMessage,
-                        sender:{
-                            image, displayName
-                    }}]
-            }
+                return [...prevMessages, messageContents]
         })
         setInputMessage('')
     }
