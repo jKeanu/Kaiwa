@@ -14,7 +14,7 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
     const [inputMessage, setInputMessage] = useState<string>('');
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
-
+    console.log(channelNumber, '-------asdasd-')
     useEffect(()=>{
         async function getChannel(){
             try{
@@ -23,6 +23,8 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
                     setCurrentChannel(res.data.channel)
                     if(res.data.channel.messages){
                         setMessageReceived(res.data.channel.messages)
+                    }else{
+                        setMessageReceived([])
                     }
                 }
             }
@@ -38,7 +40,6 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
             navigate('/')
         }
     }, [token, channelNumber, navigate])
-
     useEffect(() => {
         if (socket && channelNumber) {
             // Join the room
@@ -66,6 +67,7 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
             //ts could understand that we're not trying to return anything from the cleanup func.
             const cleanup = ():void  =>{
                 socket.removeListener('receive_message', handleReceiveMessage);
+                console.log('cleanupszzz')
             }
             return cleanup
         }
@@ -78,6 +80,7 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
 
         //----------------------------------------
         if(!socket){
+            console.log('-12-3-123-')
             return
         }
         if(!currentChannel){
@@ -102,16 +105,16 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
         })
         setInputMessage('')
     }
+    console.log(messageReceived, '-----')
     return (
         <section className='right-home-section'>
-            {messageReceived?
+            {messageReceived.length>=1?
             <div>
                 {messageReceived.map((m, index)=>(
                     <div key={index}>{m.sender.displayName}{m.content}</div>
                 ))}   
             </div>:
             <div>didn't work</div>}
-
             <input 
                 type='text' value={inputMessage} 
                 onChange={(event)=>setInputMessage(event.target.value)}

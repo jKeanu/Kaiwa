@@ -9,7 +9,6 @@ import { AxiosResponse } from 'axios';
 import {User, Channel, Friend, UserDataStatus} from '../types/generalTypes'
 import { getCurrentUser } from '../services/apiService';
 
-
 const HomePage = ()=>{
         //Get token from local storage
         const token = localStorage.getItem('token');

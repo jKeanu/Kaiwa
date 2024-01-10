@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/Login'; // Import your login component
 import RegisterPage from './pages/Register'
 import HomePage from './pages/Home'
+import './styles/main.sass'
 //Import other components as needed
 
 const App = () => {
