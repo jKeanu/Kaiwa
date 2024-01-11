@@ -6,74 +6,70 @@
     justify-content: center
     align-items: center
     min-width: 60rem
+    .login-container
+        background-color: $secondary-bg
+        height: 22rem
+        width: 36rem
+        border-radius: 0.5rem
+        box-shadow: 0 4px 4px rgb(0, 0, 0, 0.25)
+        .login-header
+            font-size: 2.5rem
+            font-family: 'Bebas Neue', sans-serif
+            font-weight: 400
+            color: white
+            text-align: center
+            padding-top: 2rem
+            margin: 0
+        .login-form-container
+            display: flex
+            justify-content: center
+            align-items: center
 
-.login-container
-    background-color: $secondary-bg
-    height: 22rem
-    width: 36rem
-    border-radius: 0.5rem
-    box-shadow: 0 4px 4px rgb(0, 0, 0, 0.25)
+            .login-form
+                display: flex
+                flex-direction: column
+                align-items: center
+                label
+                    width: 100%
+                    color: white
+                    font-family: 'Bellefair', serif
+                input
+                    width: 25rem
+                    height: 2rem
+                    background-color: rgba(37, 45, 55, 1)
+                    border-radius: 0.35rem
+                    border-style: none
+                    color: white
+                    padding-left: 1rem
+                    margin-top: 0.125rem
+                    margin-bottom: 0.75rem
+                    &:focus
+                        outline: none
+                    &::placeholder
+                        font-size: 0.7rem
+                        font-family: 'Bellefair', serif
+                button
+                    background-color: rgba(67, 77, 89, 1)
+                    color: white
+                    width: 16rem
+                    height: 2.2rem
+                    border-radius: 1.1rem
+                    border-style: none
+                    transition: background-color 0.15s ease-in-out
+                    margin-top: 2.5rem
+                    font-family: 'Bellefair', serif
+                    &:active
+                        background-color: rgb(51, 59, 69)
 
-.login-header
-    font-size: 2.5rem
-    font-family: 'Bebas Neue', sans-serif
-    font-weight: 400
-    color: white
-    text-align: center
-    padding-top: 2rem
-    margin: 0
-
-.login-form-container
-    display: flex
-    justify-content: center
-    align-items: center
-
-.login-form
-    display: flex
-    flex-direction: column
-    align-items: center
-    label
-        width: 100%
-        color: white
-        font-family: 'Bellefair', serif
-    input
-        width: 25rem
-        height: 2rem
-        background-color: rgba(37, 45, 55, 1)
-        border-radius: 0.35rem
-        border-style: none
-        color: white
-        padding-left: 1rem
-        margin-top: 0.125rem
-        margin-bottom: 0.75rem
-        &:focus
-            outline: none
-        &::placeholder
-            font-size: 0.7rem
+        .need-an-account-text
+            color: white
+            font-size: 0.8rem
             font-family: 'Bellefair', serif
-    button
-        background-color: rgba(67, 77, 89, 1)
-        color: white
-        width: 16rem
-        height: 2.2rem
-        border-radius: 1.1rem
-        border-style: none
-        transition: background-color 0.15s ease-in-out
-        margin-top: 2.5rem
-        font-family: 'Bellefair', serif
-        &:active
-            background-color: rgb(51, 59, 69)
-
-.need-an-account-text
-    color: white
-    font-size: 0.8rem
-    font-family: 'Bellefair', serif
-    margin-top: 0.35rem
-    display: block
-    text-align: center
-
-.register-link
-    text-decoration: none
-    color: rgb(9,105,171)
-    &:hover
-        text-decoration: underline
+            margin-top: 0.35rem
+            display: block
+            text-align: center
+            .register-link
+                text-decoration: none
+                color: rgb(9,105,171)
+                &:hover
+                    text-decoration: underline

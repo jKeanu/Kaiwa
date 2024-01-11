@@ -1,10 +1,14 @@
-import { NavLink} from 'react-router-dom';
+import { NavLink, Link} from 'react-router-dom';
 import {LeftSectionProps} from '../types/generalTypes';
 
 export const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, currentUserData})=>{
     const {displayName, friendTag, photo} = currentUserData
     return(
     <section className='left-home-section'>
+            <div className='logo-container'>
+                <Link to={'/'}>
+                </Link>
+            </div>
             <div className='channel-list-container'>
                 <ul className='channel-links'> 
                     {channels.map(channel=>(

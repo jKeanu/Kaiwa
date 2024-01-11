@@ -1,20 +1,19 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
-import { ChannelDataStatus, ChannelMessage, CurrentChannel, RightSectionProps } from "../types/generalTypes";
+import { ChannelDataStatus, ChannelMessage, CurrentChannel, ChannelSectionProps } from "../types/generalTypes";
 import { getCurrentChannel } from "../services/apiService";
 import { AxiosResponse } from "axios";
 
 
-export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUserData})=>{
+export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
-    const {photo, displayName, _id} = currentUserData
+    const {photo, displayName, _id, friendTag} = currentUserData
     const {channelNumber} = useParams();
     const navigate = useNavigate()
     const [inputMessage, setInputMessage] = useState<string>('');
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
-    console.log(channelNumber, '-------asdasd-')
     useEffect(()=>{
         async function getChannel(){
             try{
@@ -73,6 +72,21 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
         }
     }, [socket, channelNumber]);
 
+    function formatDate(timestamp: number): string {
+        const date = new Date(timestamp);
+        // Extracting parts of the date
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() returns 0-11
+        const year = date.getFullYear(); // Full year
+        // Formatting the time
+        let hours:number|string = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours.toString().padStart(2, '0') : '12'; // the hour '0' should be '12'
+        return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
+    }
+
 
     const sendMessage = () =>{
         //We also inserted the channelNumber(room) to send the message 
@@ -80,19 +94,21 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
 
         //----------------------------------------
         if(!socket){
-            console.log('-12-3-123-')
             return
         }
         if(!currentChannel){
             return navigate('/')
         }
+        const timestamp = Date.now()
         const messageContents:ChannelMessage = {
             content:inputMessage,
             channel:currentChannel._id,
-            time: Date.now(),
+            time: timestamp,
+            formattedDate:formatDate(timestamp),
             sender:{
-                photo, displayName, _id:_id
+                photo, displayName, _id:_id, friendTag
         }}
+
         socket.emit("send_message", {
             ...messageContents,
             channelNumber
@@ -105,24 +121,55 @@ export const RightSection:React.FC<RightSectionProps>=({token, socket, currentUs
         })
         setInputMessage('')
     }
-    console.log(messageReceived, '-----')
+
+
     return (
         <section className='right-home-section'>
-            {messageReceived.length>=1?
-            <div>
-                {messageReceived.map((m, index)=>(
-                    <div key={index}>{m.sender.displayName}{m.content}</div>
-                ))}   
-            </div>:
-            <div>didn't work</div>}
-            <input 
+            <div className="message-container">
+                <div className="message-box">
+                    {
+                    messageReceived.length>=1?
+                        messageReceived.map((message, index)=>(
+                            <div className='message-info-container' key={index}>
+                                <img className='sender-photo' src={`/img/${message.sender.photo}`}/>
+                                <div className="message-info">
+                                    <div className="message-time-displayname">
+                                        <span>
+                                            {message.sender.displayName}
+                                        </span>
+                                        <span>
+                                            {message.formattedDate}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )):
+                        <div>No Messages</div>
+                    }
+                </div>
+                <input 
                 type='text' value={inputMessage} 
-                onChange={(event)=>setInputMessage(event.target.value)}
-            />
-            <button onClick={sendMessage} disabled={inputMessage.trim()===''}>Send</button>
+                onChange={(event)=>setInputMessage(event.target.value)}/>
+                <button onClick={sendMessage} disabled={inputMessage.trim()===''}>Send</button>
+            </div>
+            <section className="channel-members-container">
+                <ul className="member-list">
+                {currentChannel?
+                    currentChannel.members.map((member, i)=>(
+                      <li className='member-container' key={`member-${i}`}>
+                        <button className="member-popup-button">
+                            <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                            <span className="member-name">{member.displayName}</span>
+                        </button>
+                      </li>  
+                    )):
+                    <div></div>
+                    }
+                </ul>
+            </section>
         </section>
     )
 }
 
-export default RightSection
+export default ChannelSection
 

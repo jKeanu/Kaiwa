@@ -1,5 +1,5 @@
 import LeftSection from '../components/LeftSection';
-import RightSection from '../components/RightSection';
+import ChannelSection from '../components/ChannelSection';
 import { useState, useEffect } from 'react';
 import {Routes, Route, useNavigate } from 'react-router-dom';
 import {io, Socket} from 'socket.io-client'
@@ -116,9 +116,9 @@ const HomePage = ()=>{
                     <main className='homepage'>
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                         <Routes>
-                            <Route index element={<p>1</p>}/>
+                            <Route index element={<div>asd</div>}/>
                             <Route path="channels/:channelNumber"
-                            element={<RightSection 
+                            element={<ChannelSection
                             socket={socket} 
                             currentUserData={userData}
                             token={token}/>}/>
@@ -126,8 +126,8 @@ const HomePage = ()=>{
                     </main>
                 :
                 <main className='homepage'>
-                    <section className=''></section>
-                    <section className=''></section>
+                    <section className='right-home-section'></section>
+                    <section className='left-home-section'></section>
                 </main>
                 }
             </div>

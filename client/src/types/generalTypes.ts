@@ -69,7 +69,7 @@ export type LeftSectionProps ={
     currentUserData: User; 
 }
 
-export type RightSectionProps={
+export type ChannelSectionProps={
     token: string,
     socket: Socket|undefined,
     currentUserData: User
@@ -78,18 +78,20 @@ export type RightSectionProps={
 export type ChannelMembers={
     _id:string,
     displayName:string,
-    photo:string
+    photo:string,
+    friendTag:string,
 }
 
 export type ChannelMessage={
     sender:{
         _id: string,
         displayName: string,
-        photo: string
+        photo: string,
+        friendTag:string,
     },
     channel:string,
     content:string,
-    time:number
+    formattedDate:string
 }
 
 //Since the implementation of Friend Channel and Group Channel is different

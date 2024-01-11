@@ -1,75 +1,77 @@
 .left-home-section
     background-color: $primary-bg
-    width: 20rem
     height: 100vh
     font-family: 'Open Sans', sans-serif
-
-.channel-list-container
-    height: 80vh
-    width: 100%
-
-.channel-links
-    list-style-type: none
+    width: 15rem
+    flex-shrink: 0 //or min-width
     display: flex
     flex-direction: column
-    padding: 0
-    .channel-link
-        text-decoration: none
-        color: white
-        font-size: 1.2rem
-        display: flex
-        align-items: center
-        justify-content: flex-start
-        column-gap: 0.5rem
-        padding: 0.5rem
-        transition: background-color 0.25s ease-in-out
-        &:hover
-            background-color: rgb(52, 76, 100)
-    .channel-photo
-        width: 2.5rem
-        height: 2.5rem
-        object-fit: cover
-        border-radius: 1.25rem
-
-.user-info-container
-    padding: 1rem 0
-    display: flex
-    justify-content: space-between
-    align-items: center
-    .user-info
-        display: flex
-        flex-direction: row
-        justify-content: start
-        align-items: center
-        .user-info-text
+    .logo-container
+        height: 5rem
+        background-color: grey
+    .channel-list-container
+        height: 100%
+        .channel-links
             display: flex
-            justify-content: center
-            align-items: flex-start
             flex-direction: column
+            .channel-link-container
+                .channel-link
+                    text-decoration: none
+                    color: white
+                    font-size: 1.2rem
+                    display: flex
+                    align-items: center
+                    justify-content: flex-start
+                    column-gap: 0.5rem
+                    padding: 0.5rem
+                    transition: background-color 0.25s ease-in-out
+                    &:hover
+                        background-color: rgb(52, 76, 100)
+                    .channel-photo
+                        width: 2.5rem
+                        height: 2.5rem
+                        object-fit: cover
+                        border-radius: 1.25rem
 
-.logout-button
-    background-color: transparent
-    color: white
-    font-weight: bold
-    padding: 0.6rem
-    border-radius: 2px
-    background-color: $secondary-bg
-    border: 1px solid transparent
-    cursor: pointer
-    transition: background-color 0.1s ease-in
-    &:hover
-        background-color: $primary-bg
+    .user-info-container
+        padding: 1rem 0
+        display: flex
+        justify-content: space-between
+        align-items: center
+        padding: 1rem 0.5rem
+        .user-info
+            display: flex
+            flex-direction: row
+            justify-content: start
+            align-items: center             
+            .user-info-photo
+                width: 2.5rem
+                height: 2.5rem
+                object-fit: cover
+                border-radius: 1.25rem
+                margin-right: 0.5rem
+            .user-info-text
+                display: flex
+                justify-content: center
+                align-items: flex-start
+                flex-direction: column
+                .display-name-info
+                    font-weight: bold
+                    color: white
 
-.display-name-info
-    font-weight: bold
-    color: white
+                .friend-tag-info
+                    color: rgb(191, 191, 191)
+                    font-size: 0.7rem
 
-.friend-tag-info
-    color: rgb(191, 191, 191)
-    font-size: 0.7rem
-
-.user-info-photo
-    width: 2.5rem
-    height: 2.5rem
-    object-fit: cover
-    border-radius: 1.25rem
+    .logout-button
+        background-color: transparent
+        color: white
+        font-weight: bold
+        padding: 0.6rem
+        border-radius: 2px
+        background-color: $secondary-bg
+        border: 1px solid transparent
+        cursor: pointer
+        transition: background-color 0.1s ease-in
+        &:hover
+            background-color: $primary-bg

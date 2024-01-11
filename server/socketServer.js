@@ -21,6 +21,8 @@ const getUserIdFromSocket = async (token) => {
   }
 };
 
+
+
 // Manage connections
 export default (httpServer) => {
   const io = new Server(httpServer, {
@@ -57,14 +59,14 @@ export default (httpServer) => {
 
     // Listen for messages
     socket.on('send_message', async (data) => {
-      const newMessage = await Chat.create({
+      await Chat.create({
         sender: userId,
         channel: data.channel,
         content: data.content,
         time: data.time,
+        formattedDate: data.formattedDate
       });
       // Update the last message of the channel
-      console.log(data,' ---------------------------- 123123123')
       await Channel.findByIdAndUpdate(
         { _id: data.channel },
         { lastMessage: data.time }
@@ -72,15 +74,15 @@ export default (httpServer) => {
 
       // Although the newMessage document consists of sender as a mongoose object id,
       // we can use spread operator and add a similar key to overwrite it.
-      const senderInfo = {
+      const messageInfo = {
         time: data.time,
         content: data.content,
         channel:data.channel,
         sender: data.sender,
+        formattedDate: data.formattedDate
       };
-      socket.to(data.channelNumber).emit('receive_message', senderInfo);
+      socket.to(data.channelNumber).emit('receive_message', messageInfo);
     });
-
     socket.on('disconnect', async () => {
       await redisClient.decr(`user:${userId}:connections`, async (err, newCount) => {
         if (newCount <= 0) {

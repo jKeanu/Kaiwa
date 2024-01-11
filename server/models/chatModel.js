@@ -16,11 +16,12 @@ const chatSchema = new mongoose.Schema({
     time:{
         type:Date,
         default:Date.now
-    }
+    },
+    formattedDate:String
 })
 
-chatSchema.index({time:-1})
 
+chatSchema.index({time:-1})
 const Chat = mongoose.model('Chat', chatSchema)
 
 export default Chat;
