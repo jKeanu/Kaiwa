@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, KeyboardEvent, useRef } from 'react';
 import { ChannelDataStatus, ChannelMessage, CurrentChannel, ChannelSectionProps } from "../types/generalTypes";
 import { getCurrentChannel } from "../services/apiService";
 import { AxiosResponse } from "axios";
@@ -66,11 +66,18 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             //ts could understand that we're not trying to return anything from the cleanup func.
             const cleanup = ():void  =>{
                 socket.removeListener('receive_message', handleReceiveMessage);
-                console.log('cleanupszzz')
             }
             return cleanup
         }
     }, [socket, channelNumber]);
+
+    const messageBoxRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (messageBoxRef.current) {
+          messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+        }
+      }, [messageReceived]);
+
 
     function formatDate(timestamp: number): string {
         const date = new Date(timestamp);
@@ -122,37 +129,66 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
         setInputMessage('')
     }
 
+    function formatToTodayIfCurrentDate(dateStr:string):string {
+        const currentDate = new Date();
+        const messageDate = new Date(dateStr);
+        const currentDateStr = currentDate.toLocaleDateString();
+        const messageDateStr = messageDate.toLocaleDateString();
+    
+        if (currentDateStr === messageDateStr) {
+            // Format the time part
+            const timeStr = dateStr.split(' ')[1] + ' ' + dateStr.split(' ')[2];
+            return `Today ${timeStr}`;
+        } else {
+            return dateStr;
+        }
+    }
+
+    function handleKeyDown(event:KeyboardEvent<HTMLInputElement>):void{
+    // Check if the Enter key was pressed (key code 13)
+    if (event.key === 'Enter') {
+        // Prevent the default behavior of the Enter key (form submission)
+        event.preventDefault();
+        // Call the sendMessage function or any other action
+        sendMessage();
+      }
+    }
 
     return (
         <section className='right-home-section'>
-            <div className="message-container">
-                <div className="message-box">
+            <section className="message-section">
+                <div className="message-box" ref={messageBoxRef}>
                     {
                     messageReceived.length>=1?
                         messageReceived.map((message, index)=>(
                             <div className='message-info-container' key={index}>
                                 <img className='sender-photo' src={`/img/${message.sender.photo}`}/>
                                 <div className="message-info">
-                                    <div className="message-time-displayname">
-                                        <span>
+                                    <div className="message-date-displayname">
+                                        <span className="message-sender">
                                             {message.sender.displayName}
                                         </span>
-                                        <span>
-                                            {message.formattedDate}
+                                        <span className="message-date">
+                                            {formatToTodayIfCurrentDate(message.formattedDate)}
                                         </span>
                                     </div>
+                                    <span className="message-content">{message.content}</span>
                                 </div>
                             </div>
                         )):
                         <div>No Messages</div>
-                    }
+                        }
                 </div>
-                <input 
-                type='text' value={inputMessage} 
-                onChange={(event)=>setInputMessage(event.target.value)}/>
-                <button onClick={sendMessage} disabled={inputMessage.trim()===''}>Send</button>
-            </div>
-            <section className="channel-members-container">
+                <div className="message-input-container">
+                    <input 
+                    type='text' value={inputMessage} 
+                    placeholder="Send a message..."
+                    onKeyDown={handleKeyDown}
+                    onChange={(event)=>setInputMessage(event.target.value)} className="message-input"/>
+                    <button onClick={sendMessage} disabled={inputMessage.trim()===''}>Send</button>
+                </div>
+            </section>
+            <section className="channel-members-section">
                 <ul className="member-list">
                 {currentChannel?
                     currentChannel.members.map((member, i)=>(

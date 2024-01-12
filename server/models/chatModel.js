@@ -21,7 +21,6 @@ const chatSchema = new mongoose.Schema({
 })
 
 
-chatSchema.index({time:-1})
 const Chat = mongoose.model('Chat', chatSchema)
 
 export default Chat;

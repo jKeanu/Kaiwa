@@ -65,6 +65,7 @@ channelSchema.virtual('messages',{
     localField: '_id'
 })
 
+
 channelSchema.pre('save', async function(next) {
     if (this.isNew) {
         const highestChannel = await this.constructor.findOne().sort('-channelNumber').exec();

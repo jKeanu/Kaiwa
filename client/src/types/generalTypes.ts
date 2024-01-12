@@ -91,7 +91,8 @@ export type ChannelMessage={
     },
     channel:string,
     content:string,
-    formattedDate:string
+    formattedDate:string,
+    time:number
 }
 
 //Since the implementation of Friend Channel and Group Channel is different

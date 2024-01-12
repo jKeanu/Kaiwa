@@ -4,7 +4,7 @@ import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus } from '../
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const registerUser = async (formData:RegisterForm):Promise<AxiosResponse<AuthStatus>> => {
-    return axios.post(`${API_URL}/users/register`, formData);
+    return axios.post(`${API_URL}/api/v1/users/register`, formData);
 };
 
 export const loginUser = async (email:string, password:string):Promise<AxiosResponse<AuthStatus>> => {
