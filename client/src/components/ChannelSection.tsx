@@ -53,11 +53,19 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     useEffect(() => {
         if (socket && channelNumber) {
             const handleReceiveMessage= (newMessage: ChannelMessage)  => {
-                setMessageReceived(prevMessages => {
-                    // If prevMessages is undefined, initialize it as an array with newMessage
-                    // Otherwise, append newMessage to it
-                    return [...prevMessages, newMessage];
-                });
+                if(newMessage.updated){
+                    setMessageReceived(prevMessages=>{
+                        const updatedMessages = [...prevMessages]
+                        updatedMessages[updatedMessages.length -1] = newMessage
+                        return updatedMessages
+                    })
+                }else{
+                    setMessageReceived(prevMessages => {
+                        // If prevMessages is undefined, initialize it as an array with newMessage
+                        // Otherwise, append newMessage to it
+                        return [...prevMessages, newMessage];
+                    });
+                }
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
@@ -78,7 +86,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
         }
       }, [messageReceived]);
 
-
     function formatDate(timestamp: number): string {
         const date = new Date(timestamp);
         // Extracting parts of the date
@@ -94,11 +101,9 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
         return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
     }
 
-
-    const sendMessage = () =>{
+    const sendMessage = ():void =>{
         //We also inserted the channelNumber(room) to send the message 
         //to the other members in the channel.
-
         //----------------------------------------
         if(!socket){
             return
@@ -107,27 +112,55 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             return navigate('/')
         }
         const timestamp = Date.now()
-        const messageContents:ChannelMessage = {
-            content:inputMessage,
-            channel:currentChannel._id,
-            time: timestamp,
-            formattedDate:formatDate(timestamp),
-            sender:{
-                photo, displayName, _id:_id, friendTag
-        }}
-
-        socket.emit("send_message", {
-            ...messageContents,
-            channelNumber
-        })
-        //Since in the message that we sent, the socket only sends
-        //the message to the user besides the sender, we 
-        //update the MessageReceived manually.
-        setMessageReceived((prevMessages) => {
-                return [...prevMessages, messageContents]
-        })
+        const prevMessageDate:Date = new Date(messageReceived[messageReceived.length-1]?.time??0)
+        const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime()
+        if(messageReceived.length>0&&messageReceived[messageReceived.length-1].sender._id === _id && timeDifference <= 60*1000){
+            //We won't change the formattedDate since, to have more user-friendly approach
+            //Since we base the date of the  message on the first message content.
+            socket.emit("continue_message",
+            {
+                time:messageReceived[messageReceived.length-1].time,
+                sender:{photo, displayName, _id:_id, friendTag},
+                channel:currentChannel._id,
+                content:inputMessage,
+                channelNumber
+            })
+            setMessageReceived((prevMessages)=>{
+                const updatedMessages = [...prevMessages]
+                //Append the input message to the content array of the last message.
+                updatedMessages[updatedMessages.length-1]={
+                    ...updatedMessages[updatedMessages.length-1],
+                    content:[
+                        ...updatedMessages[updatedMessages.length-1].content,
+                        inputMessage
+                    ]
+                }
+                return updatedMessages
+            })
+        }else{
+            const messageContents:ChannelMessage = {
+                content:[inputMessage],
+                channel:currentChannel._id,
+                time: timestamp,
+                formattedDate:formatDate(timestamp),
+                sender:{
+                    photo, displayName, _id:_id, friendTag
+            }}
+            
+            socket.emit("send_message", {
+                ...messageContents,
+                channelNumber
+            })
+            //Since in the message that we sent, the socket only sends
+            //the message to the user besides the sender, we 
+            //update the MessageReceived manually.
+            setMessageReceived((prevMessages) => {
+                    return [...prevMessages, messageContents]
+            })
+        }
         setInputMessage('')
     }
+
 
     function formatToTodayIfCurrentDate(dateStr:string):string {
         const currentDate = new Date();
@@ -172,7 +205,11 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                                             {formatToTodayIfCurrentDate(message.formattedDate)}
                                         </span>
                                     </div>
-                                    <span className="message-content">{message.content}</span>
+                                    {
+                                        message.content.map((m, i)=>(
+                                            <div key={i}>{m}</div>
+                                        ))
+                                    }
                                 </div>
                             </div>
                         )):

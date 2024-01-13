@@ -10,7 +10,7 @@ const chatSchema = new mongoose.Schema({
         ref:'Channel'
     },
     content:{
-        type:String,
+        type:[String],
         required:true
     },
     time:{

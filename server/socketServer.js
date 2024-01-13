@@ -83,6 +83,27 @@ export default (httpServer) => {
       };
       socket.to(data.channelNumber).emit('receive_message', messageInfo);
     });
+
+    socket.on("continue_message", async(data)=>{
+      const updatedMessage = await Chat.findOneAndUpdate(
+        {channel:data.channel, sender:userId, time:data.time},
+        {
+          $push:{
+          content:data.content
+        }}, {new:true})
+      //Since we need the sender details, we cannot just pass the updatedMessage
+      //directly to the receive_message, the only sender info we have on chat model is the id
+      const messageInfo = {
+        time: updatedMessage.time,
+        sender:data.sender,
+        content: updatedMessage.content,
+        channel: updatedMessage.channel,
+        formattedDate: updatedMessage.formattedDate,
+        updated:true
+      }
+      socket.to(data.channelNumber).emit('receive_message', messageInfo)
+    })
+
     socket.on('disconnect', async () => {
       await redisClient.decr(`user:${userId}:connections`, async (err, newCount) => {
         if (newCount <= 0) {

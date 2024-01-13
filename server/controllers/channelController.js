@@ -18,7 +18,7 @@ export const getUserChannel = catchAsync(async(req, res, next)=>{
     if(findChat){
         currentChannel = await Channel.findOne({channelNumber:req.params.channelNumber}).select('-__v')
             .populate({path:'members', select:'photo displayName'})
-            .populate({path:'messages', select:'-__v -_id', populate:{path:'sender', select:'displayName photo friendTag'}})
+            .populate({path:'messages', select:'-__v', populate:{path:'sender', select:'displayName photo friendTag'}})
     }
     res.status(200).json({
         status:'success',

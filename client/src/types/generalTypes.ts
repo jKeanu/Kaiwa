@@ -90,9 +90,11 @@ export type ChannelMessage={
         friendTag:string,
     },
     channel:string,
-    content:string,
+    content:string[],
     formattedDate:string,
-    time:number
+    time:number,
+    _id?:string,
+    updated?:true
 }
 
 //Since the implementation of Friend Channel and Group Channel is different
