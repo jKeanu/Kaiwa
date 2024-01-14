@@ -7,7 +7,6 @@ import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
 
 const redisClient = Redis.createClient();
-
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
 redisClient.connect();
 
@@ -85,12 +84,11 @@ export default (httpServer) => {
     });
 
     socket.on("continue_message", async(data)=>{
+      console.log(data.channel, userId, data.time, '---------')
       const updatedMessage = await Chat.findOneAndUpdate(
         {channel:data.channel, sender:userId, time:data.time},
-        {
-          $push:{
-          content:data.content
-        }}, {new:true})
+        {$push:{content:data.content}},
+           {new:true})
       //Since we need the sender details, we cannot just pass the updatedMessage
       //directly to the receive_message, the only sender info we have on chat model is the id
       const messageInfo = {

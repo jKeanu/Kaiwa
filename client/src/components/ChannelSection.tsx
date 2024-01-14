@@ -119,10 +119,12 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             //Since we base the date of the  message on the first message content.
             socket.emit("continue_message",
             {
+                //we need to convert it to this format since that is the time format in the DB
                 time:messageReceived[messageReceived.length-1].time,
                 sender:{photo, displayName, _id:_id, friendTag},
                 channel:currentChannel._id,
                 content:inputMessage,
+                newTime: timestamp,
                 channelNumber
             })
             setMessageReceived((prevMessages)=>{
@@ -149,6 +151,7 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             
             socket.emit("send_message", {
                 ...messageContents,
+
                 channelNumber
             })
             //Since in the message that we sent, the socket only sends
@@ -186,7 +189,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
         sendMessage();
       }
     }
-
     return (
         <section className='right-home-section'>
             <section className="message-section">
@@ -194,7 +196,10 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                     {
                     messageReceived.length>=1?
                         messageReceived.map((message, index)=>(
-                            <div className='message-info-container' key={index}>
+                            <div 
+                                className={message.sender._id===_id?"my-message-info-container user-message-info-container"
+                                :"user-message-info-container"} 
+                                key={index}>
                                 <img className='sender-photo' src={`/img/${message.sender.photo}`}/>
                                 <div className="message-info">
                                     <div className="message-date-displayname">
@@ -205,11 +210,13 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                                             {formatToTodayIfCurrentDate(message.formattedDate)}
                                         </span>
                                     </div>
-                                    {
-                                        message.content.map((m, i)=>(
-                                            <div key={i}>{m}</div>
-                                        ))
-                                    }
+                                    <div className="message-content-container">
+                                        {
+                                            message.content.map((m, i)=>(
+                                                <div key={i} className="message-content">{m}</div>
+                                            ))
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         )):
