@@ -84,7 +84,7 @@ export type ChannelSectionProps={
     socket: Socket|undefined,
     currentUserData: User,
     myFriends:FriendDetails[],
-    channels:Channel[]
+    setChannels: React.Dispatch<React.SetStateAction<Channel[]>>
 }
 
 export type ChannelMembers={

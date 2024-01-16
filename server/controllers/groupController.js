@@ -127,9 +127,7 @@ export const deleteGroup = catchAsync(async (req, res, next)=>{
         }
         await Channel.findOneAndDelete({_id:req.params.groupId, channelType:"Group"}).session(session)
         await session.commitTransaction()
-        res.status(200).json({
-            status:"success"
-        })
+        res.status(200).end()
     }catch(err){
         await session.abortTransaction()
         console.log('ERROR!!!', err)

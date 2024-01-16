@@ -37,3 +37,12 @@ export const inviteFriendtoGroup = async(token:string, channelId:string, userId:
     };
     return axios.patch(`${API_URL}/api/v1/groups/${channelId}/invite`, {userId}, config)
 }
+
+export const deleteGroup = async(token:string, channelId:string):Promise<AxiosResponse<void>>=>{
+    const config ={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    return axios.delete(`${API_URL}/api/v1/groups/${channelId}`, config)
+}
