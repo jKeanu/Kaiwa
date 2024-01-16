@@ -6,7 +6,7 @@ import {io, Socket} from 'socket.io-client'
 import { jwtDecode } from 'jwt-decode'
 import axios from 'axios';
 import { AxiosResponse } from 'axios';
-import {User, Channel, Friend, UserDataStatus} from '../types/generalTypes'
+import {User, Channel, Friend, UserDataStatus, FriendDetails} from '../types/generalTypes'
 import { getCurrentUser } from '../services/apiService';
 
 const HomePage = ()=>{
@@ -21,6 +21,7 @@ const HomePage = ()=>{
         //the type would be Channel[] | undefined
         const [channels, setChannels] = useState<Channel[]>([]);
         const [socket, setSocket] = useState<Socket>();
+        const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
 
         useEffect(()=>{
             const socket: Socket = io('http://localhost:3001', {
@@ -58,6 +59,9 @@ const HomePage = ()=>{
                                 photo: friend.friend.photo,
                             }
                         })
+                        const friendDetails:FriendDetails[] = friendChannels.map((friend)=> friend.friend)
+                        //Since during in a friend list we only need simple informations about the user
+                        setMyFreinds(friendDetails)
                         //Combine all friend and group channels.
                         const allChannels:Channel[] = [...newFriendChannels, ...groupChannels]
                         const sortedChannels:Channel[] = allChannels.sort((a, b) => {
@@ -103,15 +107,16 @@ const HomePage = ()=>{
             }
         }, [token, navigate]);
 
-        const handleLogout: ()=>void = ()=>{
-            localStorage.removeItem('token')
+        const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
+            e.preventDefault(); // Prevents the default behavior of the button
+            localStorage.removeItem('token');
             setUserData(undefined);
-            setChannels([]);    
-            navigate('/login')
-        }
+            setChannels([]);
+            navigate('/login');
+          };
 
         return(
-            <div className='homepage-container'>
+            <>
                 {userData&&token?
                     <main className='homepage'>
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
@@ -119,18 +124,20 @@ const HomePage = ()=>{
                             <Route index element={<div>asd</div>}/>
                             <Route path="channels/:channelNumber"
                             element={<ChannelSection
-                            socket={socket} 
+                            socket={socket}
                             currentUserData={userData}
-                            token={token}/>}/>
+                            token={token}
+                            myFriends={myFriends}
+                            channels={channels}/>}/>
                         </Routes>
                     </main>
-                :
+                    :
                 <main className='homepage'>
                     <section className='right-home-section'></section>
                     <section className='left-home-section'></section>
                 </main>
                 }
-            </div>
+            </>
         )
     
 }

@@ -28,3 +28,12 @@ export const getCurrentChannel = async(token:string, channelNumber:string|undefi
     };
     return axios.get(`${API_URL}/api/v1/channels/${channelNumber}`, config)
 }
+
+export const inviteFriendtoGroup = async(token:string, channelId:string, userId:string):Promise<AxiosResponse<{status:string}>>=>{
+    const config ={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    return axios.patch(`${API_URL}/api/v1/groups/${channelId}/invite`, {userId}, config)
+}

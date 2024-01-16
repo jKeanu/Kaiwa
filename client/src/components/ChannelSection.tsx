@@ -1,11 +1,17 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, KeyboardEvent, useRef } from 'react';
-import { ChannelDataStatus, ChannelMessage, CurrentChannel, ChannelSectionProps } from "../types/generalTypes";
+import React, { useState, useEffect, useRef } from 'react';
+import {
+        ChannelDataStatus,
+        ChannelMessage,
+        CurrentChannel,
+        ChannelSectionProps,
+        ChannelMembers
+    } from "../types/generalTypes";
 import { getCurrentChannel } from "../services/apiService";
 import { AxiosResponse } from "axios";
 
 
-export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData})=>{
+export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, channels})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag} = currentUserData
@@ -14,12 +20,16 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     const [inputMessage, setInputMessage] = useState<string>('');
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
+    const [cursorPosition, setCursorPosition] = useState<number>(0);
+    const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMembers[]>([])
+
     useEffect(()=>{
         async function getChannel(){
             try{
                 const res:AxiosResponse<ChannelDataStatus> = await getCurrentChannel(token, channelNumber)
                 if(res.data.status==='success'){
                     setCurrentChannel(res.data.channel)
+                    setCurrentChannelMembers(res.data.channel.members)
                     if(res.data.channel.messages){
                         setMessageReceived(res.data.channel.messages)
                     }else{
@@ -81,8 +91,11 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
 
     const messageBoxRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
+        //messageBoxRef.current indicates the actual div element
         if (messageBoxRef.current) {
-          messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+            //scrollTop indicates the current position of the scrollbar in pixels
+            //scrollHeight indicates the total height of the scrollable content in pixels
+            messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
         }
       }, [messageReceived]);
 
@@ -174,24 +187,53 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
         if (currentDateStr === messageDateStr) {
             // Format the time part
             const timeStr = dateStr.split(' ')[1] + ' ' + dateStr.split(' ')[2];
-            return `Today ${timeStr}`;
+            return `Today at ${timeStr}`;
         } else {
             return dateStr;
         }
     }
 
-    function handleKeyDown(event:KeyboardEvent<HTMLInputElement>):void{
+    function handleKeyDown(event:React.KeyboardEvent<HTMLTextAreaElement>):void{
     // Check if the Enter key was pressed (key code 13)
-    if (event.key === 'Enter') {
+    if(event.key === 'Enter' && event.shiftKey){
+        event.preventDefault()
+        setInputMessage((prevValue) => {
+            const start = prevValue.substring(0, cursorPosition);
+            const end = prevValue.substring(cursorPosition);
+            return start + '\n' + end;
+          })
+      }else if (event.key === 'Enter' && inputMessage) {
         // Prevent the default behavior of the Enter key (form submission)
         event.preventDefault();
         // Call the sendMessage function or any other action
         sendMessage();
       }
     }
+
+    const handleSelectionChange = (event: React.SyntheticEvent<HTMLTextAreaElement>) => {
+        const selectionStart = event.currentTarget.selectionStart || 0;
+        setCursorPosition(selectionStart);
+      };
+
+    
+
     return (
         <section className='right-home-section'>
+            <div className="modal-overlay">
+            </div>
             <section className="message-section">
+                <nav className="channel-nav">
+                    {currentChannel?.channelType==="Group"&&
+                    <button className="group-invite-button">
+                        <img src="/img/invite-member.svg"/>
+                    </button>
+                        }
+                    {(
+                        currentChannel?.channelType==="Group"
+                        &&currentChannel?.groupLeader===_id)
+                        &&<button className="disband-group-button">Disband Group</button>
+                    }
+                </nav>
                 <div className="message-box" ref={messageBoxRef}>
                     {
                     messageReceived.length>=1?
@@ -213,9 +255,15 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                                     <div className="message-content-container">
                                         {
                                             message.content.map((m, i)=>(
-                                                <div key={i} className="message-content">{m}</div>
-                                            ))
-                                        }
+                                                <div key={i} className="message-content">
+                                                    {m.split('\n').map((line, index)=>(
+                                                        <React.Fragment key={index}>
+                                                            {line}
+                                                            {index < line.length -1 && <br/>}
+                                                        </React.Fragment>
+                                                    ))}
+                                                </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -224,26 +272,28 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                         }
                 </div>
                 <div className="message-input-container">
-                    <input 
-                    type='text' value={inputMessage} 
+                    <textarea 
+                    onSelect={handleSelectionChange}
+                    value={inputMessage} 
                     placeholder="Send a message..."
                     onKeyDown={handleKeyDown}
-                    onChange={(event)=>setInputMessage(event.target.value)} className="message-input"/>
+                    onChange={(event)=>setInputMessage(event.target.value)} 
+                    className="message-input" 
+                    />
                     <button onClick={sendMessage} disabled={inputMessage.trim()===''}>Send</button>
                 </div>
             </section>
             <section className="channel-members-section">
                 <ul className="member-list">
-                {currentChannel?
-                    currentChannel.members.map((member, i)=>(
+                {
+                    currentChannelMembers.map((member, i)=>(
                       <li className='member-container' key={`member-${i}`}>
                         <button className="member-popup-button">
                             <img className='member-profile-photo' src={`/img/${member.photo}`}/>
                             <span className="member-name">{member.displayName}</span>
                         </button>
                       </li>  
-                    )):
-                    <div></div>
+                    ))
                     }
                 </ul>
             </section>

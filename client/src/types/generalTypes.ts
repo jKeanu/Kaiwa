@@ -1,3 +1,4 @@
+import React from 'react'
 import {Socket} from 'socket.io-client'
 
 // export interface LocalStorage {
@@ -63,16 +64,27 @@ export type RegisterForm={
     displayName:string
 }
 
+
+//Friend
+export type FriendDetails={
+    _id:string,
+    displayName:string,
+    photo:string,
+    friendTag:string,
+}
+
 export type LeftSectionProps ={
     channels: Channel[];  // Assuming Channel is a defined type or interface
-    handleLogout: () => void;
+    handleLogout: (e:React.MouseEvent<HTMLButtonElement>) => void;
     currentUserData: User; 
 }
 
 export type ChannelSectionProps={
     token: string,
     socket: Socket|undefined,
-    currentUserData: User
+    currentUserData: User,
+    myFriends:FriendDetails[],
+    channels:Channel[]
 }
 
 export type ChannelMembers={
@@ -92,7 +104,7 @@ export type ChannelMessage={
     channel:string,
     content:string[],
     formattedDate:string,
-    time:number,
+    time:number|Date,
     _id?:string,
     updated?:true
 }
@@ -116,3 +128,12 @@ export type ChannelDataStatus={
     status:string,
     channel:CurrentChannel
 }
+
+//Modals
+export type InviteFriend={
+    friends:FriendDetails[],
+    setChannelMembers: React.Dispatch<React.SetStateAction<ChannelMembers[]>>,
+    token:string,
+    channelId: string
+}
+
