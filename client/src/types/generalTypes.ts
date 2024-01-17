@@ -137,3 +137,14 @@ export type InviteFriend={
     channelId: string
 }
 
+export type DeleteGroup={
+    setChannels: React.Dispatch<React.SetStateAction<Channel[]>>
+    token:string,
+    currentChannelId:string
+}
+
+export type LeaveGroup={
+    token:string,
+    setChannelMembers: React.Dispatch<React.SetStateAction<ChannelMembers[]>>,
+    channelId:string
+}

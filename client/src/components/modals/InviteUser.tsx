@@ -3,7 +3,7 @@ import { inviteFriendtoGroup } from "../../services/apiService"
 import { AxiosResponse } from "axios"
 
 
-export const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, setChannelMembers, token})=>{
+const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, setChannelMembers, token})=>{
     const handleInvite = async (e:React.MouseEvent<HTMLButtonElement>, token:string, channelId:string, friend:FriendDetails):Promise<void> => {
         e.preventDefault()
         try{
@@ -33,3 +33,5 @@ export const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, setCha
         </div>
     )
 }   
+
+export default InviteUserModal

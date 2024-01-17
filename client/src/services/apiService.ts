@@ -46,3 +46,12 @@ export const deleteGroup = async(token:string, channelId:string):Promise<AxiosRe
     };
     return axios.delete(`${API_URL}/api/v1/groups/${channelId}`, config)
 }
+
+export const leaveGroup = async(token:string, channelId:string):Promise<AxiosResponse<void>>=>{
+    const config ={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    return axios.delete(`${API_URL}/api/v1/me/groups/${channelId}/leave`, config)
+}

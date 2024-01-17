@@ -30,7 +30,9 @@
             padding: 0 2rem 2rem 2rem
             overflow-y: auto
             width: 100%
-            height: 100%
+            height: fit-content
+            max-height: 100%
+            margin-top: auto
             &::-webkit-scrollbar
                 width: 0.4rem
             &::-webkit-scrollbar-thumb
@@ -112,26 +114,22 @@
                         align-items: flex-end
         //input
         .message-input-container
-            left: 0
-            right: 0
-            bottom: 0
             width: 100%
             display: flex
-            height: fit-content
-            min-height: 3rem
             background-color: $secondary-bg
             justify-content: center
+            align-items: flex-end
+            padding-bottom: 2rem
             textarea
                 width: 50rem
                 background-color: $primary-bg
                 border: none
                 color: $white-text
                 font-family: 'Open Sans', sans-serif
-                padding: 0.2rem 0.2rem 0.2rem 1rem
+                padding: 0.5rem 0.2rem 0.5rem 1rem
                 border-radius: 0.3rem 0 0 0.3rem
                 font-size: 0.8rem
                 resize: none
-                overflow: hidden
                 &:focus
                     outline: none
                 &::placeholder

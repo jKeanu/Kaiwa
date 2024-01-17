@@ -128,7 +128,7 @@ const HomePage = ()=>{
                             currentUserData={userData}
                             token={token}
                             myFriends={myFriends}
-                            channels={channels}/>}/>
+                            setChannels={setChannels}/>}/>
                         </Routes>
                     </main>
                     :

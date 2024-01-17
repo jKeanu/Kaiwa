@@ -45,7 +45,6 @@ const sendErrorDev=(err, req, res) => {
 
 const sendErrorProd=(err, req, res)=>{
     //If err.isOperational returned true, it means that we handled the error using AppError.
-    console.log(err.isOperational, '-----------')
     if(err.isOperational){
         return res.status(err.statusCode).json({
             status:err.status,

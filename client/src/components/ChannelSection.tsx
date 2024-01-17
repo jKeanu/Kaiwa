@@ -9,9 +9,10 @@ import {
     } from "../types/generalTypes";
 import { getCurrentChannel } from "../services/apiService";
 import { AxiosResponse } from "axios";
+import ReactTextareaAutosize from "react-textarea-autosize";
 
 
-export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, channels})=>{
+export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, setChannels})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag} = currentUserData
@@ -20,7 +21,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     const [inputMessage, setInputMessage] = useState<string>('');
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
-    const [cursorPosition, setCursorPosition] = useState<number>(0);
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMembers[]>([])
 
     useEffect(()=>{
@@ -40,7 +40,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             catch(err){
                 console.log(err)
             }
-        
         }
         //if there is a token, run the currentUser data fetching function
         if(token){
@@ -49,6 +48,7 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             navigate('/')
         }
     }, [token, channelNumber, navigate])
+
     useEffect(() => {
         if (socket && channelNumber) {
             // Join the room
@@ -88,6 +88,19 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             return cleanup
         }
     }, [socket, channelNumber]);
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    useEffect(()=>{
+        if(textareaRef.current){
+            textareaRef.current.focus()
+        }
+        return ():void => {
+            // Cleanup function to handle component unmount
+            if (textareaRef) {
+              textareaRef.current?.blur();
+            }
+          };
+    }, [channelNumber])
 
     const messageBoxRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -195,14 +208,7 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
 
     function handleKeyDown(event:React.KeyboardEvent<HTMLTextAreaElement>):void{
     // Check if the Enter key was pressed (key code 13)
-    if(event.key === 'Enter' && event.shiftKey){
-        event.preventDefault()
-        setInputMessage((prevValue) => {
-            const start = prevValue.substring(0, cursorPosition);
-            const end = prevValue.substring(cursorPosition);
-            return start + '\n' + end;
-          })
-      }else if (event.key === 'Enter' && inputMessage) {
+      if (event.key === 'Enter' && !event.shiftKey && inputMessage) {
         // Prevent the default behavior of the Enter key (form submission)
         event.preventDefault();
         // Call the sendMessage function or any other action
@@ -210,13 +216,8 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
       }
     }
 
-    const handleSelectionChange = (event: React.SyntheticEvent<HTMLTextAreaElement>) => {
-        const selectionStart = event.currentTarget.selectionStart || 0;
-        setCursorPosition(selectionStart);
-      };
 
     
-
     return (
         <section className='right-home-section'>
             <div className="modal-overlay">
@@ -228,6 +229,10 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                         <img src="/img/invite-member.svg"/>
                     </button>
                         }
+                    {(currentChannel?.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
+                    <button>
+                        Leave group
+                    </button>}
                     {(
                         currentChannel?.channelType==="Group"
                         &&currentChannel?.groupLeader===_id)
@@ -272,13 +277,13 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                         }
                 </div>
                 <div className="message-input-container">
-                    <textarea 
-                    onSelect={handleSelectionChange}
-                    value={inputMessage} 
-                    placeholder="Send a message..."
-                    onKeyDown={handleKeyDown}
-                    onChange={(event)=>setInputMessage(event.target.value)} 
-                    className="message-input" 
+                    <ReactTextareaAutosize 
+                        ref={textareaRef}
+                        value={inputMessage} 
+                        placeholder="Send a message..."
+                        onKeyDown={handleKeyDown}
+                        onChange={(event)=>setInputMessage(event.target.value)} 
+                        className="message-input"
                     />
                     <button onClick={sendMessage} disabled={inputMessage.trim()===''}>Send</button>
                 </div>

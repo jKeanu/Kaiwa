@@ -3,8 +3,7 @@ import { DeleteGroup } from "../../types/generalTypes"
 import { deleteGroup } from "../../services/apiService"
 
 
-export const DeleteGroupModal:React.FC<DeleteGroup>=({setChannels, token, currentChannelId})=>{
-
+const DeleteGroupModal:React.FC<DeleteGroup>=({setChannels, token, currentChannelId})=>{
     const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>, token:string, currentChannelId:string):Promise<void>=>{
         e.preventDefault()
         try{
@@ -35,3 +34,5 @@ export const DeleteGroupModal:React.FC<DeleteGroup>=({setChannels, token, curren
         </div>
     )
 }
+
+export default DeleteGroupModal
