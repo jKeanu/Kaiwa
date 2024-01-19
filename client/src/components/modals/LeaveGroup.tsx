@@ -3,7 +3,7 @@ import { LeaveGroup } from "../../types/generalTypes";
 import { leaveGroup } from "../../services/apiService";
 import { useNavigate } from "react-router-dom";
 
-const LeaveGroupModal:React.FC<LeaveGroup>=({userId, token, setChannelMembers, channelId})=>{
+const LeaveGroupModal:React.FC<LeaveGroup>=({token, setChannelMembers, channelId})=>{
     const navigate = useNavigate()
     const handleLeaveGroup=async(e:React.MouseEvent<HTMLButtonElement>, token:string, channelId:string):Promise<void>=>{
         e.preventDefault()

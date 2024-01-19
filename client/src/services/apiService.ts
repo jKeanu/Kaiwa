@@ -55,3 +55,7 @@ export const leaveGroup = async(token:string, channelId:string):Promise<AxiosRes
     };
     return axios.delete(`${API_URL}/api/v1/me/groups/${channelId}/leave`, config)
 }
+
+
+export const channelFetcher = (endpoint: string, headers: Record<string, string> = {}) => 
+    axios.get(`${API_URL}/${endpoint}`, { headers}).then(res => res.data);

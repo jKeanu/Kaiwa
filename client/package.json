@@ -17,6 +17,7 @@
     "react-router-dom": "^6.21.1",
     "react-textarea-autosize": "^8.5.3",
     "socket.io-client": "^4.7.2",
+    "swr": "^2.2.4",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {

@@ -20,8 +20,6 @@ const getUserIdFromSocket = async (token) => {
   }
 };
 
-
-
 // Manage connections
 export default (httpServer) => {
   const io = new Server(httpServer, {

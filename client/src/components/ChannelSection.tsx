@@ -7,10 +7,10 @@ import {
         ChannelSectionProps,
         ChannelMembers
     } from "../types/generalTypes";
-import { getCurrentChannel } from "../services/apiService";
-import { AxiosResponse } from "axios";
+import { API_URL } from "../services/apiService";
+import { channelFetcher } from "../services/apiService";
 import ReactTextareaAutosize from "react-textarea-autosize";
-
+import useSWR, {mutate} from "swr";
 
 export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, setChannels})=>{
     //Since currentUserData consists of many information
@@ -22,32 +22,30 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMembers[]>([])
+    const cacheKey = `api/v1/channels/${channelNumber}`
 
-    useEffect(()=>{
-        async function getChannel(){
-            try{
-                const res:AxiosResponse<ChannelDataStatus> = await getCurrentChannel(token, channelNumber)
-                if(res.data.status==='success'){
-                    setCurrentChannel(res.data.channel)
-                    setCurrentChannelMembers(res.data.channel.members)
-                    if(res.data.channel.messages){
-                        setMessageReceived(res.data.channel.messages)
-                    }else{
-                        setMessageReceived([])
-                    }
+    const headers = {
+        'Authorization': `Bearer ${token}`
+    } 
+
+    const {data, error} = useSWR<ChannelDataStatus>(
+        `api/v1/channels/${channelNumber}`, (endpoint:string) =>
+        channelFetcher(endpoint, headers)
+        )
+
+    useEffect(() => {
+            if (data) {
+                if (data.channel.messages) {
+                    setMessageReceived(data.channel.messages);
+                }else{
+                    setMessageReceived([])
                 }
+                setCurrentChannel(data.channel);
+                setCurrentChannelMembers(data.channel.members);
+            } else if (error) {
+                console.log('ERRORZZZZZZZZZ');
             }
-            catch(err){
-                console.log(err)
-            }
-        }
-        //if there is a token, run the currentUser data fetching function
-        if(token){
-            getChannel()
-        }else{
-            navigate('/')
-        }
-    }, [token, channelNumber, navigate])
+        }, [data, error])
 
     useEffect(() => {
         if (socket && channelNumber) {
@@ -76,6 +74,31 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                         return [...prevMessages, newMessage];
                     });
                 }
+                mutate(cacheKey, (currentCachedData: ChannelDataStatus | undefined) => {
+                    if (!currentCachedData || !currentCachedData.channel) {
+                      return undefined;
+                    }
+                    // Clone the current data
+                    let updatedChannelData = { ...currentCachedData };
+                  
+                    // Safely access messages, defaulting to an empty array if undefined
+                    const updatedMessages = updatedChannelData.channel.messages?.length
+                      ? [...updatedChannelData.channel.messages]
+                      : [];
+                  
+                    if (newMessage.updated) {
+                      // Update the last message or handle appropriately if the array is empty
+                      updatedMessages[updatedMessages.length - 1] = newMessage;
+                    } else {
+                      // Append new message
+                      updatedMessages.push(newMessage);
+                    }
+                  
+                    // Update the messages array in the channel data
+                    updatedChannelData.channel.messages = updatedMessages;
+                  
+                    return updatedChannelData;
+                  }, false); // false tells the SWR to not re-fetch the data from the server after updating the cache
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
@@ -140,6 +163,8 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
         const timestamp = Date.now()
         const prevMessageDate:Date = new Date(messageReceived[messageReceived.length-1]?.time??0)
         const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime()
+        //If the sent more then one message within one minute since the first message, we're just going to 
+        //add the content of the message from the previous message.
         if(messageReceived.length>0&&messageReceived[messageReceived.length-1].sender._id === _id && timeDifference <= 60*1000){
             //We won't change the formattedDate since, to have more user-friendly approach
             //Since we base the date of the  message on the first message content.
@@ -165,6 +190,27 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                 }
                 return updatedMessages
             })
+            mutate(cacheKey, (currentCachedData: ChannelDataStatus | undefined) =>{
+                if (!currentCachedData || !currentCachedData.channel) {
+                    return undefined;
+                  }
+                let updatedChannelData = {...currentCachedData}
+                const updatedMessages = updatedChannelData.channel.messages?.length
+                ? [...updatedChannelData.channel.messages]
+                : [];
+                
+                updatedMessages[updatedMessages.length-1]={
+                    ...updatedMessages[updatedMessages.length - 1],
+                    content:[
+                        ...updatedMessages[updatedMessages.length-1].content,
+                        inputMessage
+                    ]
+                }
+                updatedChannelData.channel.messages = updatedMessages
+                return updatedChannelData
+            }
+            )
+
         }else{
             const messageContents:ChannelMessage = {
                 content:[inputMessage],
@@ -186,6 +232,22 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             setMessageReceived((prevMessages) => {
                     return [...prevMessages, messageContents]
             })
+
+            mutate(cacheKey, (currentCachedData: ChannelDataStatus | undefined) =>{
+                if (!currentCachedData || !currentCachedData.channel) {
+                    return undefined;
+                  }
+                let updatedChannelData = {...currentCachedData}
+                const updatedMessages = updatedChannelData.channel.messages?.length
+                ? [...updatedChannelData.channel.messages]
+                : [];
+
+                updatedMessages.push(messageContents)
+                updatedChannelData.channel.messages = updatedMessages
+                return updatedChannelData
+            }
+            )
+
         }
         setInputMessage('')
     }
@@ -196,7 +258,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
         const messageDate = new Date(dateStr);
         const currentDateStr = currentDate.toLocaleDateString();
         const messageDateStr = messageDate.toLocaleDateString();
-    
         if (currentDateStr === messageDateStr) {
             // Format the time part
             const timeStr = dateStr.split(' ')[1] + ' ' + dateStr.split(' ')[2];
@@ -209,7 +270,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     function handleKeyDown(event:React.KeyboardEvent<HTMLTextAreaElement>):void{
     // Check if the Enter key was pressed (key code 13)
       if (event.key === 'Enter' && !event.shiftKey && inputMessage) {
-        // Prevent the default behavior of the Enter key (form submission)
         event.preventDefault();
         // Call the sendMessage function or any other action
         sendMessage();
@@ -225,13 +285,13 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             <section className="message-section">
                 <nav className="channel-nav">
                     {currentChannel?.channelType==="Group"&&
-                    <button className="group-invite-button">
+                    <button className="nav-button">
                         <img src="/img/invite-member.svg"/>
                     </button>
                         }
                     {(currentChannel?.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
-                    <button>
-                        Leave group
+                    <button className="nav-button">
+                       <img src="/img/leave-group-icon.svg"/>
                     </button>}
                     {(
                         currentChannel?.channelType==="Group"
