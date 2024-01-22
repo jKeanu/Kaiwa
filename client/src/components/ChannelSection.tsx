@@ -1,51 +1,62 @@
-import { useParams, useNavigate } from "react-router-dom";
-import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from "react-router-dom"
+import React, { useState, useEffect, useRef } from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
         CurrentChannel,
         ChannelSectionProps,
-        ChannelMembers
-    } from "../types/generalTypes";
-import { API_URL } from "../services/apiService";
-import { channelFetcher } from "../services/apiService";
-import ReactTextareaAutosize from "react-textarea-autosize";
-import useSWR, {mutate} from "swr";
+        ChannelMembers,
+        ChannelMessagesStatus
+    } from "../types/generalTypes"
+import { channelFetcher,  messageFetcher} from "../services/apiService"
+import ReactTextareaAutosize from "react-textarea-autosize"
+import useSWR, {mutate} from "swr"
 
 export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, setChannels})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag} = currentUserData
-    const {channelNumber} = useParams();
+    const {channelNumber} = useParams()
     const navigate = useNavigate()
     const [inputMessage, setInputMessage] = useState<string>('');
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMembers[]>([])
-    const cacheKey = `api/v1/channels/${channelNumber}`
+    const [messagesLimit, setMessagesLimit] = useState<number>(15);
+    const [messagesSkip, setMessagesSkip] = useState<number>(0);
+    const channelCacheKey = `api/v1/channels/${channelNumber}`
+    const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
 
     const headers = {
         'Authorization': `Bearer ${token}`
     } 
 
+    //fetching channel data 
     const {data, error} = useSWR<ChannelDataStatus>(
-        `api/v1/channels/${channelNumber}`, (endpoint:string) =>
+        channelCacheKey, (endpoint:string) =>
         channelFetcher(endpoint, headers)
         )
 
     useEffect(() => {
-            if (data) {
-                if (data.channel.messages) {
-                    setMessageReceived(data.channel.messages);
-                }else{
-                    setMessageReceived([])
-                }
-                setCurrentChannel(data.channel);
-                setCurrentChannelMembers(data.channel.members);
-            } else if (error) {
-                console.log('ERRORZZZZZZZZZ');
-            }
-        }, [data, error])
+        if (data) {
+            setCurrentChannel(data.channel);
+            setCurrentChannelMembers(data.channel.members);
+        } else if (error) {
+            console.log('ERRORZZZZZZZZZ');
+        }
+    }, [data, error])
+
+    const { data: messagesData, error: messagesError } = useSWR<ChannelMessagesStatus>(
+        messageCacheKey, (endpoint:string) =>
+        messageFetcher(endpoint, messagesLimit, messagesSkip, headers)
+    )
+    useEffect(()=>{
+        if(messagesData){
+            setMessageReceived(messagesData.messages)
+        }else if(messagesError){
+            console.log('ERRORZZZZ')
+        }
+    }, [messagesData, messagesError])
 
     useEffect(() => {
         if (socket && channelNumber) {
@@ -54,51 +65,52 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             // Handle socket disconnection or leaving the room when the component unmounts or changes
             return () => {
                 socket.emit('leaveRoom', channelNumber);
-            };
+            }
         }
     }, [socket, channelNumber]);
 
     useEffect(() => {
         if (socket && channelNumber) {
-            const handleReceiveMessage= (newMessage: ChannelMessage)  => {
+            const handleReceiveMessage= async (newMessage: ChannelMessage)  => {
                 if(newMessage.updated){
                     setMessageReceived(prevMessages=>{
                         const updatedMessages = [...prevMessages]
-                        updatedMessages[updatedMessages.length -1] = newMessage
+                        updatedMessages[0] = newMessage
                         return updatedMessages
                     })
                 }else{
                     setMessageReceived(prevMessages => {
                         // If prevMessages is undefined, initialize it as an array with newMessage
                         // Otherwise, append newMessage to it
-                        return [...prevMessages, newMessage];
+                        return [newMessage, ...prevMessages];
                     });
                 }
-                mutate(cacheKey, (currentCachedData: ChannelDataStatus | undefined) => {
-                    if (!currentCachedData || !currentCachedData.channel) {
-                      return undefined;
+                mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) => {
+                    if (!currMsgCachedData){
+                      return undefined
                     }
-                    // Clone the current data
-                    let updatedChannelData = { ...currentCachedData };
-                  
-                    // Safely access messages, defaulting to an empty array if undefined
-                    const updatedMessages = updatedChannelData.channel.messages?.length
-                      ? [...updatedChannelData.channel.messages]
-                      : [];
-                  
-                    if (newMessage.updated) {
-                      // Update the last message or handle appropriately if the array is empty
-                      updatedMessages[updatedMessages.length - 1] = newMessage;
-                    } else {
-                      // Append new message
-                      updatedMessages.push(newMessage);
+                    //Clone the current data
+                    const updatedMessages = [...currMsgCachedData.messages]
+                    //Safely access messages, defaulting to an empty array if undefined
+                    if (newMessage.updated){
+                    //Update the last message or handle appropriately if the array is empty
+                      updatedMessages[0] = newMessage
+                    }else{
+                    //Append new message
+                      updatedMessages.unshift(newMessage)
                     }
-                  
                     // Update the messages array in the channel data
-                    updatedChannelData.channel.messages = updatedMessages;
-                  
-                    return updatedChannelData;
+                    return {status:currMsgCachedData.status, messages:updatedMessages}
                   }, false); // false tells the SWR to not re-fetch the data from the server after updating the cache
+
+                  setChannels(prevChannels=>{
+                    const channels = [...prevChannels]
+                    const channelToUpdate = channels.find(channel => channel._id === currentChannel?._id)
+                    if(channelToUpdate){
+                        channelToUpdate.lastMessage = newMessage.time
+                    }
+                    return channels
+                })
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
@@ -161,17 +173,17 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             return navigate('/')
         }
         const timestamp = Date.now()
-        const prevMessageDate:Date = new Date(messageReceived[messageReceived.length-1]?.time??0)
+        const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
         const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime()
         //If the sent more then one message within one minute since the first message, we're just going to 
         //add the content of the message from the previous message.
-        if(messageReceived.length>0&&messageReceived[messageReceived.length-1].sender._id === _id && timeDifference <= 60*1000){
+        if(messageReceived.length>0&&messageReceived[0].sender._id === _id && timeDifference <= 60*1000){
             //We won't change the formattedDate since, to have more user-friendly approach
             //Since we base the date of the  message on the first message content.
             socket.emit("continue_message",
             {
                 //we need to convert it to this format since that is the time format in the DB
-                time:messageReceived[messageReceived.length-1].time,
+                prevTime:messageReceived[0].time,
                 sender:{photo, displayName, _id:_id, friendTag},
                 channel:currentChannel._id,
                 content:inputMessage,
@@ -181,35 +193,32 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             setMessageReceived((prevMessages)=>{
                 const updatedMessages = [...prevMessages]
                 //Append the input message to the content array of the last message.
-                updatedMessages[updatedMessages.length-1]={
-                    ...updatedMessages[updatedMessages.length-1],
+                updatedMessages[0]={
+                    ...updatedMessages[0],
+                    time:timestamp,
                     content:[
-                        ...updatedMessages[updatedMessages.length-1].content,
+                        ...updatedMessages[0].content,
                         inputMessage
                     ]
                 }
                 return updatedMessages
             })
-            mutate(cacheKey, (currentCachedData: ChannelDataStatus | undefined) =>{
-                if (!currentCachedData || !currentCachedData.channel) {
+            mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
+                if (!currMsgCachedData) {
                     return undefined;
                   }
-                let updatedChannelData = {...currentCachedData}
-                const updatedMessages = updatedChannelData.channel.messages?.length
-                ? [...updatedChannelData.channel.messages]
-                : [];
+                const updatedMessages = [...currMsgCachedData.messages]
                 
-                updatedMessages[updatedMessages.length-1]={
-                    ...updatedMessages[updatedMessages.length - 1],
+                updatedMessages[0]={
+                    ...updatedMessages[0],
+                    time:timestamp,
                     content:[
-                        ...updatedMessages[updatedMessages.length-1].content,
+                        ...updatedMessages[0].content,
                         inputMessage
                     ]
                 }
-                updatedChannelData.channel.messages = updatedMessages
-                return updatedChannelData
-            }
-            )
+                return {status:currMsgCachedData.status, messages:updatedMessages}
+            }, false)
 
         }else{
             const messageContents:ChannelMessage = {
@@ -223,30 +232,23 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             
             socket.emit("send_message", {
                 ...messageContents,
-
                 channelNumber
             })
             //Since in the message that we sent, the socket only sends
             //the message to the user besides the sender, we 
             //update the MessageReceived manually.
             setMessageReceived((prevMessages) => {
-                    return [...prevMessages, messageContents]
+                    return [messageContents, ...prevMessages]
             })
 
-            mutate(cacheKey, (currentCachedData: ChannelDataStatus | undefined) =>{
-                if (!currentCachedData || !currentCachedData.channel) {
+            mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
+                if (!currMsgCachedData) {
                     return undefined;
-                  }
-                let updatedChannelData = {...currentCachedData}
-                const updatedMessages = updatedChannelData.channel.messages?.length
-                ? [...updatedChannelData.channel.messages]
-                : [];
-
-                updatedMessages.push(messageContents)
-                updatedChannelData.channel.messages = updatedMessages
-                return updatedChannelData
-            }
-            )
+                }
+                const updatedMessages = [...currMsgCachedData.messages]
+                updatedMessages.unshift(messageContents)
+                return {status:currMsgCachedData.status, messages:updatedMessages}
+            }, false)
 
         }
         setInputMessage('')
@@ -276,19 +278,30 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
       }
     }
 
-
-    
     return (
         <section className='right-home-section'>
-            <div className="modal-overlay">
-            </div>
             <section className="message-section">
                 <nav className="channel-nav">
-                    {currentChannel?.channelType==="Group"&&
+                    {
+                        currentChannel?.channelType==='Friend'?
+                        <div className="channel-nav-info-container">
+                            <img className="channel-nav-photo"
+                             src={`/img/${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo:currentChannel.members[1].photo}`}/>
+                            <h2 className="channel-nav-header">
+                                {currentChannel.members[0]._id!==_id?currentChannel.members[0].displayName:currentChannel.members[1].displayName}
+                            </h2>
+                        </div>
+                        :
+                        <div className="channel-nav-info-container">
+                            <img className="channel-nav-photo" src={`/img/${currentChannel?.photo}`}/>
+                            <h2 className="channel-nav-header">{currentChannel?.channelName}</h2>
+                        </div>
+                    }
+                    {currentChannel?.channelType==='Group'&&
                     <button className="nav-button">
                         <img src="/img/invite-member.svg"/>
                     </button>
-                        }
+                    }
                     {(currentChannel?.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
                     <button className="nav-button">
                        <img src="/img/leave-group-icon.svg"/>
@@ -319,21 +332,21 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                                     </div>
                                     <div className="message-content-container">
                                         {
-                                            message.content.map((m, i)=>(
-                                                <div key={i} className="message-content">
-                                                    {m.split('\n').map((line, index)=>(
-                                                        <React.Fragment key={index}>
-                                                            {line}
-                                                            {index < line.length -1 && <br/>}
-                                                        </React.Fragment>
-                                                    ))}
-                                                </div>
+                                        message.content.map((m, i)=>(
+                                            <div key={i} className="message-content">
+                                                {m.split('\n').map((line, index)=>(
+                                                    <React.Fragment key={index}>
+                                                        {line}
+                                                        {index < line.length -1 && <br/>}
+                                                    </React.Fragment>
+                                                ))}
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
                             </div>
                         )):
-                        <div>No Messages</div>
+                        <div></div>
                         }
                 </div>
                 <div className="message-input-container">
@@ -345,16 +358,19 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                         onChange={(event)=>setInputMessage(event.target.value)} 
                         className="message-input"
                     />
-                    <button onClick={sendMessage} disabled={inputMessage.trim()===''}>Send</button>
                 </div>
             </section>
             <section className="channel-members-section">
+                <h2 className="channel-members-header">Members</h2>
                 <ul className="member-list">
                 {
                     currentChannelMembers.map((member, i)=>(
                       <li className='member-container' key={`member-${i}`}>
                         <button className="member-popup-button">
-                            <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                            <div className="member-profile-status">
+                                <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                                <div className='member-status'></div>
+                            </div>
                             <span className="member-name">{member.displayName}</span>
                         </button>
                       </li>  

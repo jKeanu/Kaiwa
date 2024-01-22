@@ -1,5 +1,6 @@
 import axios, {AxiosResponse} from 'axios';
 import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus } from '../types/generalTypes';
+import { ChannelMessage } from '../types/generalTypes';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -59,3 +60,8 @@ export const leaveGroup = async(token:string, channelId:string):Promise<AxiosRes
 
 export const channelFetcher = (endpoint: string, headers: Record<string, string> = {}) => 
     axios.get(`${API_URL}/${endpoint}`, { headers}).then(res => res.data);
+
+
+export const messageFetcher = (endpoint: string, limit: number, skip: number, headers: Record<string, string> = {}) => 
+    axios.get<{status: string, messages: ChannelMessage[]}>(`${API_URL}/${endpoint}?limit=${limit}&skip=${skip}`, { headers })
+            .then(response => response.data);

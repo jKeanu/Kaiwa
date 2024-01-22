@@ -9,4 +9,8 @@ router.use(authController.protect);
 router.route('/:channelNumber')
     .get(channelController.getUserChannel);
 
+router.route('/:channelNumber/messages')
+    .get(channelController.getChannelMessages)
+
+
 export default router;

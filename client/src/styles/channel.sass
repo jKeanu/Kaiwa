@@ -11,6 +11,23 @@
         justify-content: end
         position: relative
         .channel-nav
+            .channel-nav-info-container
+                display: flex
+                align-items: center
+                column-gap: 0.5rem
+                justify-content: space-between
+                margin-right: auto
+                margin-left: 0.5rem
+                .channel-nav-header
+                    margin: 0
+                    color: $white-text
+                    font-family: 'Open Sans', sans-serif
+                    font-weight: 300
+                .channel-nav-photo
+                    width: 2rem
+                    height: 2rem
+                    border-radius: 1rem
+                    object-fit: cover
             width: 100%
             background-color: $primary-bg
             height: max-content
@@ -33,6 +50,8 @@
             height: fit-content
             max-height: 100%
             margin-top: auto
+            display: flex
+            flex-direction: column-reverse
             &::-webkit-scrollbar
                 width: 0.4rem
             &::-webkit-scrollbar-thumb
@@ -119,7 +138,7 @@
             background-color: $secondary-bg
             justify-content: center
             align-items: flex-end
-            padding-bottom: 2rem
+            padding-bottom: 1.5rem
             textarea
                 width: 50rem
                 background-color: $primary-bg
@@ -127,7 +146,7 @@
                 color: $white-text
                 font-family: 'Open Sans', sans-serif
                 padding: 0.5rem 0.2rem 0.5rem 1rem
-                border-radius: 0.3rem 0 0 0.3rem
+                border-radius: 0.3rem
                 font-size: 0.8rem
                 resize: none
                 &:focus
@@ -135,31 +154,29 @@
                 &::placeholder
                     font-size: 0.8rem
                     font-family: 'Bellefair', serif
-            //The height of the button should be 0.2rem higher than the input
-            button
-                padding: 0.2rem
-                height: 1.9rem
-                width: 5rem
-                border: none
-                background-color: $primary-bg
-                color: white
-                font-family: 'Bellefair', serif
-                font-size: 0.8rem
-                border-radius: 0 0.3rem 0.3rem 0
-                transition: background-color 0.15s ease-in-out
-                &:hover
-                    background-color: #222b3f
                     
     //members ---5rem
     .channel-members-section
-        border-left: 1px solid rgba(142, 142, 142, 0.5)
-        width: 15rem
+        border-left: 1px solid $white-line
+        width: 12rem
         background-color: transparent
         flex-shrink: 0
         padding: 1rem 0.5rem
+        max-height: 100%
+        display: flex
+        flex-direction: column
+        .channel-members-header
+            color: $white-text
+            font-family: 'Bebas Neue', sans-serif
+            font-size: 0.9rem
+            font-weight: 300
+            margin:0
         .member-list
+            border-top: 1px solid $white-line
             height: 100%
             overflow-y: auto
+            margin:0
+            padding-top: 1rem
             .member-container
                 padding: 0.25rem 0
                 .member-popup-button
@@ -168,12 +185,25 @@
                     width: 100%
                     display: flex
                     align-items: center
-                    justify-content: space-between
-                    .member-profile-photo
-                        height: 2rem
-                        width: 2rem
-                        border-radius: 1rem
-                        object-fit: cover
+                    column-gap: 0.8rem
+                    .member-profile-status
+                        position: relative
+                        padding: 0.05rem
+                        .member-profile-photo
+                            height: 2rem
+                            width: 2rem
+                            border-radius: 1rem
+                            object-fit: cover
+                        .member-status
+                            left: 1.2rem
+                            top: 1.4rem
+                            position: absolute
+                            background-color: green
+                            width: 0.8rem
+                            height: 0.8rem
+                            border-radius: 0.4rem
+                            border: 0.2rem solid $secondary-bg
+
                     .member-name
                         color: $white-text
                         font-size: 1rem

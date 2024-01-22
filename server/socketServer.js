@@ -31,20 +31,7 @@ export default (httpServer) => {
 
   io.on('connection', async (socket) => {
     const userId = await getUserIdFromSocket(socket.handshake.query.token);
-    redisClient.incr(`user:${userId}:connections`, (err, newCount) => {
-      if (!err) {
-        if (newCount === 1) {
-          // User was not previously connected, set status to "online"
-          User.findByIdAndUpdate(userId, { status: 'Online' }, (updateErr) => {
-            if (updateErr) {
-              console.error('Error updating user status:', updateErr);
-            }
-          });
-        }
-      }else {
-        console.error('Error incrementing connection count in Redis:', err);
-      }
-    });
+    let newCount = await redisClient.incr(`user:${userId}:connections`)
 
     socket.on('joinRoom', (channelNumber) => {
       socket.join(channelNumber);
@@ -82,10 +69,9 @@ export default (httpServer) => {
     });
 
     socket.on("continue_message", async(data)=>{
-      console.log(data.channel, userId, data.time, '---------')
       const updatedMessage = await Chat.findOneAndUpdate(
-        {channel:data.channel, sender:userId, time:data.time},
-        {$push:{content:data.content}},
+        {channel:data.channel, sender:userId, time:data.prevTime},
+        {time:data.newTime, $push:{content:data.content}},
            {new:true})
       //Since we need the sender details, we cannot just pass the updatedMessage
       //directly to the receive_message, the only sender info we have on chat model is the id
@@ -95,18 +81,13 @@ export default (httpServer) => {
         content: updatedMessage.content,
         channel: updatedMessage.channel,
         formattedDate: updatedMessage.formattedDate,
-        updated:true
+        updated:true,
       }
       socket.to(data.channelNumber).emit('receive_message', messageInfo)
     })
 
     socket.on('disconnect', async () => {
-      await redisClient.decr(`user:${userId}:connections`, async (err, newCount) => {
-        if (newCount <= 0) {
-          await User.findByIdAndUpdate(userId, { status: 'Offline' });
-          await redisClient.del(`user:${userId}:connections`);
-        }
-      });
+
     });
   });
 };

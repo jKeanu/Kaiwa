@@ -1,26 +1,26 @@
-import LeftSection from '../components/LeftSection';
-import ChannelSection from '../components/ChannelSection';
-import { useState, useEffect } from 'react';
-import {Routes, Route, useNavigate } from 'react-router-dom';
+import LeftSection from '../components/LeftSection'
+import ChannelSection from '../components/ChannelSection'
+import {useState, useEffect} from 'react'
+import {Routes, Route, useNavigate } from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
-import { jwtDecode } from 'jwt-decode'
-import axios from 'axios';
-import { AxiosResponse } from 'axios';
+import {jwtDecode} from 'jwt-decode'
+import axios from 'axios'
+import {AxiosResponse} from 'axios'
 import {User, Channel, Friend, UserDataStatus, FriendDetails} from '../types/generalTypes'
-import { getCurrentUser } from '../services/apiService';
+import {getCurrentUser} from '../services/apiService'
 
 const HomePage = ()=>{
         //Get token from local storage
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token')
         //We use this to navigate from pages to pages
         const navigate = useNavigate()
         //This is where we saved the fetched current logged in user's data
-        const [userData, setUserData] = useState<User>();
+        const [userData, setUserData] = useState<User>()
         //The logged in users channels
         //if we left the initial value of the state to be blank ()
         //the type would be Channel[] | undefined
-        const [channels, setChannels] = useState<Channel[]>([]);
-        const [socket, setSocket] = useState<Socket>();
+        const [channels, setChannels] = useState<Channel[]>([])
+        const [socket, setSocket] = useState<Socket>()
         const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
 
         useEffect(()=>{
@@ -33,7 +33,6 @@ const HomePage = ()=>{
             return ()=>{
                 socket.disconnect()
             }
-
         },[token])
 
         useEffect(()=>{
@@ -65,21 +64,22 @@ const HomePage = ()=>{
                         //Combine all friend and group channels.
                         const allChannels:Channel[] = [...newFriendChannels, ...groupChannels]
                         const sortedChannels:Channel[] = allChannels.sort((a, b) => {
-                            const dateA = new Date(a.lastMessage).getTime(); // Convert to milliseconds
-                            const dateB = new Date(b.lastMessage).getTime(); // Convert to milliseconds
+                            const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
+                            const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
                             return dateB - dateA; // Compare the millisecond values
-                          })
+                        })
                         //Save the sorted channels to a state
                         setChannels(sortedChannels)
                     }
-                }catch (error: unknown) {
+                    
+                }catch(error: unknown){
                     if (axios.isAxiosError(error)) { // Type guard for AxiosError
                         // Now you can safely assume error is of type AxiosError
-                        console.log(error.message);
-                    } else if (error instanceof Error) {
-                        console.log(error.message);
-                    } else {
-                        console.error('An unknown error occurred:', error);
+                        console.log(error.message)
+                    }else if (error instanceof Error) {
+                        console.log(error.message)
+                    }else {
+                        console.error('An unknown error occurred:', error)
                     }
                 }
             }
@@ -101,20 +101,20 @@ const HomePage = ()=>{
                 const isExpired = (decodedToken.exp??0) * 1000 < Date.now();
                 //if expired remove the token, and navigate to login page
                 if (isExpired) {
-                    navigate('/login');
-                    localStorage.removeItem('token');
+                    navigate('/login')
+                    localStorage.removeItem('token')
                 }
             }
         }, [token, navigate]);
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault(); // Prevents the default behavior of the button
-            localStorage.removeItem('token');
-            setUserData(undefined);
-            setChannels([]);
-            navigate('/login');
-          };
-
+            localStorage.removeItem('token')
+            setUserData(undefined)
+            setChannels([])
+            navigate('/login')
+        };
+    
         return(
             <>
                 {userData&&token?
@@ -138,8 +138,7 @@ const HomePage = ()=>{
                 </main>
                 }
             </>
-        )
-    
+    )   
 }
 
 export default HomePage

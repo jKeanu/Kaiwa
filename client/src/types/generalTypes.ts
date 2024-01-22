@@ -14,7 +14,7 @@ export type Channel = {
     channelName: string, 
     channelNumber: number,
     id: string,
-    lastMessage: number,
+    lastMessage: number | Date,
     photo:string,
     _id:string
 }
@@ -127,6 +127,11 @@ export type CurrentChannel={
 export type ChannelDataStatus={
     status:string,
     channel:CurrentChannel
+}
+
+export type ChannelMessagesStatus={
+    status:string,
+    messages:ChannelMessage[]
 }
 
 //Modals
