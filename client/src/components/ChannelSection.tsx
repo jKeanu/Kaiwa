@@ -1,18 +1,22 @@
 import { useParams, useNavigate } from "react-router-dom"
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, DialogHTMLAttributes } from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
         CurrentChannel,
         ChannelSectionProps,
         ChannelMembers,
-        ChannelMessagesStatus
+        ChannelMessagesStatus,
+        ModalWindow
     } from "../types/generalTypes"
 import { channelFetcher,  messageFetcher} from "../services/apiService"
 import ReactTextareaAutosize from "react-textarea-autosize"
 import useSWR, {mutate} from "swr"
+import LeaveGroupModal from "./modals/LeaveGroup"
+import DeleteGroupModal from "./modals/DeleteGroup"
+import InviteUserModal from "./modals/InviteUser"
 
-export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, setChannels})=>{
+export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag} = currentUserData
@@ -24,8 +28,10 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMembers[]>([])
     const [messagesLimit, setMessagesLimit] = useState<number>(15);
     const [messagesSkip, setMessagesSkip] = useState<number>(0);
+    const [modalWindow, setModalWindow] = useState<ModalWindow>()
     const channelCacheKey = `api/v1/channels/${channelNumber}`
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
+    const memberIds:string[] = currentChannelMembers.map(member=>member._id)
 
     const headers = {
         'Authorization': `Bearer ${token}`
@@ -71,7 +77,7 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
 
     useEffect(() => {
         if (socket && channelNumber) {
-            const handleReceiveMessage= async (newMessage: ChannelMessage)  => {
+            const handleReceiveMessage= (newMessage: ChannelMessage)  => {
                 if(newMessage.updated){
                     setMessageReceived(prevMessages=>{
                         const updatedMessages = [...prevMessages]
@@ -102,15 +108,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                     // Update the messages array in the channel data
                     return {status:currMsgCachedData.status, messages:updatedMessages}
                   }, false); // false tells the SWR to not re-fetch the data from the server after updating the cache
-
-                  setChannels(prevChannels=>{
-                    const channels = [...prevChannels]
-                    const channelToUpdate = channels.find(channel => channel._id === currentChannel?._id)
-                    if(channelToUpdate){
-                        channelToUpdate.lastMessage = newMessage.time
-                    }
-                    return channels
-                })
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
@@ -188,7 +185,8 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                 channel:currentChannel._id,
                 content:inputMessage,
                 newTime: timestamp,
-                channelNumber
+                channelNumber,
+                members:memberIds
             })
             setMessageReceived((prevMessages)=>{
                 const updatedMessages = [...prevMessages]
@@ -208,7 +206,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                     return undefined;
                   }
                 const updatedMessages = [...currMsgCachedData.messages]
-                
                 updatedMessages[0]={
                     ...updatedMessages[0],
                     time:timestamp,
@@ -219,7 +216,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                 }
                 return {status:currMsgCachedData.status, messages:updatedMessages}
             }, false)
-
         }else{
             const messageContents:ChannelMessage = {
                 content:[inputMessage],
@@ -232,6 +228,7 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             
             socket.emit("send_message", {
                 ...messageContents,
+                members:memberIds,
                 channelNumber
             })
             //Since in the message that we sent, the socket only sends
@@ -254,6 +251,15 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
         setInputMessage('')
     }
 
+    const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
+        e.preventDefault()
+        setModalWindow({isOpen:true, window:action})
+    }
+    
+    const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
+        e.preventDefault()
+        setModalWindow({isOpen:false, window:''})
+    }
 
     function formatToTodayIfCurrentDate(dateStr:string):string {
         const currentDate = new Date();
@@ -298,18 +304,21 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                         </div>
                     }
                     {currentChannel?.channelType==='Group'&&
-                    <button className="nav-button">
+                    <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'inviteUser')}>
                         <img src="/img/invite-member.svg"/>
                     </button>
                     }
                     {(currentChannel?.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
-                    <button className="nav-button">
+                    <button onClick={(e)=>handleNavButtonClick(e, 'leaveGroup')} className="nav-button">
                        <img src="/img/leave-group-icon.svg"/>
                     </button>}
                     {(
                         currentChannel?.channelType==="Group"
                         &&currentChannel?.groupLeader===_id)
-                        &&<button className="disband-group-button">Disband Group</button>
+                        &&
+                        <button onClick={(e)=>handleNavButtonClick(e, 'deleteGroup')} className="disband-group-button">
+                            Disband Group
+                        </button>
                     }
                 </nav>
                 <div className="message-box" ref={messageBoxRef}>
@@ -347,7 +356,7 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                             </div>
                         )):
                         <div></div>
-                        }
+                    }
                 </div>
                 <div className="message-input-container">
                     <ReactTextareaAutosize 
@@ -360,6 +369,18 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                     />
                 </div>
             </section>
+            {modalWindow?.isOpen&&<dialog className='modal-window-container' onClick={handleModalWindowClick}>
+                {(modalWindow.window==='leaveGroup'&&currentChannel)
+                &&
+                <LeaveGroupModal token={token} channelId={currentChannel._id} />
+                }
+                {(modalWindow.window==='inviteUser'&&currentChannel)
+                &&
+                <InviteUserModal channelId={currentChannel._id} token={token} friends={myFriends}/>}
+                {(modalWindow.window==='deleteGroup'&&currentChannel)
+                &&
+                <DeleteGroupModal token={token} channelId={currentChannel._id} />}
+            </dialog>}
             <section className="channel-members-section">
                 <h2 className="channel-members-header">Members</h2>
                 <ul className="member-list">

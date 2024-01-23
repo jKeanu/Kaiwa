@@ -3,7 +3,7 @@ import { LeaveGroup } from "../../types/generalTypes";
 import { leaveGroup } from "../../services/apiService";
 import { useNavigate } from "react-router-dom";
 
-const LeaveGroupModal:React.FC<LeaveGroup>=({token, setChannelMembers, channelId})=>{
+const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId})=>{
     const navigate = useNavigate()
     const handleLeaveGroup=async(e:React.MouseEvent<HTMLButtonElement>, token:string, channelId:string):Promise<void>=>{
         e.preventDefault()
@@ -19,14 +19,15 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, setChannelMembers, channelId
 
     return(
         <div className="leave-group-modal-container">
-            <div className="leave-group-text-container">
-                Are you sure you want to leave the Group?
+            <h2 className="modal-header">Leave Group</h2>
+            <div className="modal-text">
+                Are you sure you want to leave the group?
             </div>
             <div className="leave-group-buttons-container">
-                <button onClick={(e)=>handleLeaveGroup(e, token, channelId)}>
+                <button className='confirm-button' onClick={(e)=>handleLeaveGroup(e, token, channelId)}>
                     Leave Group
                 </button>
-                <button>
+                <button className="cancel-button">
                     Cancel
                 </button>
             </div>

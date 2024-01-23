@@ -3,15 +3,14 @@ import { DeleteGroup } from "../../types/generalTypes"
 import { deleteGroup } from "../../services/apiService"
 
 
-const DeleteGroupModal:React.FC<DeleteGroup>=({setChannels, token, currentChannelId})=>{
-    const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>, token:string, currentChannelId:string):Promise<void>=>{
+const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId})=>{
+
+    const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>, token:string, currChannelId:string):Promise<void>=>{
         e.preventDefault()
         try{
-            const res:AxiosResponse<void> = await deleteGroup(token, currentChannelId)
+            const res:AxiosResponse<void> = await deleteGroup(token, currChannelId)
             if(res.status === 200){
-                setChannels(prevChannels => {
-                    return prevChannels.filter(channel => channel._id !== currentChannelId)
-                })
+
             }
         }catch(err){
             console.log(err)
@@ -20,14 +19,15 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({setChannels, token, currentChanne
 
     return(
         <div className="delete-group-modal-container">
-            <div className="delete-group-text">
+            <h2 className="modal-header">Delete Group</h2>
+            <div className="modal-text">
                 Are you sure you want to delete this Channel?
             </div>
             <div className="delete-group-buttons-container">
-                <button onClick={(e)=>handleGroupDelete(e, token, currentChannelId)} className="group-delete-button">
-                    Delete
+                <button onClick={(e)=>handleGroupDelete(e, token, channelId)} className="confirm-button">
+                    Delete Group
                 </button>
-                <button className="group-delete-cancel-button">
+                <button className="cancel-button">
                     Cancel
                 </button>
             </div>

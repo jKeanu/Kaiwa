@@ -84,7 +84,6 @@ export type ChannelSectionProps={
     socket: Socket|undefined,
     currentUserData: User,
     myFriends:FriendDetails[],
-    setChannels: React.Dispatch<React.SetStateAction<Channel[]>>
 }
 
 export type ChannelMembers={
@@ -135,21 +134,23 @@ export type ChannelMessagesStatus={
 }
 
 //Modals
+export type ModalWindow={
+    isOpen:Boolean,
+    window:string
+}
+
 export type InviteFriend={
     friends:FriendDetails[],
-    setChannelMembers: React.Dispatch<React.SetStateAction<ChannelMembers[]>>,
     token:string,
     channelId: string
 }
 
 export type DeleteGroup={
-    setChannels: React.Dispatch<React.SetStateAction<Channel[]>>
     token:string,
-    currentChannelId:string
+    channelId:string
 }
 
 export type LeaveGroup={
     token:string,
-    setChannelMembers: React.Dispatch<React.SetStateAction<ChannelMembers[]>>,
     channelId:string
 }

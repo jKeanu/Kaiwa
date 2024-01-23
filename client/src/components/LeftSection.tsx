@@ -3,7 +3,6 @@ import {LeftSectionProps} from '../types/generalTypes';
 
 export const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, currentUserData})=>{
     const {displayName, friendTag, photo} = currentUserData
-
     return(
     <section className='left-home-section'>
             <div className='logo-container'>

@@ -107,6 +107,44 @@ const HomePage = ()=>{
             }
         }, [token, navigate]);
 
+        //Join room for a live update
+        useEffect(()=>{
+          if(userData&&socket){
+            socket.emit('liveUpdates', userData._id)
+            return ()=>{
+                socket.emit('leaveLiveUpdates', userData._id)
+            }
+          }  
+        }, [userData, socket])
+
+        useEffect(()=>{
+            if(socket){
+                const handleLastMsgUpdate = (data:{channelId:string, newTime:Date})=>{
+                    setChannels(prevChannels => {
+                        const currChannels = [...prevChannels]
+                        const channelToUpdate = currChannels.find(channel=>channel._id===data.channelId)
+                        console.log(data.channelId, '------123123')
+                        if(channelToUpdate){
+                            console.log('???')
+                            channelToUpdate.lastMessage = data.newTime
+                        }
+                        console.log(channelToUpdate?.lastMessage, '-------------')
+                        const sortedChannels:Channel[] = currChannels.sort((a, b) => {
+                            const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
+                            const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
+                            return dateB - dateA; // Compare the millisecond values
+                        })
+                        return sortedChannels
+                    })
+                }
+                socket.on('channel_lastmsg_update', handleLastMsgUpdate)
+                const cleanup = ():void  =>{
+                    socket.removeListener('channel_lastmsg_update', handleLastMsgUpdate);
+                }
+                return cleanup
+            }
+        }, [socket])
+
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault(); // Prevents the default behavior of the button
             localStorage.removeItem('token')
@@ -127,8 +165,7 @@ const HomePage = ()=>{
                             socket={socket}
                             currentUserData={userData}
                             token={token}
-                            myFriends={myFriends}
-                            setChannels={setChannels}/>}/>
+                            myFriends={myFriends}/>}/>
                         </Routes>
                     </main>
                     :

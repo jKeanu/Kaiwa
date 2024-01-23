@@ -37,9 +37,18 @@ export default (httpServer) => {
       socket.join(channelNumber);
     });
 
+    socket.on('liveUpdates', (userId)=>{
+      console.log(`user-${userId}`, '---')
+      socket.join(`user-${userId}`)
+    })
+
     socket.on('leaveRoom', (channelNumber) => {
       socket.leave(channelNumber);
     });
+
+    socket.on('leaveLiveUpdates', (userId)=>{
+      socket.leave(`user-${userId}`)
+    })
 
     // Listen for messages
     socket.on('send_message', async (data) => {
@@ -56,6 +65,10 @@ export default (httpServer) => {
         { lastMessage: data.time }
       );
 
+      data.members.forEach(memberId=>{
+        console.log(`user-${memberId}`, 1)
+        io.to(`user-${memberId}`).emit(`channel_lastmsg_update`, {channelId:data.channel, newTime:data.time})
+      })
       // Although the newMessage document consists of sender as a mongoose object id,
       // we can use spread operator and add a similar key to overwrite it.
       const messageInfo = {
