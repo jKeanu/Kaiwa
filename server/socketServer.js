@@ -30,15 +30,14 @@ export default (httpServer) => {
   });
 
   io.on('connection', async (socket) => {
-    const userId = await getUserIdFromSocket(socket.handshake.query.token);
-    let newCount = await redisClient.incr(`user:${userId}:connections`)
+    const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
+    let newCount = await redisClient.incr(`user:${verifiedCurrentUserId}:connections`)
 
     socket.on('joinRoom', (channelNumber) => {
       socket.join(channelNumber);
     });
 
     socket.on('liveUpdates', (userId)=>{
-      console.log(`user-${userId}`, '---')
       socket.join(`user-${userId}`)
     })
 
@@ -50,10 +49,11 @@ export default (httpServer) => {
       socket.leave(`user-${userId}`)
     })
 
+
     // Listen for messages
     socket.on('send_message', async (data) => {
       await Chat.create({
-        sender: userId,
+        sender: verifiedCurrentUserId,
         channel: data.channel,
         content: data.content,
         time: data.time,
@@ -64,11 +64,6 @@ export default (httpServer) => {
         { _id: data.channel },
         { lastMessage: data.time }
       );
-
-      data.members.forEach(memberId=>{
-        console.log(`user-${memberId}`, 1)
-        io.to(`user-${memberId}`).emit(`channel_lastmsg_update`, {channelId:data.channel, newTime:data.time})
-      })
       // Although the newMessage document consists of sender as a mongoose object id,
       // we can use spread operator and add a similar key to overwrite it.
       const messageInfo = {
@@ -78,16 +73,33 @@ export default (httpServer) => {
         sender: data.sender,
         formattedDate: data.formattedDate
       };
+      
+      data.members.forEach(memberId=>{
+        io.to(`user-${memberId}`).emit(`channel_lastmsg_update`,
+         {channelId:data.channel, channelNumber:data.channelNumber,
+          newTime:data.time, message:messageInfo})
+      })
       socket.to(data.channelNumber).emit('receive_message', messageInfo);
     });
 
+    socket.on('user_invite_success', async(data)=>{
+      //add status on select, if status is already implemented ------------------------------
+      const invitedUser = await User.findById(data.inviteUser).select('displayName friendTag _id photo')
+      data.members.forEach(memberId=>{
+        io.to(`user-${memberId}`).emit('channel_new_member_update',
+         {invitedUser, channelNumber:data.channelNumber})
+      })
+    })
+
     socket.on("continue_message", async(data)=>{
       const updatedMessage = await Chat.findOneAndUpdate(
-        {channel:data.channel, sender:userId, time:data.prevTime},
+        {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
         {time:data.newTime, $push:{content:data.content}},
            {new:true})
+
+      await Channel.findByIdAndUpdate(data.channel, {lastMessage:data.newTime})     
       //Since we need the sender details, we cannot just pass the updatedMessage
-      //directly to the receive_message, the only sender info we have on chat model is the id
+      //directly to the receive_message, the only sender info we have on chat model is the id      
       const messageInfo = {
         time: updatedMessage.time,
         sender:data.sender,
@@ -97,6 +109,11 @@ export default (httpServer) => {
         updated:true,
       }
       socket.to(data.channelNumber).emit('receive_message', messageInfo)
+      data.members.forEach(memberId=>{
+        io.to(`user-${memberId}`).emit(`channel_lastmsg_update`, 
+        {channelId:updatedMessage.channel, channelNumber:data.channelNumber,
+          newTime:updatedMessage.time, message:messageInfo})
+      })
     })
 
     socket.on('disconnect', async () => {

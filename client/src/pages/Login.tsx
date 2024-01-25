@@ -55,13 +55,13 @@ const LoginPage = () => {
                             Email
                             <strong>{errorMessage}</strong>
                         </label>
-                        <input type="email" className="email" value={email} placeholder="Enter your email address" onChange={e => 
+                        <input id='email' type="email" className="email" value={email} placeholder="Enter your email address" onChange={e => 
                             setEmail(e.target.value)} required/>
                         <label htmlFor='password' style={{color:errorMessage?'#ea8484':'#b9b9b9'}}>
                             Password
                             <strong>{errorMessage}</strong>
                         </label>
-                        <input type="password" placeholder="Enter your password" value={password} onChange={e => 
+                        <input type="password" id='password' placeholder="Enter your password" value={password} onChange={e => 
                             setPassword(e.target.value)}  required/>
                         <button type="submit">Log In</button>
                     </form>

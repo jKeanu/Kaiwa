@@ -86,7 +86,7 @@ export type ChannelSectionProps={
     myFriends:FriendDetails[],
 }
 
-export type ChannelMembers={
+export type ChannelMember={
     _id:string,
     displayName:string,
     photo:string,
@@ -115,7 +115,7 @@ export type CurrentChannel={
     id:string,
     channelName?:string,
     groupLeader?:string,
-    members:ChannelMembers[],
+    members:ChannelMember[],
     channelType: string,
     channelNumber: number,
     photo?: string,
@@ -133,6 +133,11 @@ export type ChannelMessagesStatus={
     messages:ChannelMessage[]
 }
 
+export type ChannelMemberUpdate={
+    invitedUser:ChannelMember,
+    channelNumber:string,
+}
+
 //Modals
 export type ModalWindow={
     isOpen:Boolean,
@@ -141,16 +146,22 @@ export type ModalWindow={
 
 export type InviteFriend={
     friends:FriendDetails[],
+    socket: Socket|undefined,
     token:string,
-    channelId: string
+    channelId: string,
+    currChannelMembersId:string[]
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
+    channelNumber:string|undefined
 }
 
 export type DeleteGroup={
     token:string,
     channelId:string
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
 }
 
 export type LeaveGroup={
     token:string,
     channelId:string
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
 }

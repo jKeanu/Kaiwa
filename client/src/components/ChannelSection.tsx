@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom"
-import React, { useState, useEffect, useRef, DialogHTMLAttributes } from 'react'
+import React, { useState, useEffect, useRef} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
         CurrentChannel,
         ChannelSectionProps,
-        ChannelMembers,
+        ChannelMember,
         ChannelMessagesStatus,
         ModalWindow
     } from "../types/generalTypes"
@@ -25,9 +25,9 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     const [inputMessage, setInputMessage] = useState<string>('');
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
-    const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMembers[]>([])
-    const [messagesLimit, setMessagesLimit] = useState<number>(15);
-    const [messagesSkip, setMessagesSkip] = useState<number>(0);
+    const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
+    const [messagesLimit, setMessagesLimit] = useState<number>(15)
+    const [messagesSkip, setMessagesSkip] = useState<number>(0)
     const [modalWindow, setModalWindow] = useState<ModalWindow>()
     const channelCacheKey = `api/v1/channels/${channelNumber}`
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
@@ -38,19 +38,19 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     } 
 
     //fetching channel data 
-    const {data, error} = useSWR<ChannelDataStatus>(
+    const {data:channelData, error: channelError} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
         channelFetcher(endpoint, headers)
-        )
+    )
 
     useEffect(() => {
-        if (data) {
-            setCurrentChannel(data.channel);
-            setCurrentChannelMembers(data.channel.members);
-        } else if (error) {
+        if (channelData) {
+            setCurrentChannel(channelData.channel);
+            setCurrentChannelMembers(channelData.channel.members);
+        }else if (channelError) {
             console.log('ERRORZZZZZZZZZ');
         }
-    }, [data, error])
+    }, [channelData, channelError])
 
     const { data: messagesData, error: messagesError } = useSWR<ChannelMessagesStatus>(
         messageCacheKey, (endpoint:string) =>
@@ -237,7 +237,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             setMessageReceived((prevMessages) => {
                     return [messageContents, ...prevMessages]
             })
-
             mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
                 if (!currMsgCachedData) {
                     return undefined;
@@ -246,19 +245,24 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                 updatedMessages.unshift(messageContents)
                 return {status:currMsgCachedData.status, messages:updatedMessages}
             }, false)
-
         }
         setInputMessage('')
     }
-
     const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
         e.preventDefault()
         setModalWindow({isOpen:true, window:action})
     }
     
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
+        if (e.target === e.currentTarget) {
+            e.preventDefault();
+            setModalWindow({isOpen: false, window: ''});
+        }
+    }
+    
+    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
-        setModalWindow({isOpen:false, window:''})
+        setModalWindow({isOpen: false, window: ''})
     }
 
     function formatToTodayIfCurrentDate(dateStr:string):string {
@@ -372,14 +376,18 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             {modalWindow?.isOpen&&<dialog className='modal-window-container' onClick={handleModalWindowClick}>
                 {(modalWindow.window==='leaveGroup'&&currentChannel)
                 &&
-                <LeaveGroupModal token={token} channelId={currentChannel._id} />
+                <LeaveGroupModal token={token} channelId={currentChannel._id} 
+                handleCloseButton={handleCloseButton}/>
                 }
                 {(modalWindow.window==='inviteUser'&&currentChannel)
                 &&
-                <InviteUserModal channelId={currentChannel._id} token={token} friends={myFriends}/>}
+                <InviteUserModal handleCloseButton={handleCloseButton} channelId={currentChannel._id}
+                 token={token} friends={myFriends} currChannelMembersId={memberIds} socket={socket}
+                 channelNumber={channelNumber}/>}
                 {(modalWindow.window==='deleteGroup'&&currentChannel)
                 &&
-                <DeleteGroupModal token={token} channelId={currentChannel._id} />}
+                <DeleteGroupModal token={token} channelId={currentChannel._id} 
+                handleCloseButton={handleCloseButton}/>}
             </dialog>}
             <section className="channel-members-section">
                 <h2 className="channel-members-header">Members</h2>

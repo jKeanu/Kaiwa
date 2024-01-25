@@ -1,12 +1,13 @@
 import LeftSection from '../components/LeftSection'
 import ChannelSection from '../components/ChannelSection'
 import {useState, useEffect} from 'react'
-import {Routes, Route, useNavigate } from 'react-router-dom'
+import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import {jwtDecode} from 'jwt-decode'
 import axios from 'axios'
+import {mutate} from "swr"
 import {AxiosResponse} from 'axios'
-import {User, Channel, Friend, UserDataStatus, FriendDetails} from '../types/generalTypes'
+import {User, Channel, Friend, UserDataStatus, FriendDetails, ChannelDataStatus, ChannelMemberUpdate, LastMessageUpdate, ChannelMessage, ChannelMessagesStatus} from '../types/generalTypes'
 import {getCurrentUser} from '../services/apiService'
 
 const HomePage = ()=>{
@@ -22,6 +23,7 @@ const HomePage = ()=>{
         const [channels, setChannels] = useState<Channel[]>([])
         const [socket, setSocket] = useState<Socket>()
         const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
+        const location = useLocation()
 
         useEffect(()=>{
             const socket: Socket = io('http://localhost:3001', {
@@ -91,7 +93,7 @@ const HomePage = ()=>{
                 navigate('/login');
     
             }
-        }, [token, navigate])
+        }, [token])
 
         useEffect(() => {
             //Check if the token is not yet expired
@@ -119,16 +121,13 @@ const HomePage = ()=>{
 
         useEffect(()=>{
             if(socket){
-                const handleLastMsgUpdate = (data:{channelId:string, newTime:Date})=>{
+                const handleLastMsgUpdate = (data:LastMessageUpdate):void=>{
                     setChannels(prevChannels => {
                         const currChannels = [...prevChannels]
                         const channelToUpdate = currChannels.find(channel=>channel._id===data.channelId)
-                        console.log(data.channelId, '------123123')
                         if(channelToUpdate){
-                            console.log('???')
                             channelToUpdate.lastMessage = data.newTime
                         }
-                        console.log(channelToUpdate?.lastMessage, '-------------')
                         const sortedChannels:Channel[] = currChannels.sort((a, b) => {
                             const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
                             const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
@@ -136,14 +135,51 @@ const HomePage = ()=>{
                         })
                         return sortedChannels
                     })
+                    if(location.pathname !== `/@me/channels/${data.channelNumber}`){
+                        mutate(`api/v1/channels/${data.channelNumber}/messages`, (prevMessagesDataCache:ChannelMessagesStatus|undefined)=>{
+                            if(!prevMessagesDataCache){
+                                return undefined
+                            }
+                            const updateMessages = [...prevMessagesDataCache.messages]
+                            if(data.message.updated){
+                                updateMessages[0] = data.message
+                                return {status:prevMessagesDataCache.status, messages:updateMessages}
+                            }
+                            return {status:prevMessagesDataCache.status, messages:updateMessages}
+                        }, false)
+                    }
                 }
                 socket.on('channel_lastmsg_update', handleLastMsgUpdate)
                 const cleanup = ():void  =>{
                     socket.removeListener('channel_lastmsg_update', handleLastMsgUpdate);
                 }
                 return cleanup
+            }                            
+            //We need to add the location dependency as well to keep the useEffect in sync with the
+            //current URL, this ensures that the effect will re-execute whenever the url changes, providing
+            //the most up to date object inside the effect. Without so, the value would remain the same
+            //even though the url changes (the location would be similar to its initial value always)
+        }, [socket, location])
+        useEffect(()=>{
+            if(socket){
+                const handleChannelMemberUpdate = (data:ChannelMemberUpdate)=>{
+                    mutate(`api/v1/channels/${data.channelNumber}`, (channelDataCache:ChannelDataStatus|undefined)=>{
+                        if(!channelDataCache){
+                            return undefined
+                        }
+                        const updateChannelDataCache = {...channelDataCache.channel}
+                        updateChannelDataCache.members = [...updateChannelDataCache.members, data.invitedUser]
+                        return {status:channelDataCache.status, channel:updateChannelDataCache}
+                    }, false)
+                }
+                socket.on(`channel_new_member_update`, handleChannelMemberUpdate)
+                const cleanup = ():void  =>{
+                    socket.removeListener('channel_new_member_update', handleChannelMemberUpdate);
+                }
+                return cleanup
             }
         }, [socket])
+
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault(); // Prevents the default behavior of the button
@@ -152,7 +188,6 @@ const HomePage = ()=>{
             setChannels([])
             navigate('/login')
         };
-    
         return(
             <>
                 {userData&&token?

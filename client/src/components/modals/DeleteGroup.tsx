@@ -3,7 +3,7 @@ import { DeleteGroup } from "../../types/generalTypes"
 import { deleteGroup } from "../../services/apiService"
 
 
-const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId})=>{
+const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton})=>{
 
     const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>, token:string, currChannelId:string):Promise<void>=>{
         e.preventDefault()
@@ -27,7 +27,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId})=>{
                 <button onClick={(e)=>handleGroupDelete(e, token, channelId)} className="confirm-button">
                     Delete Group
                 </button>
-                <button className="cancel-button">
+                <button className="cancel-button" onClick={handleCloseButton}>
                     Cancel
                 </button>
             </div>
