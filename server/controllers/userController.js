@@ -69,7 +69,6 @@ export const updateUser = catchAsync(async(req, res, next)=>{
     if (req.body.password || req.body.passwordConfirm){
         return next(new AppError('This route is not for password updates.', 400))
     }
-
     const filteredBody = filterObj(req.body, 'displayName', 'friendTag')
     if(req.file){
         filteredBody.photo = req.file.filename
@@ -88,9 +87,9 @@ export const getMe = catchAsync(async(req, res, next)=>{
     //Since we only need to populate the group and friend channel when getting
     //the current logged information, we can just populate all of them here.
     const currentUser = await User.findById(req.user._id).select('-__v')
-    .populate({path:'friends.friend', select:'displayName friendTag photo'})
+    .populate({path:'friends.friend', select:'displayName friendTag photo status'})
     .populate({path:'friends.channel', select:'channelNumber lastMessage'})
-    .populate({path:'groups', select:'channelNumber lastMessage channelName photo'});
+    .populate({path:'groups', select:'channelNumber lastMessage channelName photo'})
 
     res.status(200).json({
         status:"success",

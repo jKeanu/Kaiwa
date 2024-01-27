@@ -31,6 +31,7 @@ export type Friend = {
         friendTag:string,
         photo:string,
         _id:string,
+        status:string,
     },
     status:string,
     _id: string
@@ -42,6 +43,7 @@ export type User = {
     photo:string,
     displayName:string,
     email:string,
+    status:string,
     friendTag:string,
     friends?:Friend[],
     groups?:Channel[],
@@ -71,6 +73,7 @@ export type FriendDetails={
     displayName:string,
     photo:string,
     friendTag:string,
+    status:string
 }
 
 export type LeftSectionProps ={
@@ -86,11 +89,19 @@ export type ChannelSectionProps={
     myFriends:FriendDetails[],
 }
 
+export type HomeSectionProps={
+    friends:Friend[],
+    currUserId: string,
+    socket:Socket|undefined,
+    token:string
+}
+
 export type ChannelMember={
     _id:string,
     displayName:string,
     photo:string,
     friendTag:string,
+    status:string
 }
 
 export type ChannelMessage={
@@ -164,4 +175,19 @@ export type LeaveGroup={
     token:string,
     channelId:string
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
+}
+
+
+//Live Updates
+export type LastMessageUpdate = {
+    channelId:string,
+    channelNumber:string,
+    newTime:Date,
+    message:ChannelMessage
+}
+
+export type UserStatusUpdate= {
+    channelId: string,
+    channelNumber: string, 
+    userId: string
 }

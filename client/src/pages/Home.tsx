@@ -1,16 +1,17 @@
 import LeftSection from '../components/LeftSection'
 import ChannelSection from '../components/ChannelSection'
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useMemo} from 'react'
 import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import {jwtDecode} from 'jwt-decode'
 import axios from 'axios'
 import {mutate} from "swr"
 import {AxiosResponse} from 'axios'
-import {User, Channel, Friend, UserDataStatus, FriendDetails, ChannelDataStatus, ChannelMemberUpdate, LastMessageUpdate, ChannelMessage, ChannelMessagesStatus} from '../types/generalTypes'
+import {User, Channel, Friend, UserDataStatus, FriendDetails, ChannelDataStatus, ChannelMemberUpdate, LastMessageUpdate, ChannelMessage, ChannelMessagesStatus, UserStatusUpdate} from '../types/generalTypes'
 import {getCurrentUser} from '../services/apiService'
+import HomeSection from '../components/HomeSection'
 
-const HomePage = ()=>{
+const HomePage:React.FC = ()=>{
         //Get token from local storage
         const token = localStorage.getItem('token')
         //We use this to navigate from pages to pages
@@ -23,19 +24,26 @@ const HomePage = ()=>{
         const [channels, setChannels] = useState<Channel[]>([])
         const [socket, setSocket] = useState<Socket>()
         const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
+        const [friendChannels, setFriendChannels] = useState<Friend[]>([])
         const location = useLocation()
 
-        useEffect(()=>{
-            const socket: Socket = io('http://localhost:3001', {
-            query: {
-                token: localStorage.getItem('token'),
-            },
-            });
-            setSocket(socket)
-            return ()=>{
-                socket.disconnect()
+        //join rooms based on the channel id, so when there's an update in the channel
+        //we will be notified
+        const ChannelIds:string[] = useMemo(()=>{
+            return [...channels].map(channel => channel._id)
+        }, [channels])
+
+        useEffect(() => {
+            //we need to determine if the webpage is fully visible before connecting to the socket since,
+            //webpages have preloading feature on where they detect what you type in url or hover in the link
+            //it will preload certain resources.
+            if (document.visibilityState === 'visible') {
+                if (token) {
+                    const socket = io('http://localhost:3001', { query: { token } });
+                    setSocket(socket);
+                }
             }
-        },[token])
+        }, [])
 
         useEffect(()=>{
             const currentUser:()=>Promise<void> = async ()=>{
@@ -60,9 +68,11 @@ const HomePage = ()=>{
                                 photo: friend.friend.photo,
                             }
                         })
+                        //In this case, we only need the friend information, not including the channel.
                         const friendDetails:FriendDetails[] = friendChannels.map((friend)=> friend.friend)
-                        //Since during in a friend list we only need simple informations about the user
                         setMyFreinds(friendDetails)
+                        //Since
+                        setFriendChannels(friendChannels)
                         //Combine all friend and group channels.
                         const allChannels:Channel[] = [...newFriendChannels, ...groupChannels]
                         const sortedChannels:Channel[] = allChannels.sort((a, b) => {
@@ -111,17 +121,18 @@ const HomePage = ()=>{
 
         //Join room for a live update
         useEffect(()=>{
-          if(userData&&socket){
-            socket.emit('liveUpdates', userData._id)
-            return ()=>{
-                socket.emit('leaveLiveUpdates', userData._id)
+            if(channels&&socket){
+                socket.emit('channelLiveUpdates', ChannelIds)
+                return ()=>{
+                    socket.emit('leaveChannelLiveUpdates', ChannelIds)
+                }
             }
-          }  
-        }, [userData, socket])
+        }, [channels, socket])
 
         useEffect(()=>{
             if(socket){
                 const handleLastMsgUpdate = (data:LastMessageUpdate):void=>{
+                    console.log('MESSAGE UPDATE???')
                     setChannels(prevChannels => {
                         const currChannels = [...prevChannels]
                         const channelToUpdate = currChannels.find(channel=>channel._id===data.channelId)
@@ -136,6 +147,7 @@ const HomePage = ()=>{
                         return sortedChannels
                     })
                     if(location.pathname !== `/@me/channels/${data.channelNumber}`){
+                        console.log('CORRECT PATH????')
                         mutate(`api/v1/channels/${data.channelNumber}/messages`, (prevMessagesDataCache:ChannelMessagesStatus|undefined)=>{
                             if(!prevMessagesDataCache){
                                 return undefined
@@ -145,7 +157,7 @@ const HomePage = ()=>{
                                 updateMessages[0] = data.message
                                 return {status:prevMessagesDataCache.status, messages:updateMessages}
                             }
-                            return {status:prevMessagesDataCache.status, messages:updateMessages}
+                            return {status:prevMessagesDataCache.status, messages:[data.message, ...updateMessages]}
                         }, false)
                     }
                 }
@@ -162,7 +174,7 @@ const HomePage = ()=>{
         }, [socket, location])
         useEffect(()=>{
             if(socket){
-                const handleChannelMemberUpdate = (data:ChannelMemberUpdate)=>{
+                const handleChannelMemberUpdate = (data:ChannelMemberUpdate):void=>{
                     mutate(`api/v1/channels/${data.channelNumber}`, (channelDataCache:ChannelDataStatus|undefined)=>{
                         if(!channelDataCache){
                             return undefined
@@ -180,6 +192,54 @@ const HomePage = ()=>{
             }
         }, [socket])
 
+        //When a friend or a member of the group you're part of went online
+        useEffect(()=>{
+            if(socket){
+                const handleUserOnlineStatus = (data:UserStatusUpdate):void=>{
+                    mutate(`api/v1/channels/${data.channelNumber}`, (channelDataCache:ChannelDataStatus|undefined)=>{
+                        if(!channelDataCache){
+                            return
+                        }
+                        const updateChannelDataCache = {...channelDataCache.channel}
+                        const channelMembers = updateChannelDataCache.members
+                        const channelMemberIndex = updateChannelDataCache.members.findIndex(member=>member._id===data.userId)
+                        //update user status to online
+                        channelMembers[channelMemberIndex] = {...channelMembers[channelMemberIndex], status:'Online'}
+                        return {status:channelDataCache.status, channel:updateChannelDataCache}
+                    })
+                }
+                socket.on('user_status_update_online', handleUserOnlineStatus)
+                const cleanup =():void =>{
+                    socket.removeListener('user_status_update_online', handleUserOnlineStatus);
+                }
+                return cleanup
+
+        }},[socket])
+
+        //When a friend or a member of the group you're part of went offline
+        useEffect(()=>{
+            if(socket){
+                const handleUserOfflineStatus = (data:UserStatusUpdate):void=>{
+                    mutate(`api/v1/channels/${data.channelNumber}`, (channelDataCache:ChannelDataStatus|undefined)=>{
+                        if(!channelDataCache){
+                            return
+                        }
+                        const updateChannelDataCache = {...channelDataCache.channel}
+                        const channelMembers = updateChannelDataCache.members
+                        const channelMemberIndex = updateChannelDataCache.members.findIndex(member=>member._id===data.userId)
+                        //update user status to online
+                        channelMembers[channelMemberIndex] = {...channelMembers[channelMemberIndex], status:'Offline'}
+                        return {status:channelDataCache.status, channel:updateChannelDataCache}
+                    })
+                }
+                socket.on('user_status_update_offline', handleUserOfflineStatus)
+                const cleanup =():void =>{
+                    socket.removeListener('user_status_update_offline', handleUserOfflineStatus);
+                }
+                return cleanup
+
+        }},[socket])
+
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault(); // Prevents the default behavior of the button
@@ -194,7 +254,7 @@ const HomePage = ()=>{
                     <main className='homepage'>
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                         <Routes>
-                            <Route index element={<div>asd</div>}/>
+                            <Route index element={<HomeSection friends={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
                             <Route path="channels/:channelNumber"
                             element={<ChannelSection
                             socket={socket}

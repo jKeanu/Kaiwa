@@ -5,7 +5,7 @@ import Chat from '../models/chatModel.js';
 
 export const getUserChannel = catchAsync(async(req, res, next)=>{
     let currentChannel = await Channel.findOne({channelNumber:req.params.channelNumber})
-        .populate({path:'members', select:'photo displayName friendTag'})
+        .populate({path:'members', select:'photo displayName friendTag status'})
     if (!currentChannel) {
         return next(new AppError("Channel not found.", 404));
     }

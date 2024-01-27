@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom"
-import React, { useState, useEffect, useRef} from 'react'
+import React, { useState, useEffect, useRef, useMemo} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -16,7 +16,7 @@ import LeaveGroupModal from "./modals/LeaveGroup"
 import DeleteGroupModal from "./modals/DeleteGroup"
 import InviteUserModal from "./modals/InviteUser"
 
-export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends})=>{
+const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag} = currentUserData
@@ -31,12 +31,20 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     const [modalWindow, setModalWindow] = useState<ModalWindow>()
     const channelCacheKey = `api/v1/channels/${channelNumber}`
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
-    const memberIds:string[] = currentChannelMembers.map(member=>member._id)
 
+    
+    const memberIds = useMemo(()=>{
+        return [...currentChannelMembers].map(member=>member._id)
+    }, [currentChannelMembers])
+    
+    const sortedMembers:ChannelMember[] = useMemo(() => {
+        return [...currentChannelMembers].sort((a, b) => {
+            return a.status === "Online" && b.status !== "Online" ? -1 : 1;
+        });
+    }, [currentChannelMembers]);
     const headers = {
         'Authorization': `Bearer ${token}`
     } 
-
     //fetching channel data 
     const {data:channelData, error: channelError} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
@@ -74,7 +82,6 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
             }
         }
     }, [socket, channelNumber]);
-
     useEffect(() => {
         if (socket && channelNumber) {
             const handleReceiveMessage= (newMessage: ChannelMessage)  => {
@@ -135,14 +142,14 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
     }, [channelNumber])
 
     const messageBoxRef = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        //messageBoxRef.current indicates the actual div element
-        if (messageBoxRef.current) {
-            //scrollTop indicates the current position of the scrollbar in pixels
-            //scrollHeight indicates the total height of the scrollable content in pixels
-            messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
-        }
-      }, [messageReceived]);
+    // useEffect(() => {
+    //     //messageBoxRef.current indicates the actual div element
+    //     if (messageBoxRef.current) {
+    //         //scrollTop indicates the current position of the scrollbar in pixels
+    //         //scrollHeight indicates the total height of the scrollable content in pixels
+    //         messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+    //     }
+    //   }, [messageReceived]);
 
     function formatDate(timestamp: number): string {
         const date = new Date(timestamp);
@@ -393,12 +400,12 @@ export const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, curre
                 <h2 className="channel-members-header">Members</h2>
                 <ul className="member-list">
                 {
-                    currentChannelMembers.map((member, i)=>(
+                    sortedMembers.map((member, i)=>(
                       <li className='member-container' key={`member-${i}`}>
                         <button className="member-popup-button">
                             <div className="member-profile-status">
                                 <img className='member-profile-photo' src={`/img/${member.photo}`}/>
-                                <div className='member-status'></div>
+                                <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
                             </div>
                             <span className="member-name">{member.displayName}</span>
                         </button>

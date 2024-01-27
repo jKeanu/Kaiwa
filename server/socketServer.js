@@ -10,6 +10,13 @@ const redisClient = Redis.createClient();
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
 redisClient.connect();
 
+//Flush all data during server restart.
+//Since we only use redis for updating user status, this works.
+const clearRedisData = async () => {
+  await redisClient.flushAll();
+};
+clearRedisData();
+
 const getUserIdFromSocket = async (token) => {
   try {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
@@ -31,25 +38,40 @@ export default (httpServer) => {
 
   io.on('connection', async (socket) => {
     const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
-    let newCount = await redisClient.incr(`user:${verifiedCurrentUserId}:connections`)
+    const incrStatusCount = await redisClient.incr(`user:${verifiedCurrentUserId}:connections`)
+    console.log('CONNNECTED')
+    if(incrStatusCount === 1){
+      const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Online'}, {new:true})
+        .populate({path:'friends.channel', select:'channelNumber'})
+        .populate({path:'groups', select:'channelNumber'})
+
+      const friendChannel = [...currentUserData.friends].map(friend=>friend.channel)
+      const channels = [...friendChannel, ...currentUserData.groups]
+      channels.forEach(channel=>{
+        io.to(`channel-${channel.id}`).emit(`user_status_update_online`,
+        {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
+      })
+    }
 
     socket.on('joinRoom', (channelNumber) => {
       socket.join(channelNumber);
     });
 
-    socket.on('liveUpdates', (userId)=>{
-      socket.join(`user-${userId}`)
+    socket.on('channelLiveUpdates', (channelIds)=>{
+      channelIds.forEach(channelId=>{
+        socket.join(`channel-${channelId}`)
+      })
     })
 
     socket.on('leaveRoom', (channelNumber) => {
       socket.leave(channelNumber);
     });
 
-    socket.on('leaveLiveUpdates', (userId)=>{
-      socket.leave(`user-${userId}`)
+    socket.on('leaveChannelLiveUpdates', (channelIds)=>{
+      channelIds.forEach(channelId=>{
+        socket.leave(`channel-${channelId}`)
+      })
     })
-
-
     // Listen for messages
     socket.on('send_message', async (data) => {
       await Chat.create({
@@ -73,31 +95,28 @@ export default (httpServer) => {
         sender: data.sender,
         formattedDate: data.formattedDate
       };
-      
-      data.members.forEach(memberId=>{
-        io.to(`user-${memberId}`).emit(`channel_lastmsg_update`,
-         {channelId:data.channel, channelNumber:data.channelNumber,
-          newTime:data.time, message:messageInfo})
-      })
+
+      io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
+      {channelId:data.channel, channelNumber:data.channelNumber,
+      newTime:data.time, message:messageInfo})
       socket.to(data.channelNumber).emit('receive_message', messageInfo);
     });
 
     socket.on('user_invite_success', async(data)=>{
       //add status on select, if status is already implemented ------------------------------
-      const invitedUser = await User.findById(data.inviteUser).select('displayName friendTag _id photo')
-      data.members.forEach(memberId=>{
-        io.to(`user-${memberId}`).emit('channel_new_member_update',
-         {invitedUser, channelNumber:data.channelNumber})
-      })
+      const invitedUser = await User.findById(data.inviteUser).select('displayName friendTag _id photo status')
+      io.to(`channel-${data.channelId}`).emit(`channel_new_member_update`, {invitedUser, channelNumber:data.channelNumber})
+      // data.members.forEach(memberId=>{
+      //   io.to(`user-${memberId}`).emit('channel_new_member_update',
+      //    {invitedUser, channelNumber:data.channelNumber})
+      // })
     })
-
+    
     socket.on("continue_message", async(data)=>{
       const updatedMessage = await Chat.findOneAndUpdate(
         {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
         {time:data.newTime, $push:{content:data.content}},
-           {new:true})
-
-      await Channel.findByIdAndUpdate(data.channel, {lastMessage:data.newTime})     
+           {new:true})  
       //Since we need the sender details, we cannot just pass the updatedMessage
       //directly to the receive_message, the only sender info we have on chat model is the id      
       const messageInfo = {
@@ -108,16 +127,31 @@ export default (httpServer) => {
         formattedDate: updatedMessage.formattedDate,
         updated:true,
       }
+
       socket.to(data.channelNumber).emit('receive_message', messageInfo)
-      data.members.forEach(memberId=>{
-        io.to(`user-${memberId}`).emit(`channel_lastmsg_update`, 
-        {channelId:updatedMessage.channel, channelNumber:data.channelNumber,
-          newTime:updatedMessage.time, message:messageInfo})
-      })
+      io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
+      {channelId:updatedMessage.channel, channelNumber:data.channelNumber,
+        newTime:updatedMessage.time, message:messageInfo})
+      // data.members.forEach(memberId=>{
+      //   io.to(`user-${memberId}`).emit(`channel_lastmsg_update`, 
+      //   {channelId:updatedMessage.channel, channelNumber:data.channelNumber,
+      //     newTime:updatedMessage.time, message:messageInfo})
+      // })
     })
 
     socket.on('disconnect', async () => {
-
-    });
-  });
+      const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
+      if(decrStatusCount<=0){
+        const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Offline'}, {new:true})
+        .populate({path:'friends.channel', select:'channelNumber'})
+        .populate({path:'groups', select:'channelNumber'})
+      const friendChannel = [...currentUserData.friends].map(friend=>friend.channel)
+      const channels = [...friendChannel, ...currentUserData.groups]
+      channels.forEach(channel=>{
+        io.to(`channel-${channel.id}`).emit(`user_status_update_offline`,
+        {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
+      })
+      }
+    })
+  })
 };
