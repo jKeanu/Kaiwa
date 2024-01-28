@@ -16,7 +16,6 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
             console.log(err)
         }
     }
-
     return(
         <div className="leave-group-modal-container">
             <h2 className="modal-header">Leave Group</h2>

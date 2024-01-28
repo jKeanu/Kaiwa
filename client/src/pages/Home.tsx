@@ -1,5 +1,3 @@
-import LeftSection from '../components/LeftSection'
-import ChannelSection from '../components/ChannelSection'
 import {useState, useEffect, useMemo} from 'react'
 import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
@@ -7,7 +5,14 @@ import {jwtDecode} from 'jwt-decode'
 import axios from 'axios'
 import {mutate} from "swr"
 import {AxiosResponse} from 'axios'
-import {User, Channel, Friend, UserDataStatus, FriendDetails, ChannelDataStatus, ChannelMemberUpdate, LastMessageUpdate, ChannelMessage, ChannelMessagesStatus, UserStatusUpdate} from '../types/generalTypes'
+import LeftSection from '../components/LeftSection'
+import ChannelSection from '../components/ChannelSection'
+import {User, Channel, 
+        Friend, UserDataStatus, 
+        FriendDetails, ChannelDataStatus, 
+        ChannelMemberUpdate, LastMessageUpdate,
+        ChannelMessagesStatus, UserStatusUpdate} 
+        from '../types/generalTypes'
 import {getCurrentUser} from '../services/apiService'
 import HomeSection from '../components/HomeSection'
 
@@ -38,12 +43,28 @@ const HomePage:React.FC = ()=>{
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
             if (document.visibilityState === 'visible') {
+                const token = localStorage.getItem('token');
                 if (token) {
                     const socket = io('http://localhost:3001', { query: { token } });
                     setSocket(socket);
+                    return ()=>{
+                        socket.disconnect()
+                    }
                 }
             }
-        }, [])
+        }, [token])
+        
+        // useEffect(()=>{
+        //     const socket: Socket = io('http://localhost:3001', {
+        //     query: {
+        //         token: token,
+        //     },
+        //     });
+        //     setSocket(socket)
+        //     return ()=>{
+        //         socket.disconnect()
+        //     }
+        // },[token])
 
         useEffect(()=>{
             const currentUser:()=>Promise<void> = async ()=>{
@@ -83,7 +104,6 @@ const HomePage:React.FC = ()=>{
                         //Save the sorted channels to a state
                         setChannels(sortedChannels)
                     }
-                    
                 }catch(error: unknown){
                     if (axios.isAxiosError(error)) { // Type guard for AxiosError
                         // Now you can safely assume error is of type AxiosError
@@ -132,7 +152,6 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const handleLastMsgUpdate = (data:LastMessageUpdate):void=>{
-                    console.log('MESSAGE UPDATE???')
                     setChannels(prevChannels => {
                         const currChannels = [...prevChannels]
                         const channelToUpdate = currChannels.find(channel=>channel._id===data.channelId)
@@ -147,7 +166,6 @@ const HomePage:React.FC = ()=>{
                         return sortedChannels
                     })
                     if(location.pathname !== `/@me/channels/${data.channelNumber}`){
-                        console.log('CORRECT PATH????')
                         mutate(`api/v1/channels/${data.channelNumber}/messages`, (prevMessagesDataCache:ChannelMessagesStatus|undefined)=>{
                             if(!prevMessagesDataCache){
                                 return undefined
@@ -215,7 +233,6 @@ const HomePage:React.FC = ()=>{
                 return cleanup
 
         }},[socket])
-
         //When a friend or a member of the group you're part of went offline
         useEffect(()=>{
             if(socket){
@@ -231,22 +248,20 @@ const HomePage:React.FC = ()=>{
                         channelMembers[channelMemberIndex] = {...channelMembers[channelMemberIndex], status:'Offline'}
                         return {status:channelDataCache.status, channel:updateChannelDataCache}
                     })
+                    console.log('WHAT THE ACTUAL HECKING HECK')
                 }
                 socket.on('user_status_update_offline', handleUserOfflineStatus)
                 const cleanup =():void =>{
                     socket.removeListener('user_status_update_offline', handleUserOfflineStatus);
                 }
                 return cleanup
-
         }},[socket])
 
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault(); // Prevents the default behavior of the button
             localStorage.removeItem('token')
-            setUserData(undefined)
-            setChannels([])
-            navigate('/login')
+            window.location.href = '/login'
         };
         return(
             <>

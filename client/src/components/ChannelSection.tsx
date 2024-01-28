@@ -36,7 +36,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     const memberIds = useMemo(()=>{
         return [...currentChannelMembers].map(member=>member._id)
     }, [currentChannelMembers])
-    
+
     const sortedMembers:ChannelMember[] = useMemo(() => {
         return [...currentChannelMembers].sort((a, b) => {
             return a.status === "Online" && b.status !== "Online" ? -1 : 1;
@@ -192,8 +192,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                 channel:currentChannel._id,
                 content:inputMessage,
                 newTime: timestamp,
-                channelNumber,
-                members:memberIds
+                channelNumber
             })
             setMessageReceived((prevMessages)=>{
                 const updatedMessages = [...prevMessages]
@@ -235,7 +234,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
             
             socket.emit("send_message", {
                 ...messageContents,
-                members:memberIds,
                 channelNumber
             })
             //Since in the message that we sent, the socket only sends

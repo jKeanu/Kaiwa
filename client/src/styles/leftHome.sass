@@ -7,14 +7,52 @@
     flex-shrink: 0 //or min-width
     display: flex
     flex-direction: column
-    .logo-container
-        height: 5rem
-        background-color: grey
+    max-height: 100vh
+    .upper-left-section-container
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.6)
+        padding: 0 0.5rem
+        height:5.5rem
+        .logo-container
+            height: 3.5rem
+        .search-conversation-container
+            display: flex
+            align-content: center
+            border-style: none
+            justify-content: center
+            margin-bottom: 0.3rem
+            background-color: rgba(37, 45, 55, 1)
+            border-radius: 1rem
+            padding: 0 0.45rem
+            .search-conversation-input
+                background-color: transparent
+                border-radius: 0.35rem
+                border-style: none
+                color: $white-text
+                padding-left: 1rem
+                margin-top: 0.125rem
+                font-family: 'Open Sans', sans-serif
+                font-size: 0.8rem
+                height: 1.5rem
+                width: 12.5rem
+                &:focus
+                    outline: none
+                &::placeholder
+                    font-size: 0.7rem
+                    font-family: 'Open Sans', sans-serifZ
     .channel-list-container
-        height: 100%
+        height: calc( 100% - 10.5rem )
         .channel-links
             display: flex
             flex-direction: column
+            overflow: auto
+            height: 100%
+            padding: 0.5rem 0
+            &::-webkit-scrollbar
+                width: 0.4rem
+            &::-webkit-scrollbar-thumb
+                background-color: rgb(89, 91, 111)
+                border-radius: 0.2rem
+                transition: background-color 0.3s ease-in-out
             .channel-link-container
                 .channel-link
                     text-decoration: none
@@ -35,14 +73,13 @@
                     .channel-name
                         font-family: 'Raleway', sans-serif
                         color: white
-
     .user-info-container
         border-top: 1px solid $white-line
-        padding: 1rem 0
         display: flex
         justify-content: space-between
         align-items: center
         padding: 1rem 0.5rem
+        height: 5rem
         .user-info
             display: flex
             flex-direction: row

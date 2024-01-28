@@ -4,7 +4,18 @@ const HomeSection:React.FC<HomeSectionProps>=({friends, token, currUserId, socke
     return(
         <section className="home-section-container">
             <div className="home-button-container">
-                <button></button>
+                <button>
+                    Friends
+                </button>
+                <button>
+                    Add Friend
+                </button>
+                <button>
+                    Groups
+                </button>
+                <button>
+                    Create Group
+                </button>
             </div>
         </section>
     )

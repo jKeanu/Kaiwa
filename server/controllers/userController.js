@@ -90,7 +90,6 @@ export const getMe = catchAsync(async(req, res, next)=>{
     .populate({path:'friends.friend', select:'displayName friendTag photo status'})
     .populate({path:'friends.channel', select:'channelNumber lastMessage'})
     .populate({path:'groups', select:'channelNumber lastMessage channelName photo'})
-
     res.status(200).json({
         status:"success",
         user:currentUser

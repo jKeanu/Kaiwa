@@ -10,7 +10,7 @@ const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currCh
             const res:AxiosResponse<{status:string}> = await inviteFriendtoGroup(token, channelId, friend._id)
             if(res.data.status === 'success'){
                 if(socket && channelId && channelNumber){
-                    socket.emit('user_invite_success', {inviteUser:friend._id, channelId, channelNumber, members:currChannelMembersId})
+                    socket.emit('user_invite_success', {inviteUser:friend._id, channelId, channelNumber})
                 }
             }
         }
