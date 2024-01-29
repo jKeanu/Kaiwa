@@ -177,7 +177,6 @@ export type LeaveGroup={
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
 }
 
-
 //Live Updates
 export type LastMessageUpdate = {
     channelId:string,
@@ -190,4 +189,10 @@ export type UserStatusUpdate= {
     channelId: string,
     channelNumber: string, 
     userId: string
+}
+
+
+//Sub-comp
+export type FriendListProps={
+    friends:Friend[]
 }

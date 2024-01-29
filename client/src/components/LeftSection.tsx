@@ -17,7 +17,8 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, currentUs
     <section className='left-home-section'>
         <div className='upper-left-section-container'>
             <div className='logo-container'>
-                <Link to={'/'}>
+                <Link to={'/@me'}>
+                    Home
                 </Link>
             </div>
             <div className='search-conversation-container'>

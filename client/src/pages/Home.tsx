@@ -2,9 +2,7 @@ import {useState, useEffect, useMemo} from 'react'
 import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import {jwtDecode} from 'jwt-decode'
-import axios from 'axios'
 import {mutate} from "swr"
-import {AxiosResponse} from 'axios'
 import LeftSection from '../components/LeftSection'
 import ChannelSection from '../components/ChannelSection'
 import {User, Channel, 
@@ -13,8 +11,10 @@ import {User, Channel,
         ChannelMemberUpdate, LastMessageUpdate,
         ChannelMessagesStatus, UserStatusUpdate} 
         from '../types/generalTypes'
-import {getCurrentUser} from '../services/apiService'
 import HomeSection from '../components/HomeSection'
+import { getCurrentUser } from '../services/apiService'
+import axios, {AxiosResponse} from 'axios'
+
 
 const HomePage:React.FC = ()=>{
         //Get token from local storage
@@ -32,6 +32,10 @@ const HomePage:React.FC = ()=>{
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
         const location = useLocation()
 
+        const friendChannelIds = useMemo(()=>{
+            return [...friendChannels].map(friendChannel => friendChannel.channel._id)
+        }, [friendChannels])
+
         //join rooms based on the channel id, so when there's an update in the channel
         //we will be notified
         const ChannelIds:string[] = useMemo(()=>{
@@ -42,29 +46,16 @@ const HomePage:React.FC = ()=>{
             //we need to determine if the webpage is fully visible before connecting to the socket since,
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
-            if (document.visibilityState === 'visible') {
-                const token = localStorage.getItem('token');
-                if (token) {
-                    const socket = io('http://localhost:3001', { query: { token } });
-                    setSocket(socket);
-                    return ()=>{
-                        socket.disconnect()
-                    }
+            console.log('ENTERRRRRRRRRR')
+            if (token) {
+                const socket = io('http://localhost:3001', { query: { token } });
+                setSocket(socket);
+                return ()=>{
+                    socket.disconnect()
                 }
             }
+            
         }, [token])
-        
-        // useEffect(()=>{
-        //     const socket: Socket = io('http://localhost:3001', {
-        //     query: {
-        //         token: token,
-        //     },
-        //     });
-        //     setSocket(socket)
-        //     return ()=>{
-        //         socket.disconnect()
-        //     }
-        // },[token])
 
         useEffect(()=>{
             const currentUser:()=>Promise<void> = async ()=>{
@@ -124,6 +115,14 @@ const HomePage:React.FC = ()=>{
     
             }
         }, [token])
+        
+        useEffect(() => {
+            // Check if token doesn't exist, then navigate to login
+            if (!token) {
+              navigate('/login');
+            }
+          }, [token, navigate])
+
 
         useEffect(() => {
             //Check if the token is not yet expired
@@ -225,6 +224,17 @@ const HomePage:React.FC = ()=>{
                         channelMembers[channelMemberIndex] = {...channelMembers[channelMemberIndex], status:'Online'}
                         return {status:channelDataCache.status, channel:updateChannelDataCache}
                     })
+                    //check if the user who went online is also your friend based on the friend channel id
+                    const friendChannelId = friendChannelIds.find(friendChannelId => friendChannelId === data.channelId)
+                    if(friendChannelId){
+                        setFriendChannels(prevFriendChannels=>{
+                            const updateFriendChannel = [...prevFriendChannels]
+                            const friendIndex = updateFriendChannel
+                                .findIndex(friendchannel=>friendchannel.channel._id===friendChannelId)
+                            updateFriendChannel[friendIndex].friend.status = 'Online'
+                            return updateFriendChannel
+                        })
+                    }
                 }
                 socket.on('user_status_update_online', handleUserOnlineStatus)
                 const cleanup =():void =>{
@@ -232,14 +242,14 @@ const HomePage:React.FC = ()=>{
                 }
                 return cleanup
 
-        }},[socket])
+        }},[socket, friendChannels])
         //When a friend or a member of the group you're part of went offline
         useEffect(()=>{
             if(socket){
                 const handleUserOfflineStatus = (data:UserStatusUpdate):void=>{
                     mutate(`api/v1/channels/${data.channelNumber}`, (channelDataCache:ChannelDataStatus|undefined)=>{
                         if(!channelDataCache){
-                            return
+                            return undefined
                         }
                         const updateChannelDataCache = {...channelDataCache.channel}
                         const channelMembers = updateChannelDataCache.members
@@ -248,7 +258,6 @@ const HomePage:React.FC = ()=>{
                         channelMembers[channelMemberIndex] = {...channelMembers[channelMemberIndex], status:'Offline'}
                         return {status:channelDataCache.status, channel:updateChannelDataCache}
                     })
-                    console.log('WHAT THE ACTUAL HECKING HECK')
                 }
                 socket.on('user_status_update_offline', handleUserOfflineStatus)
                 const cleanup =():void =>{

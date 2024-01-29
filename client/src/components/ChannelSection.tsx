@@ -42,9 +42,11 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
             return a.status === "Online" && b.status !== "Online" ? -1 : 1;
         });
     }, [currentChannelMembers]);
+
     const headers = {
         'Authorization': `Bearer ${token}`
-    } 
+    }
+
     //fetching channel data 
     const {data:channelData, error: channelError} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
@@ -167,9 +169,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     }
 
     const sendMessage = ():void =>{
-        //We also inserted the channelNumber(room) to send the message 
-        //to the other members in the channel.
-        //----------------------------------------
         if(!socket){
             return
         }

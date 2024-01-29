@@ -1,4 +1,23 @@
+@mixin buttons($bg-color)
+    font-family: 'Raleway', sans-serif
+    background-color: $bg-color
+    color: white
+    border: none
+    font-weight: bold
+    padding: 0.3rem
+    font-size: 0.8rem
 .home-section-container
     background-color: $secondary-bg
     width: 100%
+    height: 100%
+    padding: 0 1.5rem
+    .home-button-container
+        margin-top: 1.5rem
+        width: 70%
+        padding: 0.7rem
+        .friends-home-button
+            @include buttons($bg-color: transparent)
+            margin-right: 1rem
+            
+            
     

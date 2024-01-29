@@ -142,6 +142,7 @@ export default (httpServer) => {
     })
     socket.on('disconnect', async () => {
       const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
+      console.log('DISCONNECT', decrStatusCount)
       if(decrStatusCount<=0){
         const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Offline'}, {new:true})
         .populate({path:'friends.friend', select:'status'})
