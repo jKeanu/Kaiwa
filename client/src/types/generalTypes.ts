@@ -26,16 +26,9 @@ export type Friend = {
         lastMessage: number,
         _id:string
     },
-    friend:{
-        displayName:string,
-        friendTag:string,
-        photo:string,
-        _id:string,
-        status:string,
-    },
+    friend:FriendDetails,
     status:string,
     _id: string
-
 }
 
 export type User = {
@@ -188,11 +181,18 @@ export type LastMessageUpdate = {
 export type UserStatusUpdate= {
     channelId: string,
     channelNumber: string, 
-    userId: string
+    userId: string,
+    type?:string
 }
 
 
 //Sub-comp
 export type FriendListProps={
     friends:Friend[]
+}
+
+export type FriendReq={
+    friend:FriendDetails,
+    _id: string,
+    status:string
 }

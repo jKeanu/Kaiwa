@@ -1,5 +1,6 @@
 .friend-list-container
     width: 50%
+    padding: 0.5rem
     .friend-list
         height: 100%
         .friend-link-container
@@ -15,12 +16,26 @@
                     align-items: center
                     justify-content: center
                     margin-right: auto
-                    .friend-photo
-                        width: 1.7rem
-                        height: 1.7rem
-                        object-fit: cover
-                        border-radius: 1rem
+                    .friend-photo-status-container
+                        position: relative
+                        height: fit-content
+                        width: fit-content
                         margin-right: 0.4rem
+                        .friend-photo
+                            width: 1.7rem
+                            height: 1.7rem
+                            object-fit: cover
+                            border-radius: 1rem
+                        .friend-status
+                            height: 0.7rem
+                            width: 0.7rem
+                            border-radius: 0.35rem
+                            position: absolute
+                            bottom: 4px
+                            right: 1px
+                            border: solid 2px $secondary-bg
+                    
+
                     .user-displayName-status-container
                         display: flex
                         flex-direction: column

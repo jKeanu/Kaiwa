@@ -11,12 +11,15 @@ const LoginPage = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('')
+    const [containerVisible, setContainerVisible] = useState(false)
     const navigate = useNavigate()
     
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             navigate('/@me');
+        }else{
+            setContainerVisible(true)
         }
     }, [navigate]);
 
@@ -32,11 +35,11 @@ const LoginPage = () => {
         } catch (error: unknown) { 
             if (axios.isAxiosError(error)) { // Type guard for AxiosError
                 if(error.response?.status===401){
-                    setErrorMessage(' - ' + error.response?.data.message)
+                    setErrorMessage(error.response.data.message)
                 }else if(error.response?.status === 429){
                     setErrorMessage('Too many login attempts. Please try again later')
                 }else{
-                    setErrorMessage('Something went wron. Please try again later')
+                    setErrorMessage('Something went wrong. Please try again later')
                 }
 
             }else {
@@ -47,22 +50,28 @@ const LoginPage = () => {
 
     return (
         <div className='login-page-container'>
-            <div className='login-container'>
+            <div className={`login-container ${containerVisible?'visible':''}`}>
                 <h1 className='login-header'>Log In</h1>
                 <div className='login-form-container'>
                     <form className='login-form' onSubmit={handleLogin}>
-                        <label htmlFor='email' style={{color:errorMessage?'#ea8484':'#b9b9b9'}}>
-                            Email
-                            <strong>{errorMessage}</strong>
-                        </label>
-                        <input id='email' type="email" className="email" value={email} placeholder="Enter your email address" onChange={e => 
-                            setEmail(e.target.value)} required/>
-                        <label htmlFor='password' style={{color:errorMessage?'#ea8484':'#b9b9b9'}}>
-                            Password
-                            <strong>{errorMessage}</strong>
-                        </label>
-                        <input type="password" id='password' placeholder="Enter your password" value={password} onChange={e => 
-                            setPassword(e.target.value)}  required/>
+                        <div className="input-container">
+                            <input type="email" className='input-field' id='email' placeholder=" "
+                            value={email} onChange={e => setEmail(e.target.value)} required
+                            style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
+                            <label htmlFor="email" className="input-label">Email</label>
+                            {!errorMessage&&<span className='input-highlight'></span>}
+                            {errorMessage&&
+                            <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
+                        </div>
+                        <div className="input-container">
+                            <input type="password" className='input-field' id='password' placeholder=" "
+                            value={password} onChange={e => setPassword(e.target.value)} required
+                            style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
+                            <label htmlFor="password" className="input-label" >Password</label>
+                            {!errorMessage&&<span className='input-highlight'></span>}
+                            {errorMessage&&
+                            <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
+                        </div>
                         <button type="submit">Log In</button>
                     </form>
                 </div>

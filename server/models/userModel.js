@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     displayName:{
         type:String,
         required:[true, 'Must have a display name'],
-        maxlength:[10, 'Only maximum of 15 characters is allowed.'],
+        maxlength:[10, 'Display Name must contain no more than 10 characters'],
         minlength:[1, 'Please provide a display name']
     },
     friendTag:{
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
             validator: function (value){
                 return value.length === 6;
             },
-            message: 'Friend Tag must be exactly 6 characters.'
+            message: 'Friend Tag must be exactly 6 characters'
         }
     },
     email:{
@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
         required:[true, 'Must have a password'],
-        minlength:8,
+        minlength:[8, 'Password must contain at least 8 characters'],
         select:false
     },
     passwordConfirm:{
@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema({
             validator: function(val){
                 return val === this.password
             },
-            message:'confirm password is incorrect'
+            message:'Confirm password is incorrect'
         }
     },
     friends: [
@@ -87,7 +87,6 @@ const userSchema = new mongoose.Schema({
     passwordResetToken: String,
     passwordResetExpires: Date,
 })
-
 
 
 //combination of friendTag and username has to be unique

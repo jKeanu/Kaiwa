@@ -9,7 +9,11 @@ const FriendList:React.FC<FriendListProps>=({friends})=>{
                     <li key={friend.channel.channelNumber} className="friend-link-container">
                         <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`}>
                             <div className="friend-information">
-                                <img className='friend-photo' src={`/img/${friend.friend.photo}`}/>
+                                <div className="friend-photo-status-container">
+                                    <img className='friend-photo' src={`/img/${friend.friend.photo}`}/>
+                                    <div className='friend-status'
+                                     style={{backgroundColor:friend.friend.status==='Online'?'green':'#959595'}}></div>
+                                </div>
                                 <div className="user-displayName-status-container">
                                     <span className='friend-displayName'>{friend.friend.displayName}</span>
                                     {friend.friend.status==='Online'?

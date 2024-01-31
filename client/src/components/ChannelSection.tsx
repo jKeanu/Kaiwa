@@ -48,10 +48,11 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     }
 
     //fetching channel data 
-    const {data:channelData, error: channelError} = useSWR<ChannelDataStatus>(
+    const {data:channelData, error: channelError, isLoading:channelIsLoading} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
         channelFetcher(endpoint, headers)
     )
+
 
     useEffect(() => {
         if (channelData) {
@@ -60,7 +61,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
         }else if (channelError) {
             console.log('ERRORZZZZZZZZZ');
         }
-    }, [channelData, channelError])
+    }, [channelData, channelError, channelIsLoading])
+
 
     const { data: messagesData, error: messagesError } = useSWR<ChannelMessagesStatus>(
         messageCacheKey, (endpoint:string) =>
@@ -293,6 +295,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     }
 
     return (
+        <>
+        {(currentChannel&&messagesData)?
         <section className='right-home-section'>
             <section className="message-section">
                 <nav className="channel-nav">
@@ -411,7 +415,18 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                     }
                 </ul>
             </section>
-        </section>
+        </section>:
+        <section className="right-home-section">
+            <section className="message-section">
+                <nav className="channel-nav">
+
+                </nav>
+            </section>
+            <section className="channel-members-section">
+                <h2 className="channel-members-header">Members</h2>
+            </section>
+        </section>}
+        </>
     )
 }
 

@@ -11,9 +11,9 @@ const handleDuplicateFieldsDB = err => {
     const {email, displayName, friendTag} = err.keyValue
     let message
     if(email){
-        message = `The email ${email} is already taken. Please use a different email!`;
+        message = `The email ${email} is already taken.`
     }else if(displayName&&friendTag){
-        message = `The user with display name ${displayName} with friend tag ${friendTag}. Please use a different friend tag`;
+        message = `The user with display name ${displayName} with friend tag ${friendTag} is already taken.`
     }
     return new AppError(message, 400);
 };
@@ -24,7 +24,7 @@ const handleValidationErrorDB = err => {
         return new AppError("Invalid Input", 400)
     }
     const errors = Object.values(err.errors).map(el => el.message);
-    const message = `Invalid input data. ${errors.join('. ')}`;
+    const message = `Invalid input. ${errors.join('. ')}`;
     return new AppError(message, 400);
 };
 

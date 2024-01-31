@@ -39,7 +39,6 @@ export default (httpServer) => {
   io.on('connection', async (socket) => {
     const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
     const incrStatusCount = await redisClient.incr(`user:${verifiedCurrentUserId}:connections`)
-    console.log(incrStatusCount, '-----')
     if(incrStatusCount === 1){
       const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Online'}, {new:true})
         .select('friends groups')
@@ -47,18 +46,20 @@ export default (httpServer) => {
         .populate({path:'friends.channel', select:'channelNumber'})
         .populate({path:'groups', select:'channelNumber'})
       const filteredFriends = [...currentUserData.friends].filter(friend=>friend.status==='Friend')
-      const friendChannel = filteredFriends.map(friend=>friend.channel)
-      const channels = [...friendChannel, ...currentUserData.groups]
-      channels.forEach(channel=>{
+      const friendChannels = filteredFriends.map(friend=>friend.channel)
+      friendChannels.forEach(channel=>{
+        io.to(`channel-${channel._id}`).emit(`user_status_update_online`,
+        {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber, type:'Friend'})
+      })
+      const groupChannels = [...currentUserData.groups]
+      groupChannels.forEach(channel=>{
         io.to(`channel-${channel.id}`).emit(`user_status_update_online`,
         {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
       })
     }
-
     socket.on('joinRoom', (channelNumber) => {
       socket.join(channelNumber);
     });
-
     socket.on('channelLiveUpdates', (channelIds)=>{
       channelIds.forEach(channelId=>{
         socket.join(`channel-${channelId}`)
@@ -142,16 +143,20 @@ export default (httpServer) => {
     })
     socket.on('disconnect', async () => {
       const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
-      console.log('DISCONNECT', decrStatusCount)
+      console.log('OFFLINE', decrStatusCount)
       if(decrStatusCount<=0){
         const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Offline'}, {new:true})
         .populate({path:'friends.friend', select:'status'})
         .populate({path:'friends.channel', select:'channelNumber'})
         .populate({path:'groups', select:'channelNumber'})
         const filteredFriends = [...currentUserData.friends].filter(friend=>friend.status==='Friend')
-        const friendChannel = filteredFriends.map(friend=>friend.channel)
-        const channels = [...friendChannel, ...currentUserData.groups]
-        channels.forEach(channel=>{
+        const friendChannels = filteredFriends.map(friend=>friend.channel)
+        friendChannels.forEach(channel=>{
+          socket.to(`channel-${channel.id}`).emit(`user_status_update_offline`,
+          {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber, type:'Friend'})
+        })
+        const groupChannels = [...currentUserData.groups]
+        groupChannels.forEach(channel=>{
           socket.to(`channel-${channel.id}`).emit(`user_status_update_offline`,
           {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
         })

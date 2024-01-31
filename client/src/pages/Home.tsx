@@ -9,7 +9,7 @@ import {User, Channel,
         Friend, UserDataStatus, 
         FriendDetails, ChannelDataStatus, 
         ChannelMemberUpdate, LastMessageUpdate,
-        ChannelMessagesStatus, UserStatusUpdate} 
+        ChannelMessagesStatus, UserStatusUpdate, FriendReq} 
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
 import { getCurrentUser } from '../services/apiService'
@@ -46,8 +46,8 @@ const HomePage:React.FC = ()=>{
             //we need to determine if the webpage is fully visible before connecting to the socket since,
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
-            console.log('ENTERRRRRRRRRR')
             if (token) {
+                console.log('Did it run?')
                 const socket = io('http://localhost:3001', { query: { token } });
                 setSocket(socket);
                 return ()=>{
@@ -67,6 +67,8 @@ const HomePage:React.FC = ()=>{
                         //Save the logged in user's data to a state
                         setUserData(res.data.user)
                         const groupChannels:Channel[] = [...res.data.user.groups??[]]
+                        const friendReqs:FriendReq[] = res.data.user?.friends?.filter(friend=>friend.status !== 'Friend')??[]
+                        
                         const friendChannels:Friend[] = res.data.user?.friends?.filter(friend => friend.status === 'Friend')??[]
                         //Since the implementation of channels of friend channel is different to group channel is different
                         //we need to change the structure of the friends array to match group array so we could use sort.
@@ -225,15 +227,17 @@ const HomePage:React.FC = ()=>{
                         return {status:channelDataCache.status, channel:updateChannelDataCache}
                     })
                     //check if the user who went online is also your friend based on the friend channel id
-                    const friendChannelId = friendChannelIds.find(friendChannelId => friendChannelId === data.channelId)
-                    if(friendChannelId){
-                        setFriendChannels(prevFriendChannels=>{
-                            const updateFriendChannel = [...prevFriendChannels]
-                            const friendIndex = updateFriendChannel
-                                .findIndex(friendchannel=>friendchannel.channel._id===friendChannelId)
-                            updateFriendChannel[friendIndex].friend.status = 'Online'
-                            return updateFriendChannel
-                        })
+                    if(data.type==='Friend'){
+                        const friendChannelId = friendChannelIds.find(friendChannelId => friendChannelId === data.channelId)
+                        if(friendChannelId){
+                            setFriendChannels(prevFriendChannels=>{
+                                const updateFriendChannel = [...prevFriendChannels]
+                                const friendIndex = updateFriendChannel
+                                    .findIndex(friendchannel=>friendchannel.channel._id===friendChannelId)
+                                updateFriendChannel[friendIndex].friend.status = 'Online'
+                                return updateFriendChannel
+                            })
+                        }
                     }
                 }
                 socket.on('user_status_update_online', handleUserOnlineStatus)
@@ -241,8 +245,7 @@ const HomePage:React.FC = ()=>{
                     socket.removeListener('user_status_update_online', handleUserOnlineStatus);
                 }
                 return cleanup
-
-        }},[socket, friendChannels])
+        }},[socket, friendChannelIds])
         //When a friend or a member of the group you're part of went offline
         useEffect(()=>{
             if(socket){
@@ -258,13 +261,27 @@ const HomePage:React.FC = ()=>{
                         channelMembers[channelMemberIndex] = {...channelMembers[channelMemberIndex], status:'Offline'}
                         return {status:channelDataCache.status, channel:updateChannelDataCache}
                     })
+                    if(data.type==='Friend'){
+                        console.log('hmmm, offline?')
+                        const friendChannelId = friendChannelIds.find(friendChannelId => friendChannelId === data.channelId)
+                        console.log(friendChannelId, '----')
+                        if(friendChannelId){
+                            setFriendChannels(prevFriendChannels=>{
+                                const updateFriendChannel = [...prevFriendChannels]
+                                const friendIndex = updateFriendChannel
+                                    .findIndex(friendchannel=>friendchannel.channel._id===friendChannelId)
+                                updateFriendChannel[friendIndex].friend.status = 'Offline'
+                                return updateFriendChannel
+                            })
+                        }
+                    }
                 }
                 socket.on('user_status_update_offline', handleUserOfflineStatus)
                 const cleanup =():void =>{
                     socket.removeListener('user_status_update_offline', handleUserOfflineStatus);
                 }
                 return cleanup
-        }},[socket])
+        }},[socket, friendChannelIds])
 
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
@@ -289,8 +306,8 @@ const HomePage:React.FC = ()=>{
                     </main>
                     :
                 <main className='homepage'>
-                    <section className='right-home-section'></section>
                     <section className='left-home-section'></section>
+                    <section className='home-section-container'></section>
                 </main>
                 }
             </>
