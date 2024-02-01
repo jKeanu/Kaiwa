@@ -1,17 +1,17 @@
 .left-home-section
     background-color: $primary-bg
     border-right: 1px solid rgba(142, 142, 142, 0.3)
-    height: 100vh
     font-family: 'Open Sans', sans-serif
-    width: 15rem
+    width: 17rem
     flex-shrink: 0 //or min-width
     display: flex
     flex-direction: column
-    max-height: 100vh
+    max-height: 100%
     .upper-left-section-container
         box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.6)
         padding: 0 0.5rem
-        height:5.5rem
+        height: 5.5rem
+        flex-shrink: 0
         .logo-container
             height: 3.5rem
         .search-conversation-container
@@ -19,7 +19,6 @@
             align-content: center
             border-style: none
             justify-content: center
-            margin-bottom: 0.3rem
             background-color: rgba(37, 45, 55, 1)
             border-radius: 1rem
             padding: 0 0.45rem
@@ -29,7 +28,6 @@
                 border-style: none
                 color: $white-text
                 padding-left: 1rem
-                margin-top: 0.125rem
                 font-family: 'Open Sans', sans-serif
                 font-size: 0.8rem
                 height: 1.5rem
@@ -38,25 +36,30 @@
                     outline: none
                 &::placeholder
                     font-size: 0.7rem
-                    font-family: 'Open Sans', sans-serifZ
+                    font-family: 'Open Sans', sans-serif
+            .search-conversation-image
+                height: 1.2rem
+                width: 1.2rem
+                align-self: center
     .channel-list-container
-        height: calc( 100% - 10.5rem )
+        height: 100%
+        overflow-y: scroll
+        &::-webkit-scrollbar
+            width: 0.4rem
+        &::-webkit-scrollbar-track
+            background-color: rgb(36, 47, 67)
+        &::-webkit-scrollbar-thumb
+            background-color: rgb(81, 84, 110)
+            border-radius: 0.2rem
+            transition: background-color 0.3s ease-in-out
         .channel-links
             display: flex
             flex-direction: column
             overflow: auto
-            height: 100%
             padding: 0.5rem 0
-            &::-webkit-scrollbar
-                width: 0.4rem
-            &::-webkit-scrollbar-thumb
-                background-color: rgb(89, 91, 111)
-                border-radius: 0.2rem
-                transition: background-color 0.3s ease-in-out
             .channel-link-container
                 .channel-link
                     text-decoration: none
-                    font-size: 1.2rem
                     display: flex
                     align-items: center
                     justify-content: flex-start
@@ -73,6 +76,7 @@
                     .channel-name
                         font-family: 'Raleway', sans-serif
                         color: white
+                        font-size: 1.1rem
     .user-info-container
         border-top: 1px solid $white-line
         display: flex
@@ -80,6 +84,8 @@
         align-items: center
         padding: 1rem 0.5rem
         height: 5rem
+        flex-shrink: 0
+        flex-grow: 0
         .user-info
             display: flex
             flex-direction: row

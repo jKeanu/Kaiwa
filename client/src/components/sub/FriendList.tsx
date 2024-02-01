@@ -1,11 +1,21 @@
 import { FriendListProps } from "../../types/generalTypes";
 import { Link } from "react-router-dom";
+import { useState, useMemo } from "react";
 
 const FriendList:React.FC<FriendListProps>=({friends})=>{
+    const [searchQuery, setSearchQuery] = useState<string>('')
+
+    const filteredFriends = useMemo(()=>{
+        return [...friends].filter(friend=>friend.friend.displayName.toLowerCase().includes(searchQuery.toLowerCase()))
+    }, [searchQuery, friends])
+
+
     return(
         <div className="friend-list-container">
+            <input className="friend-list-search-input" placeholder="Search friend"
+            onChange={(e)=>setSearchQuery(e.target.value)} value={searchQuery}/>
             <ul className="friend-list">
-                {friends.map(friend=>(
+                {filteredFriends.map(friend=>(
                     <li key={friend.channel.channelNumber} className="friend-link-container">
                         <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`}>
                             <div className="friend-information">
@@ -22,8 +32,8 @@ const FriendList:React.FC<FriendListProps>=({friends})=>{
                                     <span className="friend-status">Offline</span>}
                                 </div>
                             </div>
-                            <button className="unfriend-friend-button">
-                                <img src="/img/unfriend.svg"/>
+                            <button className="friend-more-button">
+                                <img src="/img/friend-more.svg"/>
                             </button>
                         </Link>
                     </li>

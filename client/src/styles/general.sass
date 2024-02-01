@@ -11,8 +11,12 @@ ul
     padding: 0
     margin: 0
 
-div 
-    cursor: default
-
 dialog
     border: none
+
+input
+    &:focus
+        outline: none
+    &::placeholder
+        font-size: 0.7rem
+        font-family: 'Open Sans', sans-serif

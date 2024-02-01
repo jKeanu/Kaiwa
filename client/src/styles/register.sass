@@ -15,9 +15,6 @@
         &:not(:placeholder-shown) ~ .input-label
             top:-20px
             font-size: 16px
-        &:focus ~ .input-highlight,
-        &:not(:placeholder-shown) ~ .input-highlight
-            transform: scaleX(1)
     .input-label
         position: absolute
         top: 5px
@@ -27,17 +24,6 @@
         pointer-events: none
         font-family: 'Raleway', sans-serif
         will-change: top, font-size
-    .input-highlight
-        position: absolute
-        bottom: 0
-        left: 0
-        height: 2px
-        width: 100%
-        background-color: $primary-bg
-        transform-origin: left
-        transform: scaleX(0)
-        transition: all 0.3s ease
-        will-change: transform
     .input-error-message
         position: absolute
         top:105%
@@ -86,7 +72,7 @@
                 .input-container
                     @include input()
                 button
-                    background-color: rgba(67, 77, 89, 1)
+                    background-color: #37404d
                     color: white
                     width: 16rem
                     height: 2.2rem

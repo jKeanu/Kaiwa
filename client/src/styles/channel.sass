@@ -129,7 +129,6 @@
             display: flex
             justify-content: flex-end
             align-items: center
-            height: 2.7rem
             margin-bottom: auto
             .channel-nav-info-container
                 display: flex
@@ -167,7 +166,7 @@
             &::-webkit-scrollbar
                 width: 0.4rem
             &::-webkit-scrollbar-thumb
-                background-color: rgb(41, 43, 58)
+                background-color: rgb(81, 84, 110)
                 border-radius: 0.2rem
                 transition: background-color 0.3s ease-in-out
             .user-message-info-container
@@ -177,9 +176,9 @@
                 margin: 0.5rem 0
                 column-gap: 0.5rem
                 .sender-photo
-                    width: 2rem
-                    height: 2rem
-                    border-radius: 1rem
+                    width: 2.3rem
+                    height: 2.3rem
+                    border-radius: 1.15rem
                     object-fit: cover
                     align-self: start
                     margin-top: 0.2rem
@@ -193,7 +192,7 @@
                         .message-content
                             margin: 0.1rem 0       
                             font-family: 'Open Sans', sans-serif
-                            font-size: 0.8rem
+                            font-size: 0.9rem
                             font-weight: 300
                             word-break: break-word
                             width: fit-content
@@ -210,7 +209,7 @@
                             font-family: 'Open Sans', sans-serif
                         .message-date
                             font-family: 'Open Sans', sans-serif
-                            font-size: 0.5rem
+                            font-size: 0.7rem
                             color: rgb(134, 134, 134)
             //my message
             .my-message-info-container
@@ -221,9 +220,9 @@
                 column-gap: 0.5rem
                 .sender-photo
                     order: 2
-                    width: 2rem
-                    height: 2rem
-                    border-radius: 1rem
+                    width: 2.3rem
+                    height: 2.3rem
+                    border-radius: 1.15rem
                     object-fit: cover
                     align-self: start
                     margin-top: 0.2rem
@@ -267,24 +266,29 @@
     //members 
     .channel-members-section
         border-left: 1px solid $white-line
-        width: 12rem
-        background-color: transparent
+        width: 14rem
         flex-shrink: 0
-        padding: 1rem 0.5rem
+        padding: 1rem 0.5rem 0 0.5rem
         max-height: 100%
         display: flex
         flex-direction: column
         .channel-members-header
             font-family: 'Bebas Neue', sans-serif
-            font-size: 0.9rem
+            font-size: 1rem
             font-weight: 300
             margin:0
             border-bottom: 1px solid $white-line
         .member-list
             height: 100%
-            overflow-y: auto
+            overflow-y: scroll
             margin:0
             padding-top: 1rem
+            &::-webkit-scrollbar
+                width: 0.4rem
+            &::-webkit-scrollbar-thumb
+                background-color: rgb(81, 84, 110)
+                border-radius: 0.2rem
+                transition: background-color 0.3s ease-in-out
             .member-container
                 padding: 0.25rem 0
                 .member-popup-button
@@ -311,7 +315,7 @@
                             border-radius: 0.4rem
                             border: 0.2rem solid $secondary-bg
                     .member-name
-                        font-size: 1rem
+                        font-size: 1.1rem
                         font-family: 'Raleway', sans-serif
 
 
