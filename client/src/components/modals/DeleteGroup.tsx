@@ -5,10 +5,10 @@ import { deleteGroup } from "../../services/apiService"
 
 const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton})=>{
 
-    const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>, token:string, currChannelId:string):Promise<void>=>{
+    const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
         try{
-            const res:AxiosResponse<void> = await deleteGroup(token, currChannelId)
+            const res:AxiosResponse<void> = await deleteGroup(token, channelId)
             if(res.status === 200){
 
             }
@@ -24,7 +24,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
                 Are you sure you want to delete this Channel?
             </div>
             <div className="delete-group-buttons-container">
-                <button onClick={(e)=>handleGroupDelete(e, token, channelId)} className="confirm-button">
+                <button onClick={handleGroupDelete} className="confirm-button">
                     Delete Group
                 </button>
                 <button className="cancel-button" onClick={handleCloseButton}>

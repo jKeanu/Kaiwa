@@ -56,7 +56,7 @@ export const addFriend = catchAsync(async (req, res, next)=>{
         //If the other user added you, the status is Sent
         if(findFriendshipStatus(req.user._id, addUser, 'Sent')){
             await session.abortTransaction();
-            return next(new AppError(`${displayName} have sent you a friend request, check the notifaction for more info.`, 409))
+            return next(new AppError(`${displayName} have already sent you a friend request.`, 409))
         }
         //If already friends with the user, the status is Friend
         if(findFriendshipStatus(req.user._id, addUser, 'Friend')){
@@ -128,11 +128,12 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
                 {'friends.$.status':"Friend", 
                 'friends.$.channel':friendChannel[0]._id
             }},
-            {session})
+            {session, new:true})
         await acceptUser.save({session, validateBeforeSave:true})
-        await session.commitTransaction(); 
+        await session.commitTransaction()
         res.status(200).json({
-            status:"success"
+            status:"success",
+            newChannel: friendChannel
         }
         )}catch(err){
             console.log('ERROR!!!!', err)

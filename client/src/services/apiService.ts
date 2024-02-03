@@ -48,6 +48,18 @@ export const leaveGroup = async(token:string, channelId:string):Promise<AxiosRes
     return axios.delete(`${API_URL}/api/v1/me/groups/${channelId}/leave`, config)
 }
 
+export const addFriend = async(token:string, displayName:string, friendTag:string):Promise<AxiosResponse<{status:string}>>=>{
+    const config={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    }
+    return axios.post(`${API_URL}/api/v1/me/friends`, {displayName, friendTag}, config)
+}
+
+export const acceptFriend = async(token:string, pendingUserId:string)=>{
+    axios.patch(`${API_URL}/api/v1/me/friends/${pendingUserId}`, {headers:{'Authorization': `Bearer ${token}`}})
+}
 
 export const channelFetcher = (endpoint: string, headers: Record<string, string> = {}) => 
     axios.get(`${API_URL}/${endpoint}`, { headers}).then(res => res.data);
@@ -69,3 +81,5 @@ export const getCurrentUser = async(token:string|null):Promise<AxiosResponse<Use
 export const currUserDataFetcher = (endpoint:string, token:string|null)=>
     axios.get<{status:string, user:User}>(`${API_URL}/${endpoint}`, {headers:{'Authorization': `Bearer ${token}`}})
             .then(response=>response.data)
+
+

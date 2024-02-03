@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState} from 'react';
 import { Link } from 'react-router-dom';
 import axios, {AxiosResponse} from 'axios';
 import {useNavigate} from 'react-router-dom'
@@ -27,8 +27,9 @@ const RegisterPage = () => {
     }, [navigate])
     //The syntax could also be
     //const handleRegister: (e: FormEvent<HTMLFormElement>) => Promise<void> = async (e) =>
-    const handleRegister = async (e:FormEvent<HTMLFormElement>):Promise<void> => {
+    const handleRegister = async (e:React.FormEvent<HTMLFormElement>):Promise<void> => {
         e.preventDefault();
+        setErrorMessage({type:'', message:''})
         try {
             const res:AxiosResponse<AuthStatus> = await registerUser(formData)
             console.log(res)

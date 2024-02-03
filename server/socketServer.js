@@ -57,20 +57,32 @@ export default (httpServer) => {
         {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
       })
     }
-    socket.on('joinRoom', (channelNumber) => {
+
+    //JOIN ROOM
+    socket.on('personal_live_update', (userId)=>{
+      socket.join(`user-${userId}`)
+    })
+
+    socket.on('join_channel_room', (channelNumber) => {
       socket.join(channelNumber);
     });
-    socket.on('channelLiveUpdates', (channelIds)=>{
+
+    socket.on('channel_live_updates', (channelIds)=>{
       channelIds.forEach(channelId=>{
         socket.join(`channel-${channelId}`)
       })
     })
 
-    socket.on('leaveRoom', (channelNumber) => {
+    //Leave Room
+    socket.on('leave_personal_live_update', (userId)=>{
+      socket.leave(`user-${userId}`)
+    })
+
+    socket.on('leave_channel_room', (channelNumber) => {
       socket.leave(channelNumber);
     });
 
-    socket.on('leaveChannelLiveUpdates', (channelIds)=>{
+    socket.on('leave_channel_live_updates', (channelIds)=>{
       channelIds.forEach(channelId=>{
         socket.leave(`channel-${channelId}`)
       })

@@ -30,6 +30,7 @@ const HomePage:React.FC = ()=>{
         const [socket, setSocket] = useState<Socket>()
         const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
+        const [userReqs, setUserReqs] = useState<FriendReq[]>([])
         const location = useLocation()
 
         const friendChannelIds = useMemo(()=>{
@@ -68,7 +69,7 @@ const HomePage:React.FC = ()=>{
                         setUserData(res.data.user)
                         const groupChannels:Channel[] = [...res.data.user.groups??[]]
                         const friendReqs:FriendReq[] = res.data.user?.friends?.filter(friend=>friend.status !== 'Friend')??[]
-                        
+                        setUserReqs(friendReqs)
                         const friendChannels:Friend[] = res.data.user?.friends?.filter(friend => friend.status === 'Friend')??[]
                         //Since the implementation of channels of friend channel is different to group channel is different
                         //we need to change the structure of the friends array to match group array so we could use sort.
@@ -140,15 +141,25 @@ const HomePage:React.FC = ()=>{
             }
         }, [token, navigate]);
 
-        //Join room for a live update
+        //LIVE UPDATES
+        useEffect(()=>{
+            if(socket&&userData){
+                socket.emit('personal_live_update', userData._id)
+                return ()=>{
+                    socket.emit('leave_personal_live_update', userData._id)
+                }
+            }
+        }, [userData, socket])
+
         useEffect(()=>{
             if(channels&&socket){
-                socket.emit('channelLiveUpdates', ChannelIds)
+                socket.emit('channel_live_updates', ChannelIds)
                 return ()=>{
-                    socket.emit('leaveChannelLiveUpdates', ChannelIds)
+                    socket.emit('leave_channel_live_updates', ChannelIds)
                 }
             }
         }, [channels, socket])
+
 
         useEffect(()=>{
             if(socket){
@@ -262,9 +273,7 @@ const HomePage:React.FC = ()=>{
                         return {status:channelDataCache.status, channel:updateChannelDataCache}
                     })
                     if(data.type==='Friend'){
-                        console.log('hmmm, offline?')
                         const friendChannelId = friendChannelIds.find(friendChannelId => friendChannelId === data.channelId)
-                        console.log(friendChannelId, '----')
                         if(friendChannelId){
                             setFriendChannels(prevFriendChannels=>{
                                 const updateFriendChannel = [...prevFriendChannels]
@@ -295,7 +304,7 @@ const HomePage:React.FC = ()=>{
                     <main className='homepage'>
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                         <Routes>
-                            <Route index element={<HomeSection friends={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
+                            <Route index element={<HomeSection userReqs={userReqs} friends={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
                             <Route path="channels/:channelNumber"
                             element={<ChannelSection
                             socket={socket}

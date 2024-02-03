@@ -2,18 +2,19 @@ import { FriendListProps } from "../../types/generalTypes";
 import { Link } from "react-router-dom";
 import { useState, useMemo } from "react";
 
-const FriendList:React.FC<FriendListProps>=({friends})=>{
+const FriendList:React.FC<FriendListProps>=({friends, token})=>{
     const [searchQuery, setSearchQuery] = useState<string>('')
-
     const filteredFriends = useMemo(()=>{
         return [...friends].filter(friend=>friend.friend.displayName.toLowerCase().includes(searchQuery.toLowerCase()))
     }, [searchQuery, friends])
 
-
     return(
         <div className="friend-list-container">
-            <input className="friend-list-search-input" placeholder="Search friend"
-            onChange={(e)=>setSearchQuery(e.target.value)} value={searchQuery}/>
+            <div className="friend-list-top-section">
+                <h2 className="friends-header">Friends</h2>
+                <input className="friend-list-search-input" placeholder="Search friend"
+                onChange={(e)=>setSearchQuery(e.target.value)} value={searchQuery}/>
+            </div>
             <ul className="friend-list">
                 {filteredFriends.map(friend=>(
                     <li key={friend.channel.channelNumber} className="friend-link-container">

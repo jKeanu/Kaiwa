@@ -79,10 +79,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     useEffect(() => {
         if (socket && channelNumber) {
             // Join the room
-            socket.emit('joinRoom', channelNumber);
+            socket.emit('join_channel_room', channelNumber);
             // Handle socket disconnection or leaving the room when the component unmounts or changes
             return () => {
-                socket.emit('leaveRoom', channelNumber);
+                socket.emit('leave_channel_room', channelNumber);
             }
         }
     }, [socket, channelNumber]);

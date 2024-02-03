@@ -69,6 +69,12 @@ export type FriendDetails={
     status:string
 }
 
+export type FriendReq={
+    friend:FriendDetails,
+    _id: string,
+    status:string
+}
+
 export type LeftSectionProps ={
     channels: Channel[];  // Assuming Channel is a defined type or interface
     handleLogout: (e:React.MouseEvent<HTMLButtonElement>) => void;
@@ -83,6 +89,7 @@ export type ChannelSectionProps={
 }
 
 export type HomeSectionProps={
+    userReqs:FriendReq[]
     friends:Friend[],
     currUserId: string,
     socket:Socket|undefined,
@@ -188,11 +195,15 @@ export type UserStatusUpdate= {
 
 //Sub-comp
 export type FriendListProps={
-    friends:Friend[]
+    friends:Friend[],
+    token: string
 }
 
-export type FriendReq={
-    friend:FriendDetails,
-    _id: string,
-    status:string
+export type FriendReqProps={
+    token:string,
+    pendingRequests:FriendReq[]
+}
+
+export type AddFriendProps={
+    token:string
 }

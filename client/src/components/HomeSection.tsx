@@ -1,15 +1,18 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { HomeSectionProps } from "../types/generalTypes"
 import FriendList from "./sub/FriendList"
+import FriendReq from "./sub/FriendReq"
+import AddFriend from "./sub/AddFriend"
 
-const HomeSection:React.FC<HomeSectionProps>=({friends, token, currUserId, socket})=>{
+const HomeSection:React.FC<HomeSectionProps>=({friends, token, currUserId, socket, userReqs})=>{
+    const [currComponent, setCurrComponent] = useState<string>('friendReq')
 
     const friendReqs = useMemo(()=>{
-        return [...friends].filter(friend=>friend.status==='Pending')
+        return [...userReqs].filter(user=>user.status==='Pending')
     }, [friends])
 
     const sentReqs = useMemo(()=>{
-        return [...friends].filter(friend=>friend.status==='Sent')
+        return [...userReqs].filter(user=>user.status==='Sent')
     }, [friends])
 
     const sortedFriends = useMemo(()=>{
@@ -20,10 +23,25 @@ const HomeSection:React.FC<HomeSectionProps>=({friends, token, currUserId, socke
 
     return(
         <section className="home-section-container">
-            <h1 className="friends-header">Friends</h1>
             <section className="friend-section">
-                <FriendList friends={sortedFriends}/>
-        
+                <FriendList friends={sortedFriends} token={token}/>
+                <div className="friend-connection-container">
+                    <div className="home-button-container">
+                        <button className="add-friend-button" onClick={()=>setCurrComponent('addFriend')}>
+                            Add Friend
+                        </button>
+                        <button className="friend-request-button" onClick={()=>setCurrComponent('friendReq')}>
+                            Friend Requests
+                            {friendReqs.length>0&&
+                            <div className="request-indicator">
+                            </div>}
+                        </button>
+                    </div>
+                    {currComponent==='friendReq'&&
+                    <FriendReq token={token} pendingRequests={friendReqs}/>}
+                    {currComponent==='addFriend'&&
+                    <AddFriend token={token}/>}
+                </div>
             </section>
         </section>
     )

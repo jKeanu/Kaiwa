@@ -4,7 +4,7 @@ import { AxiosResponse } from "axios"
 
 const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currChannelMembersId, socket, channelNumber})=>{
     const isFriendInGroup:FriendDetails[] = friends.filter(friend => !currChannelMembersId.includes(friend._id))
-    const handleInvite = async (e:React.MouseEvent<HTMLButtonElement>, token:string, channelId:string, friend:FriendDetails):Promise<void> => {
+    const handleInvite = async (e:React.MouseEvent<HTMLButtonElement>, friend:FriendDetails):Promise<void> => {
         e.preventDefault()
         try{
             const res:AxiosResponse<{status:string}> = await inviteFriendtoGroup(token, channelId, friend._id)
@@ -28,7 +28,7 @@ const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currCh
                         <li key={index} className="invite-friend-info">
                             <img src={`/img/${friend.photo}`}/>
                             <div className="friend-invite-display-name">{friend.displayName}</div>
-                            <button onClick={(e)=>handleInvite(e, token, channelId, friend)} className="friend-invite-button">
+                            <button className="friend-invite-button" >
                                 Invite
                             </button>
                         </li>
