@@ -304,7 +304,8 @@ const HomePage:React.FC = ()=>{
                     <main className='homepage'>
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                         <Routes>
-                            <Route index element={<HomeSection userReqs={userReqs} friends={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
+                            <Route index setUserReqs={setUserReqs} setFriendsChannels={setFriendChannels} element={<HomeSection userReqs={userReqs} 
+                            friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
                             <Route path="channels/:channelNumber"
                             element={<ChannelSection
                             socket={socket}

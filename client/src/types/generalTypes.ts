@@ -92,10 +92,12 @@ export type ChannelSectionProps={
 
 export type HomeSectionProps={
     userReqs:FriendReq[]
-    friends:Friend[],
+    friendChannels:Friend[],
     currUserId: string,
     socket:Socket|undefined,
-    token:string
+    token:string,
+    setFriendChannels: React.Dispatch<React.SetStateAction<Friend[]>>,
+    setUserReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>
 }
 
 export type ChannelMember={

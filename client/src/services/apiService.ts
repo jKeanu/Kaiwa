@@ -57,9 +57,9 @@ export const addFriend = async(token:string, displayName:string, friendTag:strin
     return axios.post(`${API_URL}/api/v1/me/friends`, {displayName, friendTag}, config)
 }
 
-export const acceptFriend = async(token:string, pendingUserId:string)=>{
+export const acceptFriend = async(token:string, pendingUserId:string)=>
     axios.patch(`${API_URL}/api/v1/me/friends/${pendingUserId}`, {headers:{'Authorization': `Bearer ${token}`}})
-}
+
 
 export const channelFetcher = (endpoint: string, headers: Record<string, string> = {}) => 
     axios.get(`${API_URL}/${endpoint}`, { headers}).then(res => res.data);
