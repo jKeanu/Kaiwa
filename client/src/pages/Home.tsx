@@ -48,7 +48,6 @@ const HomePage:React.FC = ()=>{
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
             if (token) {
-                console.log('Did it run?')
                 const socket = io('http://localhost:3001', { query: { token } });
                 setSocket(socket);
                 return ()=>{
@@ -81,6 +80,7 @@ const HomePage:React.FC = ()=>{
                                 id:friend.channel.id,
                                 channelName: friend.friend.displayName,
                                 photo: friend.friend.photo,
+                                channelType: friend.channel.channelType
                             }
                         })
                         //In this case, we only need the friend information, not including the channel.

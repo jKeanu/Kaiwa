@@ -1,13 +1,13 @@
 import { AddFriendProps } from "../../types/generalTypes";
 import { addFriend } from "../../services/apiService";
 import { useState } from "react";
-import { AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 
 
 const AddFriend:React.FC<AddFriendProps>=({token})=>{
     const [displayName, setDisplayName] = useState('')
     const [friendTag, setFriendTag] = useState('')
-    const [notice, setNotice] = useState<{type:string, message:string}>({type:'', message:''})
+    const [requestStatus, setRequestStatus] = useState<{type:string, message:string}>()
     const [isSending, setIsSending] = useState(false)
     
     const handleAddFriend = async (e:React.FormEvent<HTMLFormElement>)=>{
@@ -16,12 +16,24 @@ const AddFriend:React.FC<AddFriendProps>=({token})=>{
         try{
             const res:AxiosResponse<{status:string}> = await addFriend(token, displayName, friendTag)
             if(res.data.status==='success'){
+                setRequestStatus({type:'success', message:'Successfully sent the request!'})
                 setDisplayName('')
                 setFriendTag('')
                 setIsSending(false)
             }
         }catch(err:unknown){
-
+            if(axios.isAxiosError(err)){
+                if(err.response){
+                    if(err.response.status===400 || err.response.status===404 || err.response.status===409){
+                        setRequestStatus({type:'error', message:err.response.data.message})
+                    }
+                }else{
+                    setRequestStatus({type:'error', message:'An unknown error occurred, please try again later.'})
+                }
+            }else{
+                setRequestStatus({type:'error', message:'An unknown error occurred, please try again later.'})
+            }
+            setIsSending(false)
         }
     }
     return(
@@ -31,10 +43,14 @@ const AddFriend:React.FC<AddFriendProps>=({token})=>{
                     <label htmlFor="displayName">Username</label>
                     <input autoComplete='off' value={displayName} onChange={(e)=>setDisplayName(e.target.value)} id="displayName" className="displayName-input"/>
                     <label htmlFor="friendTag">#</label>
-                    <input autoComplete="off" value={friendTag} onChange={(e)=>setFriendTag(e.target.value)} type="text" id="friendTag" className="friendTag-input"/>
+                    <input maxLength={6} autoComplete="off" value={friendTag} onChange={(e)=>setFriendTag(e.target.value.toUpperCase())} type="text" id="friendTag" className="friendTag-input"/>
                     <button type="submit" className="add-friend-submit-button">{isSending?'Sending...':'Send Friend Request'}</button>
                 </div>
             </form>
+            {requestStatus&&
+            <span className="request-status" style={{color: `${requestStatus.type==='success'?'green':'#c93a3a'}`}}>
+                {requestStatus.message}
+            </span>}
         </section>
     )
 }

@@ -18,7 +18,7 @@ export const getFriend = catchAsync(async(req, res, next)=>{
     }
     //Determine if the current user is friend with the other user
     if(!findFriendshipStatus(req.user._id, friendUser, 'Friend')){
-        return next(new AppError(`You are not friends with the user to perform this action.`, 403))
+        return next(new AppError(`You are not friends with the user to perform this action.`, 409))
     }
     res.status(200).json({
         status:"success",
@@ -61,7 +61,7 @@ export const addFriend = catchAsync(async (req, res, next)=>{
         //If already friends with the user, the status is Friend
         if(findFriendshipStatus(req.user._id, addUser, 'Friend')){
             await session.abortTransaction();
-            return next(new AppError(`You are already friends with ${displayName}.`, 403))
+            return next(new AppError(`You are already friends with ${displayName}.`, 409))
         }
         //Add a friend request (pending) status to the user
         addUser.friends.push({friend:req.user._id, status:"Pending"})
@@ -116,6 +116,10 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
         //it's value is the user document.
         isSent.status = "Friend"
         //Since both users are soon to be friend, we also need a channel on where they could communicate
+        //
+        //since create query accepts an array OR as a spread, we need to use the array 
+        //if we don't, it would see the {session} as another entry.
+        //In other words, distinguish between the documents to be created and the options object
         const friendChannel = await Channel.create([{
             members:[req.user._id, acceptUser._id],
             channelType: 'Friend'
@@ -129,11 +133,15 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
                 'friends.$.channel':friendChannel[0]._id
             }},
             {session, new:true})
+        const newChannel = await Channel.findById(friendChannel[0]._id)
+            .select('-__v')
+            .session(session)
+        //We just need the general
         await acceptUser.save({session, validateBeforeSave:true})
         await session.commitTransaction()
         res.status(200).json({
             status:"success",
-            newChannel: friendChannel
+            newChannel: newChannel
         }
         )}catch(err){
             console.log('ERROR!!!!', err)
@@ -158,7 +166,6 @@ export const unfriend = catchAsync(async(req, res, next)=>{
             await session.abortTransaction();
             return next(new AppError(`You are not friends with the user.`, 403))
         }
-
         await Channel.findOneAndDelete(
             //$all operator matches arrays that contain all the specified elements.
             {members:{ $all: [req.user._id, removeUser._id] }, channelType:'Friend'})

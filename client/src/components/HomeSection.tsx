@@ -5,7 +5,7 @@ import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
 
 const HomeSection:React.FC<HomeSectionProps>=({friends, token, currUserId, socket, userReqs})=>{
-    const [currComponent, setCurrComponent] = useState<string>('friendReq')
+    const [currComponent, setCurrComponent] = useState<string>('addFriend')
 
     const friendReqs = useMemo(()=>{
         return [...userReqs].filter(user=>user.status==='Pending')

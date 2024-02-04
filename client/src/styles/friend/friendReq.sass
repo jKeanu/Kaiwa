@@ -3,51 +3,56 @@
     box-shadow: 1px 2px 1px 3px rgba(0, 0, 0, 0.4)
     background-color: #1b1f275e
     margin-top: 0.3rem
-    .pending-request-container
-        padding: 0.5rem 1rem
-        height: 100%
-        .pending-request
+    overflow-y: scroll
+    padding: 0 1rem
+    &::-webkit-scrollbar
+        width: 0.4rem
+    &::-webkit-scrollbar-thumb
+        background-color: rgb(81, 84, 110)
+        border-radius: 0.2rem
+    .pending-request
+        display: flex
+        flex-direction: column
+        .pending-user-container
+            height: 3rem
             display: flex
-            flex-direction: column
-            .pending-user-container
-                height: 3rem
+            padding: 0.2rem
+            align-items: center
+            justify-content: start
+            border-top: 1px solid #6073a723 
+            .pending-user-information
                 display: flex
-                padding: 0.2rem
                 align-items: center
-                justify-content: start
-                .pending-user-information
+                justify-content: center
+                margin-right: auto
+                img
+                    height: 2rem
+                    width: 2rem
+                    object-fit: cover
+                    border-radius: 1rem
+                    margin-right: 0.3rem
+                span
+                    font-family: 'Raleway', sans-serif
+            .pending-request-button-container
+                display: flex
+                justify-content: center
+                align-items: center
+                button
+                    width: 2.2rem
+                    height: 2.2rem
+                    border: none
+                    background-color: transparent
+                    border-radius: 1.1rem
                     display: flex
-                    align-items: center
-                    justify-content: center
-                    margin-right: auto
-                    img
-                        height: 2rem
-                        width: 2rem
-                        object-fit: cover
-                        border-radius: 1rem
-                        margin-right: 0.3rem
-                    span
-                        font-family: 'Raleway', sans-serif
-                .pending-request-button-container
-                    display: flex
+                    flex-direction: row
                     justify-content: center
                     align-items: center
-                    button
-                        width: 2.2rem
-                        height: 2.2rem
-                        border: none
-                        background-color: transparent
-                        border-radius: 1.1rem
-                        display: flex
-                        flex-direction: row
-                        justify-content: center
-                        align-items: center
-                        transition: all 0.15s ease
-                    .accept-friend-request-button
-                        margin-right: 0.5rem
-                        &:hover
-                            background-color: #14d31eca
-                    .decline-friend-request-button
-                        &:hover
-                            background-color: #e91919c5
-#d31414#d31414#d34e4e
+                    transition: all 0.15s ease
+                    cursor: pointer
+                .accept-friend-request-button
+                    margin-right: 0.5rem
+                    &:hover
+                        background-color: #14d31eca
+                .decline-friend-request-button
+                    &:hover
+                        background-color: #e91919c5

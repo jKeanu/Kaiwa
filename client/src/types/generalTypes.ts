@@ -13,6 +13,7 @@ import {Socket} from 'socket.io-client'
 export type Channel = {
     channelName: string, 
     channelNumber: number,
+    channelType:string,
     id: string,
     lastMessage: number | Date,
     photo:string,
@@ -24,7 +25,8 @@ export type Friend = {
         channelNumber:number,
         id:string,
         lastMessage: number,
-        _id:string
+        _id:string,
+        channelType:string
     },
     friend:FriendDetails,
     status:string,
@@ -192,7 +194,19 @@ export type UserStatusUpdate= {
     type?:string
 }
 
+export type newChannel={
+    _id:string,
+    channelType:string,
+    channelnumber:number,
+    lastMessage:number|Date,
+    id:string,
+    members:string[]
+}
 
+export type acceptFriendStatus={
+    status:string,
+    newChannel:newChannel
+}
 //Sub-comp
 export type FriendListProps={
     friends:Friend[],

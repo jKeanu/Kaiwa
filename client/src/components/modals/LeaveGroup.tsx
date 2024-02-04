@@ -13,7 +13,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
                 navigate('/')
             }
         }catch(err){
-            console.log(err)
+            
         }
     }
     return(
