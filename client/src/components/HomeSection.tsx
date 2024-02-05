@@ -4,7 +4,7 @@ import FriendList from "./sub/FriendList"
 import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
 
-const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, userReqs, setFriendChannels, setUserReqs})=>{
+const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, userReqs, handleNewFriendChannel})=>{
     const [currComponent, setCurrComponent] = useState<string>('addFriend')
 
     const friendReqs = useMemo(()=>{
@@ -38,8 +38,7 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId
                         </button>
                     </div>
                     {currComponent==='friendReq'&&
-                    <FriendReq token={token} pendingRequests={friendReqs}
-                     setFriendChannels={setFriendChannels} setUserReqs={setUserReqs}/>}
+                    <FriendReq pendingRequests={friendReqs} token={token} handleNewFriendChannel={handleNewFriendChannel} />}
                     {currComponent==='addFriend'&&
                     <AddFriend token={token}/>}
                 </div>

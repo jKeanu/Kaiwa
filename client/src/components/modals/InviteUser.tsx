@@ -28,7 +28,7 @@ const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currCh
                         <li key={index} className="invite-friend-info">
                             <img src={`/img/${friend.photo}`}/>
                             <div className="friend-invite-display-name">{friend.displayName}</div>
-                            <button className="friend-invite-button" >
+                            <button className="friend-invite-button" onClick={(e)=>handleInvite(e, friend)}>
                                 Invite
                             </button>
                         </li>

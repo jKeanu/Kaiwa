@@ -193,7 +193,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                 channel:currentChannel._id,
                 content:inputMessage,
                 newTime: timestamp,
-                channelNumber
+                channelNumber,
+                channelType: currentChannel.channelType
             })
             setMessageReceived((prevMessages)=>{
                 const updatedMessages = [...prevMessages]
@@ -235,7 +236,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
             
             socket.emit("send_message", {
                 ...messageContents,
-                channelNumber
+                channelNumber,
+                channelType: currentChannel.channelType
             })
             //Since in the message that we sent, the socket only sends
             //the message to the user besides the sender, we 

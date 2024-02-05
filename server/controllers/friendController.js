@@ -135,6 +135,7 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
             {session, new:true})
         const newChannel = await Channel.findById(friendChannel[0]._id)
             .select('-__v')
+            .populate({path:'members', select:'photo displayName friendTag status'})
             .session(session)
         //We just need the general
         await acceptUser.save({session, validateBeforeSave:true})

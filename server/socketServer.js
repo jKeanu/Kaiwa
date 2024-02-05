@@ -113,7 +113,7 @@ export default (httpServer) => {
 
       io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
       {channelId:data.channel, channelNumber:data.channelNumber,
-      newTime:data.time, message:messageInfo})
+      newTime:data.time, message:messageInfo, channelType:data.channelType})
       socket.to(data.channelNumber).emit('receive_message', messageInfo);
     });
 
@@ -145,7 +145,7 @@ export default (httpServer) => {
 
       socket.to(data.channelNumber).emit('receive_message', messageInfo)
       io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
-      {channelId:updatedMessage.channel, channelNumber:data.channelNumber,
+      {channelId:updatedMessage.channel, channelNumber:data.channelNumber, channelType:data.channelType,
         newTime:updatedMessage.time, message:messageInfo})
       // data.members.forEach(memberId=>{
       //   io.to(`user-${memberId}`).emit(`channel_lastmsg_update`, 

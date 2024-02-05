@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
-import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User } from '../types/generalTypes';
+import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus } from '../types/generalTypes';
 import { ChannelMessage } from '../types/generalTypes';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -57,8 +57,15 @@ export const addFriend = async(token:string, displayName:string, friendTag:strin
     return axios.post(`${API_URL}/api/v1/me/friends`, {displayName, friendTag}, config)
 }
 
-export const acceptFriend = async(token:string, pendingUserId:string)=>
-    axios.patch(`${API_URL}/api/v1/me/friends/${pendingUserId}`, {headers:{'Authorization': `Bearer ${token}`}})
+export const acceptFriend = async(token:string, pendingUserId:string):Promise<AxiosResponse<AcceptFriendStatus>>=>{
+    console.log(token, '---')
+    const config ={
+
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    }
+    return axios.patch(`${API_URL}/api/v1/me/friends/${pendingUserId}/accept`, '', config)}
 
 
 export const channelFetcher = (endpoint: string, headers: Record<string, string> = {}) => 

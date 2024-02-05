@@ -24,7 +24,7 @@ export type Friend = {
     channel:{
         channelNumber:number,
         id:string,
-        lastMessage: number,
+        lastMessage: number|Date,
         _id:string,
         channelType:string
     },
@@ -40,8 +40,8 @@ export type User = {
     email:string,
     status:string,
     friendTag:string,
-    friends?:Friend[],
-    groups?:Channel[],
+    friends:Friend[],
+    groups:Channel[],
 }
 
 export type UserDataStatus={
@@ -96,8 +96,8 @@ export type HomeSectionProps={
     currUserId: string,
     socket:Socket|undefined,
     token:string,
-    setFriendChannels: React.Dispatch<React.SetStateAction<Friend[]>>,
-    setUserReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>
+    handleNewFriendChannel: (friendInfo:Friend)=>void
+
 }
 
 export type ChannelMember={
@@ -185,8 +185,9 @@ export type LeaveGroup={
 export type LastMessageUpdate = {
     channelId:string,
     channelNumber:string,
-    newTime:Date,
-    message:ChannelMessage
+    newTime:Date|number,
+    message:ChannelMessage,
+    channelType:string
 }
 
 export type UserStatusUpdate= {
@@ -196,18 +197,18 @@ export type UserStatusUpdate= {
     type?:string
 }
 
-export type newChannel={
+export type NewChannel={
     _id:string,
     channelType:string,
-    channelnumber:number,
+    channelNumber:number,
     lastMessage:number|Date,
     id:string,
-    members:string[]
+    members:ChannelMember[]
 }
 
-export type acceptFriendStatus={
+export type AcceptFriendStatus={
     status:string,
-    newChannel:newChannel
+    newChannel:NewChannel
 }
 //Sub-comp
 export type FriendListProps={
@@ -217,7 +218,8 @@ export type FriendListProps={
 
 export type FriendReqProps={
     token:string,
-    pendingRequests:FriendReq[]
+    pendingRequests:FriendReq[],
+    handleNewFriendChannel: (friendInfo:Friend)=>void
 }
 
 export type AddFriendProps={

@@ -96,6 +96,13 @@ const HomePage:React.FC = ()=>{
                             return dateB - dateA; // Compare the millisecond values
                         })
                         //Save the sorted channels to a state
+                        //NOTE: we implemented the channels based on the fetched user data, since
+                        //if we based it on the userData state variable, we need to create a new useEffect hook,
+                        //and since we base it on the userData we need to use the useData as a dependency,
+                        //(updating the friends and groups channels in the userData)
+                        //and every change, the methods above gets executed each time, which is redundant.
+                        //In other words, its like redefining channels state variable again and again.
+                        //When we can just save the channels right away and apply the changes there.
                         setChannels(sortedChannels)
                     }
                 }catch(error: unknown){
@@ -118,14 +125,36 @@ const HomePage:React.FC = ()=>{
     
             }
         }, [token])
-        
+
+        //We need this function specifically when we acccept a friend request, or someone accepted ours,
+        //to create a new channel
+        const handleNewFriendChannel = (friendInfo:Friend):void=>{
+            console.log('FRIEND INFO', friendInfo)
+            const convertChannel:Channel = {
+                channelName:friendInfo.friend.displayName,
+                channelNumber: friendInfo.channel.channelNumber,
+                channelType: friendInfo.channel.channelType,
+                id: friendInfo.channel.id,
+                _id: friendInfo.channel._id,
+                lastMessage: friendInfo.channel.lastMessage,
+                photo: friendInfo.friend.photo
+            }
+            setChannels(prevChannels =>{
+                const updateChannel = [...prevChannels]
+                updateChannel.unshift(convertChannel)
+                return updateChannel
+            })
+            setFriendChannels(prevFriendChannels=>{
+                return [...prevFriendChannels, friendInfo]
+            })
+        }
+
         useEffect(() => {
             // Check if token doesn't exist, then navigate to login
             if (!token) {
               navigate('/login');
             }
           }, [token, navigate])
-
 
         useEffect(() => {
             //Check if the token is not yet expired
@@ -294,7 +323,7 @@ const HomePage:React.FC = ()=>{
 
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
-            e.preventDefault(); // Prevents the default behavior of the button
+            e.preventDefault()
             localStorage.removeItem('token')
             window.location.href = '/login'
         };
@@ -304,7 +333,7 @@ const HomePage:React.FC = ()=>{
                     <main className='homepage'>
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                         <Routes>
-                            <Route index setUserReqs={setUserReqs} setFriendsChannels={setFriendChannels} element={<HomeSection userReqs={userReqs} 
+                            <Route index element={<HomeSection userReqs={userReqs} handleNewFriendChannel={handleNewFriendChannel}
                             friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
                             <Route path="channels/:channelNumber"
                             element={<ChannelSection
