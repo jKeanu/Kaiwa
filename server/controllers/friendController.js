@@ -3,7 +3,10 @@ import User from '../models/userModel.js';
 import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import Channel from '../models/channelModel.js';
+import { MongoServerError } from 'mongodb'
 
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 //Checking the friendship status with the other user.
 const findFriendshipStatus = (currentUserId, userCheck, status) => 
@@ -92,65 +95,77 @@ export const addFriend = catchAsync(async (req, res, next)=>{
 })
 
 export const acceptFriend = catchAsync(async (req, res, next)=>{
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try{
-        const acceptUser = await User.findById(req.params.friendId).session(session)
-        if(!acceptUser){
-            await session.abortTransaction(); //Abort the transaction
-            return next(new AppError("User does not exists.", 404))
-        }
-        //Check if the user is already friends with the other user.
-        if(findFriendshipStatus(req.user._id, acceptUser, "Friend")){
-            await session.abortTransaction();
-            return next(new AppError(`You're already friends with ${acceptUser.displayName}.`, 409))       
-        }
-        //Check if the other user sent the friend request, if the isSent exists, it means the user sent
-        //the request.
-        const isSent = findFriendshipStatus(req.user._id, acceptUser, "Sent")
-        if(!isSent){
-            await session.abortTransaction();
-            return next(new AppError(`The user did not send you a friend request.`, 400))
-        }
-        //Although isSent is used to identify whether the user sent a friend requests, 
-        //it's value is the user document.
-        isSent.status = "Friend"
-        //Since both users are soon to be friend, we also need a channel on where they could communicate
-        //
-        //since create query accepts an array OR as a spread, we need to use the array 
-        //if we don't, it would see the {session} as another entry.
-        //In other words, distinguish between the documents to be created and the options object
-        const friendChannel = await Channel.create([{
-            members:[req.user._id, acceptUser._id],
-            channelType: 'Friend'
-        }],
-        {session})
-        isSent.channel = friendChannel[0]._id
-        await User.updateOne({_id:req.user._id, 
-            'friends.friend': acceptUser._id},
-            {$set:
-                {'friends.$.status':"Friend", 
-                'friends.$.channel':friendChannel[0]._id
-            }},
-            {session, new:true})
-        const newChannel = await Channel.findById(friendChannel[0]._id)
-            .select('-__v')
-            .populate({path:'members', select:'photo displayName friendTag status'})
-            .session(session)
-        //We just need the general
-        await acceptUser.save({session, validateBeforeSave:true})
-        await session.commitTransaction()
-        res.status(200).json({
-            status:"success",
-            newChannel: newChannel
-        }
-        )}catch(err){
-            console.log('ERROR!!!!', err)
-            await session.abortTransaction();
-            next(err)
-        }finally{
-            await session.endSession()
-        }
+    let retries = 3; // Maximum number of retries
+    let delayTime = 1000; // Delay time in milliseconds
+    const attemptOperation = async ()=>{
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try{
+            const acceptUser = await User.findById(req.params.friendId).session(session)
+            if(!acceptUser){
+                await session.abortTransaction(); //Abort the transaction
+                return next(new AppError("User does not exists.", 404))
+            }
+            //Check if the user is already friends with the other user.
+            if(findFriendshipStatus(req.user._id, acceptUser, "Friend")){
+                await session.abortTransaction();
+                return next(new AppError(`You're already friends with ${acceptUser.displayName}.`, 409))       
+            }
+            //Check if the other user sent the friend request, if the isSent exists, it means the user sent
+            //the request.
+            const isSent = findFriendshipStatus(req.user._id, acceptUser, "Sent")
+            if(!isSent){
+                await session.abortTransaction();
+                return next(new AppError(`The user did not send you a friend request.`, 400))
+            }
+            //Although isSent is used to identify whether the user sent a friend requests, 
+            //it's value is the user document.
+            isSent.status = "Friend"
+            //Since both users are soon to be friend, we also need a channel on where they could communicate
+            //
+            //since create query accepts an array OR as a spread, we need to use the array 
+            //if we don't, it would see the {session} as another entry.
+            //In other words, distinguish between the documents to be created and the options object
+            const friendChannel = await Channel.create([{
+                members:[req.user._id, acceptUser._id],
+                channelType: 'Friend'
+            }],
+            {session})
+            isSent.channel = friendChannel[0]._id
+            await User.updateOne({_id:req.user._id, 
+                'friends.friend': acceptUser._id},
+                {$set:
+                    {'friends.$.status':"Friend", 
+                    'friends.$.channel':friendChannel[0]._id
+                }},
+                {session, new:true})
+            const newChannel = await Channel.findById(friendChannel[0]._id)
+                .select('-__v')
+                .populate({path:'members', select:'photo displayName friendTag status'})
+                .session(session)
+            //We just need the general
+            await acceptUser.save({session, validateBeforeSave:true})
+            await session.commitTransaction()
+            res.status(200).json({
+                status:"success",
+                newChannel: newChannel})
+            }catch(err){
+                if(err instanceof MongoServerError && err.code === 112 && retries > 0){
+                    console.log(`WriteConflict detected, retrying... Retries left: ${retries}`);
+                    retries--;
+                    await delay(delayTime); // Wait for a specified delayTime before retrying
+                    await session.abortTransaction(); // Important to abort the current transaction
+                    session.endSession();
+                    return attemptOperation(); // Retry the operation
+                }
+                console.log('ERROR!!!!', err)
+                await session.abortTransaction();
+                next(err)
+            }finally{
+                await session.endSession()
+            }
+    }
+    attemptOperation()
 })
 
 export const unfriend = catchAsync(async(req, res, next)=>{

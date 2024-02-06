@@ -96,7 +96,8 @@ export type HomeSectionProps={
     currUserId: string,
     socket:Socket|undefined,
     token:string,
-    handleNewFriendChannel: (friendInfo:Friend)=>void
+    handleNewFriendChannel: (friendInfo:Friend)=>void,
+    setUserReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>
 
 }
 
@@ -211,6 +212,7 @@ export type AcceptFriendStatus={
     newChannel:NewChannel
 }
 //Sub-comp
+//Friend
 export type FriendListProps={
     friends:Friend[],
     token: string
@@ -219,7 +221,8 @@ export type FriendListProps={
 export type FriendReqProps={
     token:string,
     pendingRequests:FriendReq[],
-    handleNewFriendChannel: (friendInfo:Friend)=>void
+    handleNewFriendChannel: (friendInfo:Friend)=>void,
+    setUserReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>
 }
 
 export type AddFriendProps={

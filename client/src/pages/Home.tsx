@@ -67,7 +67,7 @@ const HomePage:React.FC = ()=>{
                         //Save the logged in user's data to a state
                         setUserData(res.data.user)
                         const groupChannels:Channel[] = [...res.data.user.groups??[]]
-                        const friendReqs:FriendReq[] = res.data.user?.friends?.filter(friend=>friend.status !== 'Friend')??[]
+                        const friendReqs:FriendReq[] = res.data.user?.friends?.filter(friend=>friend.status === 'Pending')??[]
                         setUserReqs(friendReqs)
                         const friendChannels:Friend[] = res.data.user?.friends?.filter(friend => friend.status === 'Friend')??[]
                         //Since the implementation of channels of friend channel is different to group channel is different
@@ -334,6 +334,7 @@ const HomePage:React.FC = ()=>{
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                         <Routes>
                             <Route index element={<HomeSection userReqs={userReqs} handleNewFriendChannel={handleNewFriendChannel}
+                            setUserReqs={setUserReqs}
                             friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
                             <Route path="channels/:channelNumber"
                             element={<ChannelSection

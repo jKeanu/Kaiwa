@@ -5,7 +5,9 @@ import { AxiosResponse } from "axios"
 import { acceptFriend } from "../../services/apiService"
 
 
-const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFriendChannel})=>{
+const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFriendChannel, setUserReqs})=>{
+    const [loading, setLoading] = useState('')
+
     const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string):Promise<void>=>{
         e.preventDefault()
         try{
@@ -34,7 +36,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
                 handleNewFriendChannel(newChannel)
             }
         }catch(err : unknown){  
-            console.log('ACCEPT ERROR')  
+            console.log('ACCEPT ERROR', err)  
         }
     }
 

@@ -4,16 +4,9 @@ import FriendList from "./sub/FriendList"
 import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
 
-const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, userReqs, handleNewFriendChannel})=>{
+const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, userReqs, handleNewFriendChannel, setUserReqs})=>{
     const [currComponent, setCurrComponent] = useState<string>('addFriend')
 
-    const friendReqs = useMemo(()=>{
-        return [...userReqs].filter(user=>user.status==='Pending')
-    }, [userReqs])
-
-    const sentReqs = useMemo(()=>{
-        return [...userReqs].filter(user=>user.status==='Sent')
-    }, [userReqs])
 
     const sortedFriends = useMemo(()=>{
         return [...friendChannels].sort((a, b) => {
@@ -32,13 +25,14 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId
                         </button>
                         <button className="friend-request-button" onClick={()=>setCurrComponent('friendReq')}>
                             Friend Requests
-                            {friendReqs.length>0&&
+                            {userReqs.length>0&&
                             <div className="request-indicator">
                             </div>}
                         </button>
                     </div>
                     {currComponent==='friendReq'&&
-                    <FriendReq pendingRequests={friendReqs} token={token} handleNewFriendChannel={handleNewFriendChannel} />}
+                    <FriendReq pendingRequests={userReqs} 
+                    token={token} handleNewFriendChannel={handleNewFriendChannel} setUserReqs={setUserReqs}/>}
                     {currComponent==='addFriend'&&
                     <AddFriend token={token}/>}
                 </div>
