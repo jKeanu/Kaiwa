@@ -7,13 +7,15 @@ import AddFriend from "./sub/AddFriend"
 const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, userReqs, handleNewFriendChannel, setUserReqs})=>{
     const [currComponent, setCurrComponent] = useState<string>('addFriend')
 
-
     const sortedFriends = useMemo(()=>{
         return [...friendChannels].sort((a, b) => {
             return a.friend.status === "Online" && b.friend.status !== "Online" ? -1 : 1;
         })
     }, [friendChannels])
 
+    useEffect(()=>{
+        
+    }, [])
     return(
         <section className="home-section-container">
             <section className="friend-section">
@@ -34,7 +36,7 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId
                     <FriendReq pendingRequests={userReqs} 
                     token={token} handleNewFriendChannel={handleNewFriendChannel} setUserReqs={setUserReqs}/>}
                     {currComponent==='addFriend'&&
-                    <AddFriend token={token}/>}
+                    <AddFriend token={token} socket={socket}/>}
                 </div>
             </section>
         </section>

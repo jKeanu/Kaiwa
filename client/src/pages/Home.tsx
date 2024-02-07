@@ -124,7 +124,7 @@ const HomePage:React.FC = ()=>{
                 navigate('/login');
     
             }
-        }, [token])
+        }, [token, navigate])
 
         //We need this function specifically when we acccept a friend request, or someone accepted ours,
         //to create a new channel
@@ -190,6 +190,7 @@ const HomePage:React.FC = ()=>{
         }, [channels, socket])
 
 
+        //If someone sends a message on a channel, this updates the order of the channel list
         useEffect(()=>{
             if(socket){
                 const handleLastMsgUpdate = (data:LastMessageUpdate):void=>{
@@ -231,6 +232,8 @@ const HomePage:React.FC = ()=>{
             //the most up to date object inside the effect. Without so, the value would remain the same
             //even though the url changes (the location would be similar to its initial value always)
         }, [socket, location])
+
+        //This updates when a member left or joined the channel that you are part of
         useEffect(()=>{
             if(socket){
                 const handleChannelMemberUpdate = (data:ChannelMemberUpdate):void=>{
@@ -286,6 +289,7 @@ const HomePage:React.FC = ()=>{
                 }
                 return cleanup
         }},[socket, friendChannelIds])
+
         //When a friend or a member of the group you're part of went offline
         useEffect(()=>{
             if(socket){
@@ -321,6 +325,21 @@ const HomePage:React.FC = ()=>{
                 return cleanup
         }},[socket, friendChannelIds])
 
+
+
+        //When someone added you as a friend
+        useEffect(()=>{
+            if(socket){
+                const handleFriendRequest = (data:FriendReq)=>{
+                    setUserReqs(prevUserReqs=> [...prevUserReqs, data])
+                }
+                socket.on('receive-friend-request', handleFriendRequest)
+                const cleanup = ():void=>{
+                    socket.removeListener('receive-friend-request', handleFriendRequest)
+                }
+                return cleanup
+            }
+        }, [socket])
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault()

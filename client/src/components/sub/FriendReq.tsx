@@ -2,14 +2,20 @@ import { useState } from "react"
 import { useMemo } from "react"
 import { FriendReqProps, AcceptFriendStatus, Friend } from "../../types/generalTypes"
 import { AxiosResponse } from "axios"
-import { acceptFriend } from "../../services/apiService"
+import { acceptFriend, declineFriend } from "../../services/apiService"
 
 
 const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFriendChannel, setUserReqs})=>{
-    const [loading, setLoading] = useState('')
+    const [loading, setLoading] = useState([''])
+    const [error, setError] = useState([''])
 
     const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string):Promise<void>=>{
         e.preventDefault()
+        setLoading(prevLoading=>[...prevLoading, `req-${pendingUserId}`])
+        setError(prevError=>{
+            const updateError = [...prevError]
+            return updateError.filter(error=>error!==`error-${pendingUserId}`)
+        })  
         try{
             const res:AxiosResponse<AcceptFriendStatus> = await acceptFriend(token, pendingUserId)
             if(res.data.status==='success'){
@@ -35,10 +41,42 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
                 }
                 handleNewFriendChannel(newChannel)
             }
+            setUserReqs(prevUserReqs=>{
+                const updateUserReqs = [...prevUserReqs]
+                return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
+            })
         }catch(err : unknown){  
-            console.log('ACCEPT ERROR', err)  
+            setLoading(prevLoading=>{
+                const updateLoading = [...prevLoading]
+                return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
+            })
+            setError(prevError=>[...prevError, `error-${pendingUserId}`])  
         }
     }
+
+    const handleRejectRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string):Promise<void>=>{
+        e.preventDefault()
+        setLoading(prevLoading=>[...prevLoading, `req-${pendingUserId}`])
+        setError(prevError=>{
+            const updateError = [...prevError]
+            return updateError.filter(error=>error!==`error-${pendingUserId}`)
+        })  
+        try{
+            const res:AxiosResponse<void>= await declineFriend(token, pendingUserId)
+            if(res.status===204){
+                setUserReqs(prevUserReqs=>{
+                    const updateUserReqs = [...prevUserReqs]
+                    return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
+                })
+            }
+            throw new Error('pewpew')
+        }catch(err){
+            setLoading(prevLoading=>{
+                const updateLoading = [...prevLoading]
+                return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
+            })
+            setError(prevError=>[...prevError, `error-${pendingUserId}`])  
+        }}
 
     return(
         <section className="pending-request-section">
@@ -50,12 +88,22 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
                             <span>{request.friend.displayName}</span>
                         </div>
                         <div className="pending-request-button-container">
-                            <button className="accept-friend-request-button" onClick={(e)=>handleAcceptRequest(e, request.friend._id)}>
-                                <img src="/img/accept.svg" />
-                            </button>
-                            <button className="decline-friend-request-button">
-                                <img src="/img/decline.svg"/>
-                            </button>
+                            {loading.includes(`req-${request.friend._id}`)?
+                            <div className="friend-req-button-loading"></div>
+                            :
+                            <>
+                                {error.includes(`error-${request.friend._id}`)&&
+                                <span className="pending-request-error">An error occurred</span>}
+                                <button className="accept-friend-request-button" 
+                                onClick={(e)=>handleAcceptRequest(e, request.friend._id)}>
+                                    <img src="/img/accept.svg" />
+                                </button>
+                                <button className="decline-friend-request-button" 
+                                onClick={(e)=>handleRejectRequest(e, request.friend._id)}>
+                                    <img src="/img/decline.svg"/>
+                                </button>
+                            </>
+                            }
                         </div>
                     </li>
                 ))}

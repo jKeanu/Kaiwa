@@ -77,6 +77,7 @@ const userSchema = new mongoose.Schema({
     ],
     status:{
         type:String,
+        default: 'Offline',
         enum:['Online', 'Offline']
     },
     groups:[{

@@ -1,3 +1,14 @@
+@keyframes l3 
+    20%
+        background-position:0%   0%, 50%  50%,100%  50%
+    40%
+        background-position:0% 100%, 50%   0%,100%  50%
+    60%
+        background-position:0%  50%, 50% 100%,100%   0%
+    80%
+        background-position:0%  50%, 50%  50%,100% 100%
+    
+    
 .pending-request-section
     flex: 0.85
     box-shadow: 1px 2px 1px 3px rgba(0, 0, 0, 0.4)
@@ -37,6 +48,25 @@
                 display: flex
                 justify-content: center
                 align-items: center
+                position: relative
+                .pending-request-error
+                    position: absolute
+                    color: $error-message
+                    top: 30%
+                    right: 100%
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.7rem
+                    width: 6rem
+
+                .friend-req-button-loading
+                    margin-right: 30px
+                    width: 20px
+                    aspect-ratio: 2
+                    --_g: no-repeat radial-gradient(circle closest-side, #c9c9c9 90%, #fdfdfd00)
+                    background: var(--_g) 0%   50%, var(--_g) 50%  50%, var(--_g) 100% 50%
+                    background-size: calc(100%/3) 50%
+                    animation: l3 1s infinite linear
+
                 button
                     width: 2.2rem
                     height: 2.2rem

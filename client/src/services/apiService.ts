@@ -60,13 +60,22 @@ export const addFriend = async(token:string, displayName:string, friendTag:strin
 export const acceptFriend = async(token:string, pendingUserId:string):Promise<AxiosResponse<AcceptFriendStatus>>=>{
     console.log(token, '---')
     const config ={
-
         headers:{
             'Authorization': `Bearer ${token}`
         }
     }
     return axios.patch(`${API_URL}/api/v1/me/friends/${pendingUserId}/accept`, '', config)}
 
+
+export const declineFriend = async(token:string, pendingUserId:string):Promise<AxiosResponse<void>>=>{
+    const config = {
+
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    }
+    return axios.delete(`${API_URL}/api/v1/me/friends/${pendingUserId}/decline`, config)
+}
 
 export const channelFetcher = (endpoint: string, headers: Record<string, string> = {}) => 
     axios.get(`${API_URL}/${endpoint}`, { headers}).then(res => res.data);

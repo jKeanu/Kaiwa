@@ -121,10 +121,6 @@ export default (httpServer) => {
       //add status on select, if status is already implemented ------------------------------
       const invitedUser = await User.findById(data.inviteUser).select('displayName friendTag _id photo status')
       io.to(`channel-${data.channelId}`).emit(`channel_new_member_update`, {invitedUser, channelNumber:data.channelNumber})
-      // data.members.forEach(memberId=>{
-      //   io.to(`user-${memberId}`).emit('channel_new_member_update',
-      //    {invitedUser, channelNumber:data.channelNumber})
-      // })
     })
     
     socket.on("continue_message", async(data)=>{
@@ -147,15 +143,15 @@ export default (httpServer) => {
       io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
       {channelId:updatedMessage.channel, channelNumber:data.channelNumber, channelType:data.channelType,
         newTime:updatedMessage.time, message:messageInfo})
-      // data.members.forEach(memberId=>{
-      //   io.to(`user-${memberId}`).emit(`channel_lastmsg_update`, 
-      //   {channelId:updatedMessage.channel, channelNumber:data.channelNumber,
-      //     newTime:updatedMessage.time, message:messageInfo})
-      // })
     })
+
+    //When a user sends a friend-request live update
+    socket.on("friend_request_sent", (data)=>{
+      socket.to(`user-${data.requestedUserId}`).emit('receive-friend-request', data.requestDetails)
+    })
+
     socket.on('disconnect', async () => {
       const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
-      console.log('OFFLINE', decrStatusCount)
       if(decrStatusCount<=0){
         const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Offline'}, {new:true})
         .populate({path:'friends.friend', select:'status'})

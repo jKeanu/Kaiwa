@@ -234,12 +234,7 @@ export const leaveGroup = catchAsync(async (req, res, next)=>{
         await user.save({session, validateBeforeSave:false})
         await groupChannel.save({session})
         await session.commitTransaction();
-        res.status(200).json({
-            status:"success",
-            data:{
-                groups:user.groups
-            }
-        })
+        res.status(204).end()
     }catch(err){
         await session.abortTransaction()
         console.log("ERROR!!!", err)

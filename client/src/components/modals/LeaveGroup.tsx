@@ -9,7 +9,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
         e.preventDefault()
         try{
             const res:AxiosResponse<void> = await leaveGroup(token, channelId)
-            if(res.status===200){
+            if(res.status===204){
                 navigate('/')
             }
         }catch(err){

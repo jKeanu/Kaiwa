@@ -82,9 +82,14 @@ export const addFriend = catchAsync(async (req, res, next)=>{
         //trigger an error since we remove passwordConfirm every
         //new user has been created or we change password.
         await addUser.save({session, validateBeforeSave:false})
-        await session.commitTransaction();  // Commit the transaction
+        const newRequestDetails = addUser.friends.find(friend=>friend.friend===req.user._id)
+        console.log(newRequestDetails, '-----')
+        await User.populate(newRequestDetails, {path:'friend', select:'displayName FriendTag status photo', options:{session}})
+        await session.commitTransaction()
         res.status(201).json({
-            status:'success'
+            status:'success',
+            requestDetails:newRequestDetails,
+            requestedUserId:addUser._id
     })}catch(err){
         console.log('ERROR!!!!', err)
         await session.abortTransaction();
@@ -197,9 +202,7 @@ export const unfriend = catchAsync(async(req, res, next)=>{
             {session}
         )
         await session.commitTransaction();
-        res.status(200).json({
-            status:"success"
-        })
+        res.status(204).end()
     }catch(err){
         console.log('ERROR!!!!', err)
         await session.abortTransaction();
@@ -234,11 +237,8 @@ export const declineFriend = catchAsync(async(req, res, next)=>{
             {session}
         )
         await session.commitTransaction();
-        res.status(200).json({
-            status:"success",
-        })
+        res.status(204).end()
     }catch(err){
-        console.log('ERROR!!!!', err)
         await session.abortTransaction();
         next(err)
     }finally{

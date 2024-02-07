@@ -17,7 +17,6 @@ const createSendToken = (user, statusCode, req, res) => {
   user.password = undefined;
   res.status(statusCode).json({
     status: 'success',
-    user,
     token
   });
 };
@@ -28,7 +27,7 @@ export const login = catchAsync(async (req, res, next)=>{
     if (!email || !password) {
         return next(new AppError('Please provide email and password!', 400));
     }
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select('+password -friends -groups');
     if(!user||!(await user.correctPassword(password, user.password))){
         return next(new AppError('Incorrect password or email', 401))
     }
