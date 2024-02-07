@@ -5,11 +5,12 @@ import { AxiosResponse } from "axios"
 import { acceptFriend, declineFriend } from "../../services/apiService"
 
 
-const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFriendChannel, setUserReqs})=>{
+const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFriendChannel, setFriendReqs, socket, currUserId})=>{
     const [loading, setLoading] = useState([''])
     const [error, setError] = useState([''])
 
-    const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string):Promise<void>=>{
+    //friendId is the object that contains the channel info and the user info and your status with that user
+    const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string, friendId:string):Promise<void>=>{
         e.preventDefault()
         setLoading(prevLoading=>[...prevLoading, `req-${pendingUserId}`])
         setError(prevError=>{
@@ -37,14 +38,22 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
                         ...sortMembers[0]
                     },
                     status:"Friend",
-                    _id:fetchedNewChannelData._id
+                    _id:friendId
                 }
                 handleNewFriendChannel(newChannel)
+                setFriendReqs(prevUserReqs=>{
+                    const updateUserReqs = [...prevUserReqs]
+                    return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
+                })
+                if(socket){
+                    console.log(currUserId, '-----')
+                    socket.emit('accepted_pending_friend_request', {
+                        newChannelInfo: newChannel.channel,
+                        pendingUserId: pendingUserId,
+                        newFriendId: currUserId
+                    })
+                }
             }
-            setUserReqs(prevUserReqs=>{
-                const updateUserReqs = [...prevUserReqs]
-                return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
-            })
         }catch(err : unknown){  
             setLoading(prevLoading=>{
                 const updateLoading = [...prevLoading]
@@ -64,12 +73,11 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
         try{
             const res:AxiosResponse<void>= await declineFriend(token, pendingUserId)
             if(res.status===204){
-                setUserReqs(prevUserReqs=>{
+                setFriendReqs(prevUserReqs=>{
                     const updateUserReqs = [...prevUserReqs]
                     return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
                 })
             }
-            throw new Error('pewpew')
         }catch(err){
             setLoading(prevLoading=>{
                 const updateLoading = [...prevLoading]
@@ -95,7 +103,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
                                 {error.includes(`error-${request.friend._id}`)&&
                                 <span className="pending-request-error">An error occurred</span>}
                                 <button className="accept-friend-request-button" 
-                                onClick={(e)=>handleAcceptRequest(e, request.friend._id)}>
+                                onClick={(e)=>handleAcceptRequest(e, request.friend._id, request._id)}>
                                     <img src="/img/accept.svg" />
                                 </button>
                                 <button className="decline-friend-request-button" 

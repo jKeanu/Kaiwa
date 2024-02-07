@@ -74,13 +74,19 @@ export type FriendDetails={
 export type FriendReq={
     friend:FriendDetails,
     _id: string,
+    status:string,
+}
+
+export type SentReq={
+    friend:FriendDetails,
+    _id: string,
     status:string
 }
 
 export type AddFriendStatus={
     status:string,
-    requestDetails:FriendReq,
-    requestedUserId:string
+    pendingRequestDetails:FriendReq,
+    sentRequestDetails:SentReq
 }
 
 //props
@@ -98,14 +104,14 @@ export type ChannelSectionProps={
 }
 
 export type HomeSectionProps={
-    userReqs:FriendReq[]
+    friendReqs:FriendReq[]
     friendChannels:Friend[],
     currUserId: string,
     socket:Socket|undefined,
     token:string,
     handleNewFriendChannel: (friendInfo:Friend)=>void,
-    setUserReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>
-
+    setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
+    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>
 }
 
 export type ChannelMember={
@@ -229,10 +235,25 @@ export type FriendReqProps={
     token:string,
     pendingRequests:FriendReq[],
     handleNewFriendChannel: (friendInfo:Friend)=>void,
-    setUserReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>
+    setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
+    socket: Socket|undefined,
+    currUserId:string
 }
 
 export type AddFriendProps={
     token:string,
-    socket: Socket|undefined
+    socket: Socket|undefined,
+    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>
+}
+
+//Socket event-listener param
+export type FriendRequestAccepted={
+    newChannelInfo:{
+        channelNumber:number,
+        channelType:string,
+        lastMessage: number | Date,
+        _id: string,
+        id: string
+    },
+    newFriendId:string
 }

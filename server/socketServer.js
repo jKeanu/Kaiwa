@@ -150,6 +150,12 @@ export default (httpServer) => {
       socket.to(`user-${data.requestedUserId}`).emit('receive-friend-request', data.requestDetails)
     })
 
+    //When a user accepted a friend-request live update
+    socket.on("accepted_pending_friend_request", (data)=>{
+      socket.to(`user-${data.pendingUserId}`).emit(`friend_request_accepted`,
+       {newFriendId:data.newFriendId, newChannelInfo:data.newChannelInfo})
+    })
+
     socket.on('disconnect', async () => {
       const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
       if(decrStatusCount<=0){

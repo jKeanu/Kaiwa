@@ -9,7 +9,7 @@ import {User, Channel,
         Friend, UserDataStatus, 
         FriendDetails, ChannelDataStatus, 
         ChannelMemberUpdate, LastMessageUpdate,
-        ChannelMessagesStatus, UserStatusUpdate, FriendReq} 
+        ChannelMessagesStatus, UserStatusUpdate, FriendReq, SentReq, FriendRequestAccepted} 
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
 import { getCurrentUser } from '../services/apiService'
@@ -30,7 +30,8 @@ const HomePage:React.FC = ()=>{
         const [socket, setSocket] = useState<Socket>()
         const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
-        const [userReqs, setUserReqs] = useState<FriendReq[]>([])
+        const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
+        const [sentReqs, setSentReqs] = useState<SentReq[]>([])
         const location = useLocation()
 
         const friendChannelIds = useMemo(()=>{
@@ -67,8 +68,10 @@ const HomePage:React.FC = ()=>{
                         //Save the logged in user's data to a state
                         setUserData(res.data.user)
                         const groupChannels:Channel[] = [...res.data.user.groups??[]]
-                        const friendReqs:FriendReq[] = res.data.user?.friends?.filter(friend=>friend.status === 'Pending')??[]
-                        setUserReqs(friendReqs)
+                        const friendReqData:FriendReq[] = res.data.user?.friends?.filter(friend=>friend.status === 'Pending')??[]
+                        setFriendReqs(friendReqData)
+                        const sentReqData:SentReq[] = res.data.user?.friends?.filter(friend=>friend.status === 'Sent')??[]
+                        setSentReqs(sentReqData)
                         const friendChannels:Friend[] = res.data.user?.friends?.filter(friend => friend.status === 'Friend')??[]
                         //Since the implementation of channels of friend channel is different to group channel is different
                         //we need to change the structure of the friends array to match group array so we could use sort.
@@ -102,7 +105,7 @@ const HomePage:React.FC = ()=>{
                         //(updating the friends and groups channels in the userData)
                         //and every change, the methods above gets executed each time, which is redundant.
                         //In other words, its like redefining channels state variable again and again.
-                        //When we can just save the channels right away and apply the changes there.
+                        //When we can just save the channels right away and apply the changes on the setter.
                         setChannels(sortedChannels)
                     }
                 }catch(error: unknown){
@@ -129,7 +132,6 @@ const HomePage:React.FC = ()=>{
         //We need this function specifically when we acccept a friend request, or someone accepted ours,
         //to create a new channel
         const handleNewFriendChannel = (friendInfo:Friend):void=>{
-            console.log('FRIEND INFO', friendInfo)
             const convertChannel:Channel = {
                 channelName:friendInfo.friend.displayName,
                 channelNumber: friendInfo.channel.channelNumber,
@@ -188,6 +190,46 @@ const HomePage:React.FC = ()=>{
                 }
             }
         }, [channels, socket])
+
+        //New Friend channel
+        useEffect(()=>{
+            if(socket){
+                const handleRequestAccepted = (data:FriendRequestAccepted)=>{
+                    const {channelType, channelNumber, lastMessage} = data.newChannelInfo
+                    const newFriendInfo = [...sentReqs].find(sentReq=>sentReq.friend._id===data.newFriendId)
+                    console.log('yooooo', sentReqs, '-----')
+                    if(newFriendInfo){
+                        const {displayName, photo, status, friendTag} = newFriendInfo.friend
+                        const newFriendChannel:Friend = {
+                            channel:{
+                                channelType,
+                                channelNumber,
+                                _id:data.newChannelInfo._id,
+                                id:data.newChannelInfo.id,
+                                lastMessage
+                            },
+                            friend:{
+                                displayName,
+                                photo,
+                                status,
+                                friendTag,
+                                _id:newFriendInfo.friend._id
+                            },
+                            _id:newFriendInfo._id,
+                            status:"Friend"
+                        }
+                        handleNewFriendChannel(newFriendChannel)
+                        setSentReqs(prevSentReqs=>{
+                            return [...prevSentReqs].filter(sentReqs=>sentReqs.friend._id!==data.newFriendId)
+                        })
+                    }}
+                socket.on('friend_request_accepted', handleRequestAccepted)
+                const cleanup = ():void=>{
+                    socket.removeListener('friend_request_accepted', handleRequestAccepted)
+                }
+                return cleanup
+            }
+        }, [socket, sentReqs])
 
 
         //If someone sends a message on a channel, this updates the order of the channel list
@@ -331,7 +373,7 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const handleFriendRequest = (data:FriendReq)=>{
-                    setUserReqs(prevUserReqs=> [...prevUserReqs, data])
+                    setFriendReqs(prevUserReqs=> [...prevUserReqs, data])
                 }
                 socket.on('receive-friend-request', handleFriendRequest)
                 const cleanup = ():void=>{
@@ -352,8 +394,8 @@ const HomePage:React.FC = ()=>{
                     <main className='homepage'>
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                         <Routes>
-                            <Route index element={<HomeSection userReqs={userReqs} handleNewFriendChannel={handleNewFriendChannel}
-                            setUserReqs={setUserReqs}
+                            <Route index element={<HomeSection friendReqs={friendReqs} handleNewFriendChannel={handleNewFriendChannel}
+                            setFriendReqs={setFriendReqs} setSentReqs={setSentReqs} 
                             friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
                             <Route path="channels/:channelNumber"
                             element={<ChannelSection

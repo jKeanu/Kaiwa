@@ -68,7 +68,7 @@ export const addFriend = catchAsync(async (req, res, next)=>{
         }
         //Add a friend request (pending) status to the user
         addUser.friends.push({friend:req.user._id, status:"Pending"})
-        await User.findByIdAndUpdate(req.user._id, {$push:{
+        const currUserData = await User.findByIdAndUpdate(req.user._id, {$push:{
             friends:{
                 friend: addUser._id,
                 status:'Sent'
@@ -82,14 +82,18 @@ export const addFriend = catchAsync(async (req, res, next)=>{
         //trigger an error since we remove passwordConfirm every
         //new user has been created or we change password.
         await addUser.save({session, validateBeforeSave:false})
-        const newRequestDetails = addUser.friends.find(friend=>friend.friend===req.user._id)
-        console.log(newRequestDetails, '-----')
-        await User.populate(newRequestDetails, {path:'friend', select:'displayName FriendTag status photo', options:{session}})
+        //pending request details
+        const newPendingRequestDetails = addUser.friends.find(friend=>friend.friend===req.user._id)
+        await User.populate(newPendingRequestDetails, {path:'friend', select:'displayName FriendTag status photo', options:{session}})
+        //Sent request details
+        const newSentRequestDetails = currUserData.friends.find(friend=>friend.friend.toString()===addUser._id.toString())
+        await User.populate(newSentRequestDetails, {path:'friend', select:'displayName FriendTag status photo', options:{session}})
+
         await session.commitTransaction()
         res.status(201).json({
             status:'success',
-            requestDetails:newRequestDetails,
-            requestedUserId:addUser._id
+            pendingRequestDetails:newPendingRequestDetails,
+            sentRequestDetails:newSentRequestDetails
     })}catch(err){
         console.log('ERROR!!!!', err)
         await session.abortTransaction();
@@ -137,7 +141,9 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
             }],
             {session})
             isSent.channel = friendChannel[0]._id
-            await User.updateOne({_id:req.user._id, 
+            // refers to the position of the first element in the friends array that 
+            //matches the condition specified in the query part ('friends.friend': acceptUser._id)
+            await User.findOneAndUpdate({_id:req.user._id, 
                 'friends.friend': acceptUser._id},
                 {$set:
                     {'friends.$.status':"Friend", 

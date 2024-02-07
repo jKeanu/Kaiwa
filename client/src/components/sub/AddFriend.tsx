@@ -4,7 +4,7 @@ import { useState } from "react";
 import axios, { AxiosResponse } from "axios";
 
 
-const AddFriend:React.FC<AddFriendProps>=({token, socket})=>{
+const AddFriend:React.FC<AddFriendProps>=({token, socket, setSentReqs})=>{
     const [displayName, setDisplayName] = useState('')
     const [friendTag, setFriendTag] = useState('')
     const [requestStatus, setRequestStatus] = useState<{type:string, message:string}>()
@@ -21,10 +21,11 @@ const AddFriend:React.FC<AddFriendProps>=({token, socket})=>{
                 setDisplayName('')
                 setFriendTag('')
                 setIsSending(false)
+                setSentReqs(prevSentReqs=>[...prevSentReqs, res.data.sentRequestDetails])
                 if(socket){
                     socket.emit('friend_request_sent', 
-                    {requestedUserId:res.data.requestedUserId,
-                     requestDetails:res.data.requestDetails})
+                    {requestedUserId:res.data.sentRequestDetails.friend._id,
+                     requestDetails:res.data.pendingRequestDetails})
                 }
             }
         }catch(err:unknown){
@@ -34,10 +35,10 @@ const AddFriend:React.FC<AddFriendProps>=({token, socket})=>{
                         setRequestStatus({type:'error', message:err.response.data.message})
                     }
                 }else{
-                    setRequestStatus({type:'error', message:'An unknown error occurred, please try again later.'})
+                    setRequestStatus({type:'error', message:`${err}`})
                 }
             }else{
-                setRequestStatus({type:'error', message:'An unknown error occurred, please try again later.'})
+                setRequestStatus({type:'error', message:`${err}`})
             }
             setIsSending(false)
         }
