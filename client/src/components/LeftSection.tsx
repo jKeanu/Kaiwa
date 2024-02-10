@@ -12,7 +12,6 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, currentUs
     const clearSearchQuery = ():void => {
         setSearchQuery('');
     }
-
     return(
     <section className='left-home-section'>
         <div className='upper-left-section-container'>

@@ -69,12 +69,20 @@ export const acceptFriend = async(token:string, pendingUserId:string):Promise<Ax
 
 export const declineFriend = async(token:string, pendingUserId:string):Promise<AxiosResponse<void>>=>{
     const config = {
-
         headers:{
             'Authorization': `Bearer ${token}`
         }
     }
     return axios.delete(`${API_URL}/api/v1/me/friends/${pendingUserId}/decline`, config)
+}
+
+export const removeFriend = async(token:string, friendId:string):Promise<AxiosResponse<void>>=>{
+    const config = {
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    } 
+    return axios.delete(`${API_URL}/api/v1/me/friends/${friendId}/unfriend`, config)
 }
 
 export const channelFetcher = (endpoint: string, headers: Record<string, string> = {}) => 

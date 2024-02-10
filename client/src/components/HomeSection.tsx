@@ -3,9 +3,10 @@ import { HomeSectionProps } from "../types/generalTypes"
 import FriendList from "./sub/FriendList"
 import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
+import Unfriend from "./modals/Unfriend"
 
 const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, friendReqs,
-     handleNewFriendChannel, setFriendReqs, setSentReqs})=>{
+     handleNewFriendChannel, setFriendReqs, setSentReqs, handleFriendChannelDelete})=>{
     const [currComponent, setCurrComponent] = useState<string>('addFriend')
 
     const sortedFriends = useMemo(()=>{
@@ -14,13 +15,12 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId
         })
     }, [friendChannels])
 
-    useEffect(()=>{
-        
-    }, [])
+
     return(
         <section className="home-section-container">
             <section className="friend-section">
-                <FriendList friends={sortedFriends} token={token}/>
+                <FriendList friends={sortedFriends} token={token} socket={socket}
+                handleFriendChannelDelete={handleFriendChannelDelete}/>
                 <div className="friend-connection-container">
                     <div className="home-button-container">
                         <button className="add-friend-button" onClick={()=>setCurrComponent('addFriend')}>

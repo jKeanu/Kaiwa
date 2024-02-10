@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { SetStateAction } from 'react'
 import {Socket} from 'socket.io-client'
 
 // export interface LocalStorage {
@@ -109,6 +109,7 @@ export type HomeSectionProps={
     currUserId: string,
     socket:Socket|undefined,
     token:string,
+    handleFriendChannelDelete:(channelId:string)=>void,
     handleNewFriendChannel: (friendInfo:Friend)=>void,
     setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
     setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>
@@ -169,8 +170,17 @@ export type ChannelMemberUpdate={
 
 //Modals
 export type ModalWindow={
-    isOpen:Boolean,
+    isOpen:boolean,
     window:string
+}
+
+export type UnfriendModalSettings={
+    isOpen:boolean,
+    ids:{
+        friendId:string,
+        channelId:string,
+    },
+    displayName:string
 }
 
 export type InviteFriend={
@@ -193,6 +203,17 @@ export type LeaveGroup={
     token:string,
     channelId:string
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
+}
+
+export type UnfriendProps={
+    token:string,
+    channelId:string,
+    friendId:string,
+    socket:Socket|undefined,
+    displayName:string
+    handleFriendChannelDelete:(channelId:string)=>void,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    setModalSettings: React.Dispatch<SetStateAction<UnfriendModalSettings>>
 }
 
 //Live Updates
@@ -228,7 +249,9 @@ export type AcceptFriendStatus={
 //Friend
 export type FriendListProps={
     friends:Friend[],
-    token: string
+    token: string,
+    handleFriendChannelDelete:(channelId:string)=>void,
+    socket:Socket|undefined,
 }
 
 export type FriendReqProps={

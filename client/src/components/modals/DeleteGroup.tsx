@@ -4,7 +4,6 @@ import { deleteGroup } from "../../services/apiService"
 
 
 const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton})=>{
-
     const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
         try{
@@ -16,7 +15,6 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
             console.log(err)
         }
     }
-
     return(
         <div className="delete-group-modal-container">
             <h2 className="modal-header">Delete Group</h2>

@@ -35,10 +35,10 @@ const AddFriend:React.FC<AddFriendProps>=({token, socket, setSentReqs})=>{
                         setRequestStatus({type:'error', message:err.response.data.message})
                     }
                 }else{
-                    setRequestStatus({type:'error', message:`${err}`})
+                    setRequestStatus({type:'error', message:`An unknown error occurred. Please try again later.`})
                 }
             }else{
-                setRequestStatus({type:'error', message:`${err}`})
+                setRequestStatus({type:'error', message:`An unknown error occurred. Please try again later.`})
             }
             setIsSending(false)
         }

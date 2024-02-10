@@ -3,6 +3,7 @@ import User from '../models/userModel.js';
 import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import Channel from '../models/channelModel.js';
+import Chat from '../models/chatModel.js'
 import { MongoServerError } from 'mongodb'
 
 
@@ -162,21 +163,20 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
                 newChannel: newChannel})
             }catch(err){
                 if(err instanceof MongoServerError && err.code === 112 && retries > 0){
-                    console.log(`WriteConflict detected, retrying... Retries left: ${retries}`);
                     retries--;
                     await delay(delayTime); // Wait for a specified delayTime before retrying
                     await session.abortTransaction(); // Important to abort the current transaction
-                    session.endSession();
                     return attemptOperation(); // Retry the operation
                 }
                 console.log('ERROR!!!!', err)
                 await session.abortTransaction();
                 next(err)
+            //the finally block has a higher priority and will always execute before the return operation is completed.
             }finally{
                 await session.endSession()
             }
     }
-    attemptOperation()
+    await attemptOperation()
 })
 
 export const unfriend = catchAsync(async(req, res, next)=>{
@@ -193,10 +193,11 @@ export const unfriend = catchAsync(async(req, res, next)=>{
             await session.abortTransaction();
             return next(new AppError(`You are not friends with the user.`, 403))
         }
-        await Channel.findOneAndDelete(
+        const deleteChannel = await Channel.findOneAndDelete(
             //$all operator matches arrays that contain all the specified elements.
             {members:{ $all: [req.user._id, removeUser._id] }, channelType:'Friend'})
                 .session(session)
+        await Chat.deleteMany({channel:deleteChannel._id}).session(session)
         await User.updateOne(
             {_id:removeUser._id},
             {$pull: {friends:{friend:req.user._id}}},
@@ -218,41 +219,52 @@ export const unfriend = catchAsync(async(req, res, next)=>{
     }
 })
 
+
 export const declineFriend = catchAsync(async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
-    try{
-        const removeUser = await User.findById(req.params.friendId).session(session)
-        if(!removeUser){
-            await session.abortTransaction();
-            return next(new AppError(`User does not exists.`, 404))
-        }
-        const isRequested = findFriendshipStatus(req.user._id, removeUser, "Sent")
-        if(!isRequested){
-            await session.abortTransaction();
-            return next(new AppError(`The user did not send you a friend request.`, 400))
-        }
-        await User.updateOne(
-            {_id:removeUser._id},
-            {$pull: {friends:{friend:req.user._id}}},
-            {session}
+    let retries = 3; // Maximum number of retries
+    let delayTime = 1000; // Delay time in milliseconds
+    const attemptOperation = async ()=>{
+        try{
+            const removeUser = await User.findById(req.params.friendId).session(session)
+            if(!removeUser){
+                await session.abortTransaction();
+                return next(new AppError(`User does not exists.`, 404))
+            }
+            const isRequested = findFriendshipStatus(req.user._id, removeUser, "Sent")
+            if(!isRequested){
+                await session.abortTransaction();
+                return next(new AppError(`The user did not send you a friend request.`, 400))
+            }
+            await User.updateOne(
+                {_id:removeUser._id},
+                {$pull: {friends:{friend:req.user._id}}},
+                {session}
+                )
+            await User.updateOne(
+                {_id:req.user._id},
+                {$pull: {friends:{friend:removeUser._id}}},
+                {session}
             )
-        await User.updateOne(
-            {_id:req.user._id},
-            {$pull: {friends:{friend:removeUser._id}}},
-            {session}
-        )
-        await session.commitTransaction();
-        res.status(204).end()
-    }catch(err){
-        await session.abortTransaction();
-        next(err)
-    }finally{
-        await session.endSession()
+            await session.commitTransaction();
+            res.status(204).end()
+        }catch(err){
+            if(err instanceof MongoServerError && err.code === 112 && retries > 0){
+                console.log(`WriteConflict detected, retrying... Retries left: ${retries}`);
+                retries--;
+                await delay(delayTime); // Wait for a specified delayTime before retrying
+                await session.abortTransaction(); // Important to abort the current transaction
+                return attemptOperation(); // Retry the operation
+            }
+            await session.abortTransaction();
+            next(err)
+        }finally{
+            await session.endSession()
+        }
     }
+    await attemptOperation()
 })
-
-
 
 export const getUserFriends = catchAsync(async(req, res, next)=>{
     const user = await User.findById(req.user._id)

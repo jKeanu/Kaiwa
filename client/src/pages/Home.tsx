@@ -150,6 +150,17 @@ const HomePage:React.FC = ()=>{
                 return [...prevFriendChannels, friendInfo]
             })
         }
+        
+
+        //When we remove a friend from a friend list, or someone did remove us.
+        const handleFriendChannelDelete = (channelId:string):void=>{
+            setFriendChannels(prevFriendChannels=>{
+                return [...prevFriendChannels].filter(friendChannels => friendChannels.channel._id!==channelId)
+            })
+            setChannels(prevChannels=>{
+                return [...prevChannels].filter(channels=>channels._id !==channelId)
+            })
+        }
 
         useEffect(() => {
             // Check if token doesn't exist, then navigate to login
@@ -197,7 +208,6 @@ const HomePage:React.FC = ()=>{
                 const handleRequestAccepted = (data:FriendRequestAccepted)=>{
                     const {channelType, channelNumber, lastMessage} = data.newChannelInfo
                     const newFriendInfo = [...sentReqs].find(sentReq=>sentReq.friend._id===data.newFriendId)
-                    console.log('yooooo', sentReqs, '-----')
                     if(newFriendInfo){
                         const {displayName, photo, status, friendTag} = newFriendInfo.friend
                         const newFriendChannel:Friend = {
@@ -394,7 +404,9 @@ const HomePage:React.FC = ()=>{
                     <main className='homepage'>
                         <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
                         <Routes>
-                            <Route index element={<HomeSection friendReqs={friendReqs} handleNewFriendChannel={handleNewFriendChannel}
+                            <Route index element={<HomeSection friendReqs={friendReqs} 
+                            handleFriendChannelDelete={handleFriendChannelDelete}
+                            handleNewFriendChannel={handleNewFriendChannel}
                             setFriendReqs={setFriendReqs} setSentReqs={setSentReqs} 
                             friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
                             <Route path="channels/:channelNumber"
