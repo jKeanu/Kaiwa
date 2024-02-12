@@ -60,7 +60,7 @@ export const createGroupChannel = catchAsync(async(req, res, next)=>{
         await session.commitTransaction();
         res.status(201).json({
             status:"success",
-            data:newChannel
+            newChannel:newChannel[0]
         })
     }catch(err){
         await session.abortTransaction();

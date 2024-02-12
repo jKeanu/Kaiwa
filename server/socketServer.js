@@ -149,11 +149,19 @@ export default (httpServer) => {
     socket.on("friend_request_sent", (data)=>{
       socket.to(`user-${data.requestedUserId}`).emit('receive-friend-request', data.requestDetails)
     })
-
+    
     //When a user accepted a friend-request live update
     socket.on("accepted_pending_friend_request", (data)=>{
       socket.to(`user-${data.pendingUserId}`).emit(`friend_request_accepted`,
        {newFriendId:data.newFriendId, newChannelInfo:data.newChannelInfo})
+    })
+
+
+    //When a new group channel has been created
+    socket.on("new_group_channel_created", (data)=>{
+      data.newMembers.forEach(member=>{
+        socket.to(`user-${member}`).emit('new_group_channel', data.newChannel)
+      })
     })
 
     socket.on('disconnect', async () => {

@@ -1,10 +1,27 @@
 import { NavLink, Link} from 'react-router-dom';
 import {LeftSectionProps} from '../types/generalTypes';
 import { useMemo, useState } from 'react';
+import CreateGroup from './modals/CreateGroup';
 
-const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, currentUserData})=>{
+const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChannels,
+    currentUserData, friendsInfo, token, socket})=>{
     const [searchQuery, setSearchQuery] = useState('')
-    const {displayName, friendTag, photo} = currentUserData
+    const [modal, setModal] = useState(false)
+    const {displayName, friendTag, photo, _id} = currentUserData
+
+    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setModal(false)
+    }
+
+    const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
+        if (e.button===0 && e.target === e.currentTarget) {
+            e.preventDefault();
+            setModal(false)
+        }
+    }
+
+
     const filteredChannels = useMemo(()=>{
         return channels.filter(channel=>channel.channelName.toLowerCase().includes(searchQuery.toLocaleLowerCase()))
     }, [channels, searchQuery])
@@ -12,13 +29,29 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, currentUs
     const clearSearchQuery = ():void => {
         setSearchQuery('');
     }
+
     return(
     <section className='left-home-section'>
+        {modal&&
+        <dialog className='modal-window-container' onMouseDown={handleModalWindowClick}>
+            <CreateGroup token={token} currUserId={_id} friendsInfo={friendsInfo}
+             socket={socket} handleCloseButton={handleCloseButton} setChannels={setChannels}/>
+        </dialog >}
         <div className='upper-left-section-container'>
             <div className='logo-container'>
                 <Link to={'/@me'}>
                     Home
                 </Link>
+            </div>
+            <div className='create-group-container'>
+                <button className='create-group-button' onClick={()=>setModal(true)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -5 24 24" fill="none" 
+                    stroke="#b9b9b9 " strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="create-group-image">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87">
+                        </path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </button>
             </div>
             <div className='search-conversation-container'>
                 <img className='search-conversation-image'src='/img/search.svg' />

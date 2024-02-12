@@ -10,7 +10,7 @@ const AddFriend:React.FC<AddFriendProps>=({token, socket, setSentReqs})=>{
     const [requestStatus, setRequestStatus] = useState<{type:string, message:string}>()
     const [isSending, setIsSending] = useState(false)
     
-    const handleAddFriend = async (e:React.FormEvent<HTMLFormElement>)=>{
+    const handleAddFriend = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()
         setRequestStatus({type:'', message:''})
         setIsSending(true)

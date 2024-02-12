@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
-import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus } from '../types/generalTypes';
+import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus } from '../types/generalTypes';
 import { ChannelMessage } from '../types/generalTypes';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -28,6 +28,17 @@ export const inviteFriendtoGroup = async(token:string, channelId:string, userId:
         }
     };
     return axios.patch(`${API_URL}/api/v1/groups/${channelId}/invite`, {userId}, config)
+    
+}
+
+//Group
+export const createGroup = async(token:string, members:string[], channelName:string):Promise<AxiosResponse<CreateGroupStatus>>=>{
+    const config ={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    }
+    return axios.post(`${API_URL}/api/v1/groups`, {members, channelName}, config)
 }
 
 export const deleteGroup = async(token:string, channelId:string):Promise<AxiosResponse<void>>=>{

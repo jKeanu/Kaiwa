@@ -85,7 +85,7 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
             </dialog>}
             <div className="friend-list-top-section">
                 <h2 className="friends-header">Friends</h2>
-                <input className="friend-list-search-input" placeholder="Search friend"
+                <input className="friend-list-search-input" placeholder="Search friends..."
                 onChange={(e)=>setSearchQuery(e.target.value)} value={searchQuery}/>
             </div>
             <ul className="friend-list">

@@ -28,14 +28,19 @@ const HomePage:React.FC = ()=>{
         //the type would be Channel[] | undefined
         const [channels, setChannels] = useState<Channel[]>([])
         const [socket, setSocket] = useState<Socket>()
-        const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
+        // const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
         const [sentReqs, setSentReqs] = useState<SentReq[]>([])
         const location = useLocation()
 
+
         const friendChannelIds = useMemo(()=>{
             return [...friendChannels].map(friendChannel => friendChannel.channel._id)
+        }, [friendChannels])
+        
+        const myFriends:FriendDetails[] = useMemo(()=>{
+            return [...friendChannels].map(friend=>friend.friend)
         }, [friendChannels])
 
         //join rooms based on the channel id, so when there's an update in the channel
@@ -87,8 +92,6 @@ const HomePage:React.FC = ()=>{
                             }
                         })
                         //In this case, we only need the friend information, not including the channel.
-                        const friendDetails:FriendDetails[] = friendChannels.map((friend)=> friend.friend)
-                        setMyFreinds(friendDetails)
                         //Since
                         setFriendChannels(friendChannels)
                         //Combine all friend and group channels.
@@ -125,7 +128,6 @@ const HomePage:React.FC = ()=>{
             } else {
                 //If not, go back to login page
                 navigate('/login');
-    
             }
         }, [token, navigate])
 
@@ -206,24 +208,12 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const handleRequestAccepted = (data:FriendRequestAccepted)=>{
-                    const {channelType, channelNumber, lastMessage} = data.newChannelInfo
                     const newFriendInfo = [...sentReqs].find(sentReq=>sentReq.friend._id===data.newFriendId)
                     if(newFriendInfo){
-                        const {displayName, photo, status, friendTag} = newFriendInfo.friend
                         const newFriendChannel:Friend = {
-                            channel:{
-                                channelType,
-                                channelNumber,
-                                _id:data.newChannelInfo._id,
-                                id:data.newChannelInfo.id,
-                                lastMessage
-                            },
+                            channel:{...data.newChannelInfo},
                             friend:{
-                                displayName,
-                                photo,
-                                status,
-                                friendTag,
-                                _id:newFriendInfo.friend._id
+                                ...newFriendInfo.friend
                             },
                             _id:newFriendInfo._id,
                             status:"Friend"
@@ -393,6 +383,21 @@ const HomePage:React.FC = ()=>{
             }
         }, [socket])
 
+
+        //When someone in your friends included you in a new group
+        useEffect(()=>{
+            if(socket){
+                const handleNewGroupChannel = (data:Channel)=>{
+                    setChannels(prevChannels=>[data, ...prevChannels])
+                }
+                socket.on('new_group_channel', handleNewGroupChannel)
+                const cleanup=():void=>{
+                    socket.removeListener('new_group_channel', handleNewGroupChannel)
+                }
+                return cleanup
+            }
+        })
+
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault()
             localStorage.removeItem('token')
@@ -402,7 +407,8 @@ const HomePage:React.FC = ()=>{
             <>
                 {userData&&token?
                     <main className='homepage'>
-                        <LeftSection channels={channels} handleLogout={handleLogout} currentUserData={userData}/>
+                        <LeftSection friendsInfo={myFriends} channels={channels} token={token} socket={socket}
+                        handleLogout={handleLogout} currentUserData={userData} setChannels={setChannels}/>
                         <Routes>
                             <Route index element={<HomeSection friendReqs={friendReqs} 
                             handleFriendChannelDelete={handleFriendChannelDelete}
