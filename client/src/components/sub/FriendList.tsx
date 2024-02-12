@@ -91,47 +91,42 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
             <ul className="friend-list">
                 {filteredFriends.map(friend=>(
                     <li key={friend.channel.channelNumber} className="friend-link-container">
-                        {unfriendLoading.includes(`unfriend-${friend.friend._id}`)?
-                        <div className="unfriend-loading"></div>
-                        :
-                        <>
-                            <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`}>
-                                <div className="friend-information">
-                                    <div className="friend-photo-status-container">
-                                        <img className='friend-photo' src={`/img/${friend.friend.photo}`}/>
-                                        <div className='friend-status'
-                                        style={{backgroundColor:friend.friend.status==='Online'?'green':'#959595'}}></div>
-                                    </div>
-                                    <div className="user-displayName-status-container">
-                                        <span className='friend-displayName'>{friend.friend.displayName}</span>
-                                        {friend.friend.status==='Online'?
-                                        <span className="friend-status">Online</span>
-                                        :
-                                        <span className="friend-status">Offline</span>}
-                                    </div>
+                        <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`}>
+                            <div className="friend-information">
+                                <div className="friend-photo-status-container">
+                                    <img className='friend-photo' src={`/img/${friend.friend.photo}`}/>
+                                    <div className='friend-status'
+                                    style={{backgroundColor:friend.friend.status==='Online'?'green':'#959595'}}></div>
                                 </div>
-                            </Link>
-                            <button className="friend-more-button" onClick={(e)=>handlePopUpClick(e, friend.friend._id)}>
-                                <div className="friend-more-img-container">
-                                    <img src="/img/friend-more.svg"/>
+                                <div className="user-displayName-status-container">
+                                    <span className='friend-displayName'>{friend.friend.displayName}</span>
+                                    {friend.friend.status==='Online'?
+                                    <span className="friend-status">Online</span>
+                                    :
+                                    <span className="friend-status">Offline</span>}
                                 </div>
-                            </button>
-                            {popUp===`user-${friend.friend._id}-popup`
-                            &&
-                            <div className="friend-more-pop-up-container" 
-                            style={{left:`${popupPosition.x/1.70}px`, top:`${popupPosition.y+popupPosition.clickY+5}px`, 
-                                transform: `translateY(${-popupPosition.y}px)`}}>
-                                <Link to={`channels/${friend.channel.channelNumber}`} className="friend-pop-up-link">
-                                    Send Message
-                                </Link>
-                                <button className="remove-friend-button" 
-                                onClick={(e)=>handleOpenModal(e, friend.friend.displayName, friend.channel._id, friend.friend._id)}>
-                                    Remove Friend
-                                </button>
                             </div>
-                            }
-                        </>}
-                    </li>
+                        </Link>
+                        <button className="friend-more-button" onClick={(e)=>handlePopUpClick(e, friend.friend._id)}>
+                            <div className="friend-more-img-container">
+                                <img src="/img/friend-more.svg"/>
+                            </div>
+                        </button>
+                        {popUp===`user-${friend.friend._id}-popup`
+                        &&
+                        <div className="friend-more-pop-up-container" 
+                        style={{left:`${popupPosition.x/1.70}px`, top:`${popupPosition.y+popupPosition.clickY+5}px`, 
+                            transform: `translateY(${-popupPosition.y}px)`}}>
+                            <Link to={`channels/${friend.channel.channelNumber}`} className="friend-pop-up-link">
+                                Send Message
+                            </Link>
+                            <button className="remove-friend-button" 
+                            onClick={(e)=>handleOpenModal(e, friend.friend.displayName, friend.channel._id, friend.friend._id)}>
+                                Remove Friend
+                            </button>
+                        </div>
+                        }
+                </li>
                 ))}
             </ul>
         </section>

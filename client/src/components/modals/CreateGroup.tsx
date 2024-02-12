@@ -3,15 +3,17 @@ import { CreateGroupProps, CreateGroupStatus } from "../../types/generalTypes"
 import { useMemo } from "react"
 import { AxiosResponse } from "axios"
 import { createGroup } from "../../services/apiService"
+import { useNavigate } from "react-router-dom"
 
 const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, socket,
-    setChannels, handleCloseButton})=>{
+    setChannels, handleCloseButton, setIsDisabled, setModal})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const [members, setMembers] = useState([currUserId])
     const [groupName, setGroupName] = useState('')
     const [field, setField] = useState('groupName')
     const [createGroupErr, setCreateGroupErr] = useState({err:false, type:'', message:''})
     const [loading, setLoading] = useState(false)
+    const navigate = useNavigate()
 
     const filteredFriends = useMemo(()=>{
         return [...friendsInfo].filter(friends=>friends.displayName.toLowerCase().includes(searchQuery.toLocaleLowerCase()))
@@ -23,7 +25,6 @@ const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, s
             return checked?[...prevMembers, value]:[...prevMembers].filter(member=>member!==value)
         })
     }
-
     const handleGroupName = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
         if(groupName===''){
@@ -42,6 +43,8 @@ const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, s
 
     const handleCreateGroup = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()
+        setLoading(true)
+        setIsDisabled(true)
         try{
             const res:AxiosResponse<CreateGroupStatus> = await createGroup(token, members, groupName)
             const {members:newMembers, __v, ...newChannel} = {...res.data.newChannel}
@@ -52,6 +55,10 @@ const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, s
                 if(socket){
                     socket.emit('new_group_channel_created', {newMembers, newChannel})
                 }
+                setIsDisabled(false)
+                navigate(`channels/${newChannel.channelNumber}`)
+                setModal(false)
+                setLoading(false)
             }
         }catch(err){
             console.log(err)
@@ -103,8 +110,12 @@ const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, s
                     <button type="button" className="group-name-confirm" onClick={handleGroupName}>Confirm</button>
                     </>:
                     <>
-                        <button disabled={loading} onClick={handleBackButton} className="create-group-back-button" type="button">Back</button>
-                        <button className="create-group-button" type="submit" disabled={loading}>
+                        <button disabled={loading} onClick={handleBackButton} className="create-group-back-button" type="button">Back</button>                        
+                        <button className="create-group-button" type="submit" disabled={loading} style={{justifyContent:`${loading?"center":"space-between"}`}}>
+                        {loading?
+                        <div className="create-group-loading"></div>
+                        :
+                        <>
                             <span>
                                 Create Group
                             </span>
@@ -114,6 +125,7 @@ const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, s
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
+                        </>}
                         </button>
                     </>}
                 </div>

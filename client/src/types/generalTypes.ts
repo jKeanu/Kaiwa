@@ -233,7 +233,9 @@ export type CreateGroupProps={
     friendsInfo:FriendDetails[],
     socket:Socket|undefined,
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
-    setChannels:React.Dispatch<SetStateAction<Channel[]>>
+    setChannels:React.Dispatch<SetStateAction<Channel[]>>,
+    setIsDisabled: React.Dispatch<SetStateAction<boolean>>,
+    setModal: React.Dispatch<SetStateAction<boolean>>
 }
 
 

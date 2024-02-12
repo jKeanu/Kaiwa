@@ -8,7 +8,8 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
     const [searchQuery, setSearchQuery] = useState('')
     const [modal, setModal] = useState(false)
     const {displayName, friendTag, photo, _id} = currentUserData
-
+    const [isDisabled, setIsDisabled] = useState(false)
+    
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
         setModal(false)
@@ -33,9 +34,10 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
     return(
     <section className='left-home-section'>
         {modal&&
-        <dialog className='modal-window-container' onMouseDown={handleModalWindowClick}>
-            <CreateGroup token={token} currUserId={_id} friendsInfo={friendsInfo}
-             socket={socket} handleCloseButton={handleCloseButton} setChannels={setChannels}/>
+        <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} 
+        style={{pointerEvents:`${isDisabled?"none":"auto"}`}}>
+            <CreateGroup token={token} currUserId={_id} friendsInfo={friendsInfo} setIsDisabled={setIsDisabled}
+             socket={socket} setModal={setModal} handleCloseButton={handleCloseButton} setChannels={setChannels}/>
         </dialog >}
         <div className='upper-left-section-container'>
             <div className='logo-container'>
