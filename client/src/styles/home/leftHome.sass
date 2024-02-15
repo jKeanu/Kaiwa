@@ -6,6 +6,7 @@
     flex-shrink: 0 //or min-width
     display: flex
     flex-direction: column
+    max-width: 17rem
     height: 100vh
     max-height: 100vh
     .modal-window-container
@@ -132,7 +133,7 @@
                         border: none
                         height: 2rem
                         border-radius: 1rem
-                        padding: 0.7rem
+                        padding: 0rem 0.7rem
                         display: flex
                         align-items: center
                         justify-content: center
@@ -148,6 +149,7 @@
                         cursor: pointer
                         transition: background-color 0.15s ease
                         border: none
+                        padding: 0rem 0.7rem
                         &:hover
                             background-color: #2e4470
                     .create-group-button
@@ -159,7 +161,7 @@
                         height: 2rem
                         width: 9rem
                         border-radius: 1rem
-                        padding: 0.7rem
+                        padding: 0rem 0.7rem
                         cursor: pointer
                         transition: background-color 0.15s ease
                         &:hover
@@ -230,12 +232,14 @@
             background-color: rgb(81, 84, 110)
             border-radius: 0.2rem
             transition: background-color 0.3s ease-in-out
+        width: 100%
         .channel-links
             display: flex
             flex-direction: column
             overflow: auto
             padding: 0.5rem 0
             .channel-link-container
+                overflow-x: hidden
                 .channel-link
                     text-decoration: none
                     display: flex
@@ -246,15 +250,21 @@
                     transition: background-color 0.25s ease-in-out
                     &:hover
                         background-color: rgb(52, 76, 100)
+                    &.active
+                        background-color: rgb(52, 76, 100)
                     .channel-photo
                         width: 2.5rem
                         height: 2.5rem
                         object-fit: cover
                         border-radius: 1.25rem
+                        flex-shrink: 0
                     .channel-name
                         font-family: 'Raleway', sans-serif
                         color: white
                         font-size: 1.1rem
+                        white-space: nowrap
+                        width: 100%
+
     .user-info-container
         border-top: 1px solid $white-line
         display: flex
@@ -286,7 +296,6 @@
                 .friend-tag-info
                     color: rgb(191, 191, 191)
                     font-size: 0.7rem
-
     .logout-button
         background-color: transparent
         color: white

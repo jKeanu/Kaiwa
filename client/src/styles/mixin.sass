@@ -13,26 +13,22 @@
     width: 100%
     height: 100%
     background-color: rgba(0, 0, 0, 0.2)
-    display: flex
-    justify-content: center
-    align-items: center
+    display: block
     z-index: 1
 
-@mixin loading($margin-r, $w)
-    margin-right: $margin-r
-    width: $w
-    aspect-ratio: 2
-    --_g: no-repeat radial-gradient(circle closest-side, #d1d1d1b5 90%, #fdfdfd00)
-    background: var(--_g) 0%   50%, var(--_g) 50%  50%, var(--_g) 100% 50%
-    background-size: calc(100%/3) 50%
-    animation: l3 1s infinite linear
-
 @mixin modal($border-radius)
+    position: absolute
+    top: 40%
     background-color: #151a26
     padding: 1.5rem
     border-radius: $border-radius
     min-height: 10rem
     min-width: 25rem
+    left: 50%
+    transform: translate(-50%, -50%)
+    transition: all 0.15s ease-in
+    &.visible
+        top: 50%
     .modal-x-button-container
         display: flex
         justify-content: end
@@ -40,13 +36,20 @@
         .modal-x-button
             background-color: transparent
             border: none
+            padding: 0
+            cursor: pointer
+            &:hover > .x-img
+                stroke-width: 2px
+            .x-img
+                transition: all 0.05s ease-in-out
+                
     .modal-header
         margin: 0.5rem 0
         font-family: 'Raleway', sans-serif
         font-size: 1.2rem
     .modal-text  
         font-family: 'Raleway', sans-serif
-
+        
 @mixin modal-button-container
     display: flex
     justify-content: flex-end
@@ -84,6 +87,15 @@
             cursor: pointer
             background-color: $white-text
             color: black
+    &.s-modal-button-container
+        position: relative
+        .s-modal-err
+            position: absolute
+            color: $error-message
+            font-family: 'Open Sans', sans-serif
+            font-size: 0.7rem
+            left: 0
+            top: 105%
 
 
 @mixin scroll($scroll-color)
@@ -93,4 +105,13 @@
         background-color: $scroll-color
         border-radius: 0.2rem
         transition: background-color 0.3s ease-in-out
-    
+
+
+@mixin loading($margin-r, $w)
+    margin-right: $margin-r
+    width: $w
+    aspect-ratio: 2
+    --_g: no-repeat radial-gradient(circle closest-side, #d1d1d1b5 90%, #fdfdfd00)
+    background: var(--_g) 0%   50%, var(--_g) 50%  50%, var(--_g) 100% 50%
+    background-size: calc(100%/3) 50%
+    animation: l3 1s infinite linear

@@ -3,6 +3,7 @@ import User from '../models/userModel.js';
 import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import Channel from '../models/channelModel.js';
+import Chat from '../models/chatModel.js';
 
 const filterObj = (obj, ...allowedfields)=>{
     const newObj = {}
@@ -121,6 +122,8 @@ export const deleteGroup = catchAsync(async (req, res, next)=>{
             {$pull:{
                 groups:groupChannel._id
             }}, {session})
+        //Delete all messages in the channel
+        await Chat.deleteMany({channel:groupChannel._id}).session(session)
         if (updateStatus.modifiedCount !== groupChannel.members.length){
             await session.abortTransaction();
             return next(new AppError("One or more of the input is invalid", 400))

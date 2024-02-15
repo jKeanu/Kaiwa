@@ -16,7 +16,7 @@ import LeaveGroupModal from "./modals/LeaveGroup"
 import DeleteGroupModal from "./modals/DeleteGroup"
 import InviteUserModal from "./modals/InviteUser"
 
-const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends})=>{
+const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, setChannels})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag} = currentUserData
@@ -59,7 +59,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
             setCurrentChannel(channelData.channel);
             setCurrentChannelMembers(channelData.channel.members);
         }else if (channelError) {
-            console.log('ERRORZZZZZZZZZ');
+            navigate('/@me');
         }
     }, [channelData, channelError, channelIsLoading])
 
@@ -387,7 +387,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                 {(modalWindow.window==='leaveGroup'&&currentChannel)
                 &&
                 <LeaveGroupModal token={token} channelId={currentChannel._id} 
-                handleCloseButton={handleCloseButton}/>
+                handleCloseButton={handleCloseButton} setChannels={setChannels}/>
                 }
                 {(modalWindow.window==='inviteUser'&&currentChannel)
                 &&
@@ -397,7 +397,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                 {(modalWindow.window==='deleteGroup'&&currentChannel)
                 &&
                 <DeleteGroupModal token={token} channelId={currentChannel._id} 
-                handleCloseButton={handleCloseButton}/>}
+                handleCloseButton={handleCloseButton} setChannels={setChannels}/>}
             </dialog>}
             <section className="channel-members-section">
                 <h2 className="channel-members-header">Members</h2>

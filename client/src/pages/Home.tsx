@@ -420,6 +420,7 @@ const HomePage:React.FC = ()=>{
                             socket={socket}
                             currentUserData={userData}
                             token={token}
+                            setChannels={setChannels}
                             myFriends={myFriends}/>}/>
                         </Routes>
                     </main>

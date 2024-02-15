@@ -1,7 +1,7 @@
 import { NavLink, Link} from 'react-router-dom';
 import {LeftSectionProps} from '../types/generalTypes';
 import { useMemo, useState } from 'react';
-import CreateGroup from './modals/CreateGroup';
+import CreateGroupModal from './modals/CreateGroup';
 
 const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChannels,
     currentUserData, friendsInfo, token, socket})=>{
@@ -18,7 +18,9 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.button===0 && e.target === e.currentTarget) {
             e.preventDefault();
-            setModal(false)
+            if(!isDisabled){
+                setModal(false)
+            }
         }
     }
 
@@ -34,9 +36,8 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
     return(
     <section className='left-home-section'>
         {modal&&
-        <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} 
-        style={{pointerEvents:`${isDisabled?"none":"auto"}`}}>
-            <CreateGroup token={token} currUserId={_id} friendsInfo={friendsInfo} setIsDisabled={setIsDisabled}
+        <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} >
+            <CreateGroupModal token={token} currUserId={_id} friendsInfo={friendsInfo} setIsDisabled={setIsDisabled}
              socket={socket} setModal={setModal} handleCloseButton={handleCloseButton} setChannels={setChannels}/>
         </dialog >}
         <div className='upper-left-section-container'>
@@ -68,7 +69,8 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
             <ul className='channel-links'> 
                 {filteredChannels.map(channel=>(
                     <li className='channel-link-container' key={channel.channelNumber}>
-                        <NavLink className='channel-link' to={`channels/${channel.channelNumber}`} onClick={clearSearchQuery}>
+                        <NavLink className='channel-link' to={`channels/${channel.channelNumber}`} 
+                        onClick={clearSearchQuery}>
                             <img className='channel-photo'src={`/img/${channel.photo}`} alt=''/>
                             <span className='channel-name'>{channel.channelName}</span>
                         </NavLink>

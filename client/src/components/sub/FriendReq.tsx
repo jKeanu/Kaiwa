@@ -46,7 +46,6 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
                     return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
                 })
                 if(socket){
-                    console.log(currUserId, '-----')
                     socket.emit('accepted_pending_friend_request', {
                         newChannelInfo: newChannel.channel,
                         pendingUserId: pendingUserId,

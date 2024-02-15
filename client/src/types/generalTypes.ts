@@ -105,6 +105,7 @@ export type ChannelSectionProps={
     socket: Socket|undefined,
     currentUserData: User,
     myFriends:FriendDetails[],
+    setChannels: React.Dispatch<SetStateAction<Channel[]>>
 }
 
 export type HomeSectionProps={
@@ -214,20 +215,24 @@ export type InviteFriend={
     channelNumber:string|undefined
 }
 
+
+//Group
 export type DeleteGroup={
     token:string,
     channelId:string
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    setChannels: React.Dispatch<SetStateAction<Channel[]>>
 }
 
-//Group
+
 export type LeaveGroup={
     token:string,
     channelId:string
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    setChannels: React.Dispatch<SetStateAction<Channel[]>>
 }
 
-export type CreateGroupProps={
+export type CreateGroup={
     token:string,
     currUserId:string,
     friendsInfo:FriendDetails[],

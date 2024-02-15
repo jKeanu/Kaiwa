@@ -53,9 +53,14 @@
                         width: 3.5rem
                         padding: 0.4rem
                         transition: background-color 0.15s ease-in
+                        cursor: pointer
+                        display: flex
+                        align-items: center
+                        justify-content: center
                         &:hover
                             background-color: rgb(31, 128, 41)
-                            cursor: pointer
+                        .invite-user-loading
+                            @include loading(0, 30px)
                         
     //messages
     .message-section

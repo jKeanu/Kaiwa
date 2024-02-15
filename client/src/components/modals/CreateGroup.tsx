@@ -1,17 +1,19 @@
-import React, { useState } from "react"
-import { CreateGroupProps, CreateGroupStatus } from "../../types/generalTypes"
+import React, { useEffect, useState } from "react"
+import { CreateGroup, CreateGroupStatus } from "../../types/generalTypes"
 import { useMemo } from "react"
 import { AxiosResponse } from "axios"
+import axios from 'axios'
 import { createGroup } from "../../services/apiService"
 import { useNavigate } from "react-router-dom"
 
-const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, socket,
+const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, socket,
     setChannels, handleCloseButton, setIsDisabled, setModal})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const [members, setMembers] = useState([currUserId])
     const [groupName, setGroupName] = useState('')
     const [field, setField] = useState('groupName')
     const [createGroupErr, setCreateGroupErr] = useState({err:false, type:'', message:''})
+    const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
@@ -60,17 +62,39 @@ const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, s
                 setModal(false)
                 setLoading(false)
             }
-        }catch(err){
-            console.log(err)
-            setCreateGroupErr({err:true, type:'createErr', message:'An unknown error occurred. Please try again later.'})
+        }catch(err:unknown){
+            if (axios.isAxiosError(err)){
+                if(err.response?.status===400){
+                    if (err.response.data.message.split('. ').length>1){
+                        setCreateGroupErr({err:true, type:'createErr', message:err.response.data.message.split('. ')[1]})
+                    }else{
+                        setCreateGroupErr({err:true, type:'createErr', message:err.response.data.message})
+                    }
+                }else{
+                    setCreateGroupErr({err:true, type:'createErr', message:'An unknown error occurred. Please try again later.'})
+                }
+            }else{
+                setCreateGroupErr({err:true, type:'createErr', message:'An unknown error occurred. Please try again later.'})
+            }
+            setLoading(false)
+            setIsDisabled(false)
         }
     }
 
+    useEffect(()=>{
+        setModalVisible(true)
+    }, [])
 
     return(
-        <div className="create-group-modal-container">
+        <div className={`create-group-modal-container ${modalVisible?'visible':''}`}>
             <div className="modal-x-button-container">
-                <button disabled={loading} className='modal-x-button' onClick={handleCloseButton}>Close</button>
+                <button disabled={loading} className='modal-x-button' onClick={handleCloseButton}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
+                    strokeLinecap="round" strokeLinejoin="round" className="x-img">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
             <h2 className="modal-header">Create Group</h2>
             <div className="modal-text">{field==="groupName"?"Give your channel a name. You can change it later.":
@@ -135,4 +159,4 @@ const CreateGroup:React.FC<CreateGroupProps>=({token, friendsInfo, currUserId, s
 }
 
 
-export default CreateGroup
+export default CreateGroupModal
