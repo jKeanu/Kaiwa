@@ -9,11 +9,12 @@ import {User, Channel,
         Friend, UserDataStatus, 
         FriendDetails, ChannelDataStatus, 
         ChannelMemberUpdate, LastMessageUpdate,
-        ChannelMessagesStatus, UserStatusUpdate, FriendReq, SentReq, FriendRequestAccepted} 
+        ChannelMessagesStatus, UserStatusUpdate, FriendReq, SentReq, FriendRequestAccepted, NoticeModalSettings} 
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
 import { getCurrentUser } from '../services/apiService'
 import axios, {AxiosResponse} from 'axios'
+import NoticeModal from '../components/modals/Notice'
 
 
 const HomePage:React.FC = ()=>{
@@ -32,6 +33,8 @@ const HomePage:React.FC = ()=>{
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
         const [sentReqs, setSentReqs] = useState<SentReq[]>([])
+        const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
+        ({isOpen:false, channelId:''})
         const location = useLocation()
 
 
@@ -283,14 +286,34 @@ const HomePage:React.FC = ()=>{
                         if(!channelDataCache){
                             return undefined
                         }
-                        const updateChannelDataCache = {...channelDataCache.channel}
-                        updateChannelDataCache.members = [...updateChannelDataCache.members, data.invitedUser]
-                        return {status:channelDataCache.status, channel:updateChannelDataCache}
+                        if(data.type==='Joined'){
+                            const updateChannelDataCache = {...channelDataCache.channel}
+                            updateChannelDataCache.members = [...updateChannelDataCache.members, data.user]
+                            return {status:channelDataCache.status, channel:updateChannelDataCache}
+                        }else if(data.type==='Left'){
+                            const updateChannelDataCache = {...channelDataCache.channel}
+                            updateChannelDataCache.members = [...updateChannelDataCache.members].filter(member=>member._id!==data.user._id)
+                            return {status:channelDataCache.status, channel:updateChannelDataCache}
+                        }
                     }, false)
                 }
-                socket.on(`channel_new_member_update`, handleChannelMemberUpdate)
+                socket.on(`channel_member_update`, handleChannelMemberUpdate)
                 const cleanup = ():void  =>{
-                    socket.removeListener('channel_new_member_update', handleChannelMemberUpdate);
+                    socket.removeListener('channel_member_update', handleChannelMemberUpdate);
+                }
+                return cleanup
+            }
+        }, [socket])
+
+        //This executed when a you were invited to an already existing group channel
+        useEffect(()=>{
+            if(socket){
+                const groupChannelInvite = (newGroupChannel:Channel)=>{
+                    setChannels(prevChannels => [newGroupChannel, ...prevChannels])
+                }
+                socket.on('invited_to_group', groupChannelInvite)
+                const cleanup = ():void=>{
+                    socket.removeListener('invited_to_group', groupChannelInvite)
                 }
                 return cleanup
             }
@@ -398,6 +421,28 @@ const HomePage:React.FC = ()=>{
             }
         })
 
+        const handleModalConfirm = (e:React.MouseEvent<HTMLButtonElement>, channelId:string)=>{
+            e.preventDefault()
+            setChannels(prevChannels=> [...prevChannels].filter(channels=>channels._id!==channelId))
+            setNoticeModal({isOpen:false, channelId:''})
+        }
+
+        //This executes when the group leader of a group channel deleted the group channel
+        useEffect(()=>{
+            if(socket){
+                const handleGroupDeletion = (data:{channelNumber:string, channelId:string}):void=>{
+                    // setChannels(prevChannels=> [...prevChannels].filter(channels=>channels._id!==channelId))
+                    if(location.pathname === `/@me/channels/${data.channelNumber}`){
+                        navigate('/@me')
+                        setNoticeModal({isOpen:true, channelId:data.channelNumber})
+                    }else{
+                        setChannels(prevChannels=> [...prevChannels].filter(channels=>channels._id!==data.channelId))
+                    }
+                }
+                socket.on("delete_group_channel", handleGroupDeletion)
+            }
+        })
+
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault()
             localStorage.removeItem('token')
@@ -407,6 +452,10 @@ const HomePage:React.FC = ()=>{
             <>
                 {userData&&token?
                     <main className='homepage'>
+                        {noticeModal.isOpen&&
+                        <dialog className='modal-window-container'>
+                            <NoticeModal channelId={noticeModal.channelId} handleModalConfirm={handleModalConfirm}/>
+                        </dialog>}
                         <LeftSection friendsInfo={myFriends} channels={channels} token={token} socket={socket}
                         handleLogout={handleLogout} currentUserData={userData} setChannels={setChannels}/>
                         <Routes>

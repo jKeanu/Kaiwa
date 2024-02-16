@@ -117,11 +117,23 @@ export default (httpServer) => {
       socket.to(data.channelNumber).emit('receive_message', messageInfo);
     });
 
+    //Invite a user to the group channel
     socket.on('user_invite_success', async(data)=>{
       //add status on select, if status is already implemented ------------------------------
-      const invitedUser = await User.findById(data.inviteUser).select('displayName friendTag _id photo status')
-      io.to(`channel-${data.channelId}`).emit(`channel_new_member_update`, {invitedUser, channelNumber:data.channelNumber})
+      const user = await User.findById(data.inviteUser).select('displayName friendTag _id photo status')
+      const currChannel = await Channel.findById(data.channelId)
+        .select('photo channelNumber _id channelName channelType lastMessage id')
+      io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Joined'})
+      socket.to(`user-${user._id}`).emit('invited_to_group', currChannel)
     })
+
+    //When a user left the group channel
+    socket.on('leave_group', async(data)=>{
+      const user = await User.findById(verifiedCurrentUserId).select('displayName friendTag_id photo status')
+      io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Left'})
+    })
+    
+
     
     socket.on("continue_message", async(data)=>{
       const updatedMessage = await Chat.findOneAndUpdate(
@@ -161,6 +173,13 @@ export default (httpServer) => {
     socket.on("new_group_channel_created", (data)=>{
       data.newMembers.forEach(member=>{
         socket.to(`user-${member}`).emit('new_group_channel', data.newChannel)
+      })
+    })
+
+    //When a group channel has been deleted
+    socket.on("group_channel_deleted", (data)=>{
+      data.membersId.forEach(memberId=>{
+        socket.to(`user-${memberId}`).emit('delete_group_channel', {channelId:data.channelId, channelNumber:data.channelNumber})
       })
     })
 

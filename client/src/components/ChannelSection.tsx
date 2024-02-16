@@ -33,7 +33,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
 
     
-    const memberIds = useMemo(()=>{
+    const membersId:string[] = useMemo(()=>{
         return [...currentChannelMembers].map(member=>member._id)
     }, [currentChannelMembers])
 
@@ -386,18 +386,21 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
             {modalWindow?.isOpen&&<dialog className='modal-window-container' onClick={handleModalWindowClick}>
                 {(modalWindow.window==='leaveGroup'&&currentChannel)
                 &&
-                <LeaveGroupModal token={token} channelId={currentChannel._id} 
+                <LeaveGroupModal token={token} channelId={currentChannel._id} socket={socket}
+                currUserId={_id} channelNumber={channelNumber}
                 handleCloseButton={handleCloseButton} setChannels={setChannels}/>
                 }
                 {(modalWindow.window==='inviteUser'&&currentChannel)
                 &&
                 <InviteUserModal handleCloseButton={handleCloseButton} channelId={currentChannel._id}
-                 token={token} friends={myFriends} currChannelMembersId={memberIds} socket={socket}
+                 token={token} friends={myFriends} currChannelMembersId={membersId} socket={socket}
                  channelNumber={channelNumber}/>}
                 {(modalWindow.window==='deleteGroup'&&currentChannel)
                 &&
-                <DeleteGroupModal token={token} channelId={currentChannel._id} 
-                handleCloseButton={handleCloseButton} setChannels={setChannels}/>}
+                <DeleteGroupModal token={token} channelId={currentChannel._id} channelNumber={channelNumber}
+                handleCloseButton={handleCloseButton} setChannels={setChannels} socket={socket}
+                membersId={membersId}
+                />}
             </dialog>}
             <section className="channel-members-section">
                 <h2 className="channel-members-header">Members</h2>

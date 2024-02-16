@@ -130,7 +130,7 @@ export const deleteGroup = catchAsync(async (req, res, next)=>{
         }
         await Channel.findOneAndDelete({_id:req.params.groupId, channelType:"Group"}).session(session)
         await session.commitTransaction()
-        res.status(200).end()
+        res.status(204).end()
     }catch(err){
         await session.abortTransaction()
         console.log('ERROR!!!', err)
@@ -160,56 +160,68 @@ export const getGroupMembers = catchAsync(async (req, res, next)=>{
 
 
 export const inviteMember = catchAsync(async (req, res, next)=>{
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try{
-        const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"})
-        if(!groupChannel){
-            return next(new AppError("Group channel with that ID does not exists", 404))
-        }
-        //Check if the user that is being invited exists.
-        const user = await User.findById(req.body.userId).session(session)
-        if (!user){
+    let retries = 3; // Maximum number of retries
+    let delayTime = 1000; // Delay time in milliseconds
+    const attemptOperation = async ()=>{
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try{
+            const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"})
+            if(!groupChannel){
+                return next(new AppError("Group channel with that ID does not exists", 404))
+            }
+            //Check if the user that is being invited exists.
+            const user = await User.findById(req.body.userId).session(session)
+            if (!user){
+                await session.abortTransaction()
+                return next(new AppError("User does not exists", 404))
+            }
+            //if the current user is not a member of the group
+            if(!groupChannel.members.includes(req.user._id.toString())){
+                await session.abortTransaction()
+                return next(new AppError("You are not authorized to invite a user to this group", 401))    
+            }
+            //Check if the logged in user is friends with the user that we're inviting in the group
+            const findStatus = user.friends.find(friend=>
+                friend.friend.toString() ===req.user._id.toString() &&
+                friend.status === 'Friend')
+            //If the findStatus does not exists it means that the logged in user is not friends with
+            //the person he/she is inviting.
+            if(!findStatus){
+                await session.abortTransaction()
+                return next(new AppError("Friends with the user is required to invite.", 400))
+            }
+            //Checking if the user that is being invited is already in the group
+            if(groupChannel.members.includes(user._id)){
+                await session.abortTransaction()
+                return next(new AppError("The user is already in the group.", 400))
+            }
+            //pushing the channel into the invited users groups 
+            user.groups.push(groupChannel._id)
+            //updating the group member
+            groupChannel.members.push(user._id)
+            await groupChannel.save({session})
+            await user.save({session, validateBeforeSave:false})
+            await session.commitTransaction();
+            res.status(200).json({
+                status:"success",
+            })
+        }catch(err){
+            if(err instanceof MongoServerError && err.code === 112 && retries > 0){
+                console.log(`WriteConflict detected, retrying... Retries left: ${retries}`);
+                retries--;
+                await delay(delayTime);
+                await session.abortTransaction(); 
+                return attemptOperation(); 
+            }
+            console.log(err, '-------123')
             await session.abortTransaction()
-            return next(new AppError("User does not exists", 404))
-        }
-        //if the current user is not a member of the group
-        if(!groupChannel.members.includes(req.user._id.toString())){
-            await session.abortTransaction()
-            return next(new AppError("You are not authorized to invite a user to this group", 401))    
-        }
-        //Check if the logged in user is friends with the user that we're inviting in the group
-        const findStatus = user.friends.find(friend=>
-            friend.friend.toString() ===req.user._id.toString() &&
-            friend.status === 'Friend')
-        //If the findStatus does not exists it means that the logged in user is not friends with
-        //the person he/she is inviting.
-        if(!findStatus){
-            await session.abortTransaction()
-            return next(new AppError("Friends with the user is required to invite.", 400))
-        }
-        //Checking if the user that is being invited is already in the group
-        if(groupChannel.members.includes(user._id)){
-            await session.abortTransaction()
-            return next(new AppError("The user is already in the group.", 400))
-        }
-        //pushing the channel into the invited users groups 
-        user.groups.push(groupChannel._id)
-        //updating the group member
-        groupChannel.members.push(user._id)
-        await groupChannel.save({session})
-        await user.save({session, validateBeforeSave:false})
-        await session.commitTransaction();
-        res.status(200).json({
-            status:"success",
-        })
-    }catch(err){
-        console.log('ERROR!!!', err)
-        await session.abortTransaction()
-        next(err)
-    }finally{
-        await session.endSession()
-}
+            next(err)
+        }finally{
+            await session.endSession()
+    }
+    }
+    await attemptOperation()
 })
 
 export const leaveGroup = catchAsync(async (req, res, next)=>{

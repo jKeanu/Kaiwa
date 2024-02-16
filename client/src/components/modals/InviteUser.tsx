@@ -7,6 +7,7 @@ import { useState} from "react"
 const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currChannelMembersId, socket, channelNumber, handleCloseButton})=>{
     const [modalVisible, setModalVisible] = useState(false)
     const [loadings, setLoadings] = useState<string[]>([])
+    const [errors, setErrors] = useState<string[]>([])
     useEffect(()=>{
         setModalVisible(true)
     },[])
@@ -23,7 +24,7 @@ const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currCh
             }
         }
         catch(err){
-            console.log(err)
+
         }
     }
 
@@ -46,7 +47,7 @@ const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currCh
                         <li key={index} className="invite-friend-info">
                             <img src={`/img/${friend.photo}`}/>
                             <div className="friend-invite-display-name">{friend.displayName}</div>
-                            <button className="friend-invite-button" onClick={(e)=>handleInvite(e, friend)}>
+                            <button className="friend-invite-button" disabled={loadings.includes(friend._id)} onClick={(e)=>handleInvite(e, friend)}>
                                 {loadings.includes(friend._id)?
                                 <div className="invite-user-loading"></div>
                                 :

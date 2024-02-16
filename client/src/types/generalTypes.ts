@@ -169,8 +169,9 @@ export type ChannelMessagesStatus={
 }
 
 export type ChannelMemberUpdate={
-    invitedUser:ChannelMember,
+    user:ChannelMember,
     channelNumber:string,
+    type:string
 }
 
 export type CreateGroupStatus={
@@ -189,8 +190,9 @@ export type CreateGroupStatus={
     }
 }
 
-//Modals
-//Friend
+//Modals----
+
+//state types
 export type ModalWindow={
     isOpen:boolean,
     window:string
@@ -205,6 +207,19 @@ export type UnfriendModalSettings={
     displayName:string
 }
 
+export type NoticeModalSettings={
+    isOpen:boolean,
+    channelId:string
+
+}
+
+//Modal window props
+export type Notice={
+    channelId:string,
+    handleModalConfirm:(e:React.MouseEvent<HTMLButtonElement>, channelId:string)=>void
+}
+
+//Friend
 export type InviteFriend={
     friends:FriendDetails[],
     socket: Socket|undefined,
@@ -221,7 +236,10 @@ export type DeleteGroup={
     token:string,
     channelId:string
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
-    setChannels: React.Dispatch<SetStateAction<Channel[]>>
+    setChannels: React.Dispatch<SetStateAction<Channel[]>>,
+    socket: Socket|undefined,
+    membersId:string[],
+    channelNumber: string|undefined
 }
 
 
@@ -229,7 +247,10 @@ export type LeaveGroup={
     token:string,
     channelId:string
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
-    setChannels: React.Dispatch<SetStateAction<Channel[]>>
+    setChannels: React.Dispatch<SetStateAction<Channel[]>>,
+    socket: Socket|undefined,
+    currUserId: string,
+    channelNumber: string | undefined
 }
 
 export type CreateGroup={
@@ -243,8 +264,7 @@ export type CreateGroup={
     setModal: React.Dispatch<SetStateAction<boolean>>
 }
 
-
-//Live Updates
+//Live Updates----
 export type LastMessageUpdate = {
     channelId:string,
     channelNumber:string,
@@ -273,7 +293,7 @@ export type AcceptFriendStatus={
     status:string,
     newChannel:NewChannel
 }
-//Sub-comp
+//Sub-comp----
 //Friend
 export type FriendListProps={
     friends:Friend[],
@@ -308,7 +328,7 @@ export type UnfriendProps={
     setModalSettings: React.Dispatch<SetStateAction<UnfriendModalSettings>>
 }
 
-//Socket event-listener param
+//Socket event-listener param---
 export type FriendRequestAccepted={
     newChannelInfo:{
         channelNumber:number,

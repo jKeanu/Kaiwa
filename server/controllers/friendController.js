@@ -221,11 +221,11 @@ export const unfriend = catchAsync(async(req, res, next)=>{
 
 
 export const declineFriend = catchAsync(async(req, res, next)=>{
-    const session = await mongoose.startSession();
-    session.startTransaction();
     let retries = 3; // Maximum number of retries
     let delayTime = 1000; // Delay time in milliseconds
     const attemptOperation = async ()=>{
+        const session = await mongoose.startSession();
+        session.startTransaction();
         try{
             const removeUser = await User.findById(req.params.friendId).session(session)
             if(!removeUser){

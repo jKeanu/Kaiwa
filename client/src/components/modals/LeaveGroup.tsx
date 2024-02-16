@@ -4,7 +4,7 @@ import { leaveGroup } from "../../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton})=>{
+const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton, socket, channelNumber})=>{
     const [modalVisible, setModalVisible] = useState(false)
     const navigate = useNavigate()
     const [isLoading, setIsLoading]  = useState(false)
@@ -17,6 +17,9 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
             if(res.status===204){
                 navigate('/@me')
                 setIsLoading(false)
+                if(socket){
+                    socket.emit('leave_group', {channelId, channelNumber})
+                }
             }
         }catch(err){
             setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
