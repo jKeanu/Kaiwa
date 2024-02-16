@@ -9,12 +9,11 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
     const [searchQuery, setSearchQuery] = useState<string>('')
     const [popUp, setPopUp] = useState<string>('')
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 , clickX:0, clickY:0})
-    const [unfriendLoading, setUnfriendLoading] = useState<string[]>([])
-    const [modalSettings, setModalSettings] = useState<UnfriendModalSettings>({isOpen:false, ids:{channelId:'', friendId:''}, displayName:''})
+    const [modalSettings, setModalSettings] = useState<UnfriendModalSettings>({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
 
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
-        setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:''})
+        setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
     }
 
     const filteredFriends = useMemo(()=>{
@@ -29,16 +28,16 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
         setPopupPosition({x:e.clientX, y:e.clientY, clickX, clickY})
     }
 
-    const handleOpenModal = (e:React.MouseEvent<HTMLButtonElement>, displayName:string, channelId:string, friendId:string)=>{
+    const handleOpenModal = (e:React.MouseEvent<HTMLButtonElement>, displayName:string, channelId:string, friendId:string, channelNumber:number)=>{
         e.preventDefault()
         setPopUp('')
-        setModalSettings({isOpen:true, ids:{channelId, friendId}, displayName})
+        setModalSettings({isOpen:true, ids:{channelId, friendId}, displayName, channelNumber})
     }
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.target === e.currentTarget) {
             e.preventDefault();
-            setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:''})
+            setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
         }
     }
 
@@ -76,7 +75,8 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
         <section className="friend-list-container">
             {modalSettings.isOpen&&
             <dialog className="modal-window-container" onClick={handleModalWindowClick}>
-                <Unfriend {...modalSettings.ids} displayName={modalSettings.displayName} 
+                <Unfriend {...modalSettings.ids} displayName={modalSettings.displayName}
+                channelNumber={modalSettings.channelNumber}
                 handleCloseButton={handleCloseButton}
                 socket={socket} handleFriendChannelDelete={handleFriendChannelDelete} 
                 token={token}
@@ -121,7 +121,8 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
                                 Send Message
                             </Link>
                             <button className="remove-friend-button" 
-                            onClick={(e)=>handleOpenModal(e, friend.friend.displayName, friend.channel._id, friend.friend._id)}>
+                            onClick={(e)=>handleOpenModal(e, friend.friend.displayName, friend.channel._id,
+                             friend.friend._id, friend.channel.channelNumber)}>
                                 Remove Friend
                             </button>
                         </div>

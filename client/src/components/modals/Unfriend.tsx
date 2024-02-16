@@ -4,7 +4,7 @@ import { removeFriend } from "../../services/apiService"
 import { useEffect, useState } from "react"
 
 const Unfriend:React.FC<UnfriendProps>=({channelId, friendId, token, socket, handleFriendChannelDelete,
-    handleCloseButton, displayName, setModalSettings})=>{
+    handleCloseButton, displayName, setModalSettings, channelNumber})=>{
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
@@ -17,9 +17,9 @@ const Unfriend:React.FC<UnfriendProps>=({channelId, friendId, token, socket, han
             if(res.status===204){
                 handleFriendChannelDelete(channelId)
                 if(socket){
-                    socket.emit("remove_friend", {channelId, friendId})
+                    socket.emit("remove_friend", {channelId, friendId, channelNumber})
                 }
-                setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:''})
+                setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
                 setIsLoading(false)
             }
         }catch(err){

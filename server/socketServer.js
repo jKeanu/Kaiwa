@@ -179,8 +179,15 @@ export default (httpServer) => {
     //When a group channel has been deleted
     socket.on("group_channel_deleted", (data)=>{
       data.membersId.forEach(memberId=>{
-        socket.to(`user-${memberId}`).emit('delete_group_channel', {channelId:data.channelId, channelNumber:data.channelNumber})
+        socket.to(`user-${memberId}`).emit('delete_group_channel',
+        {channelId:data.channelId, channelNumber:data.channelNumber})
       })
+    })
+
+    //When a user unfriended someone
+    socket.on("remove_friend", (data)=>{
+      socket.to(`user-${data.friendId}`).emit('delete_friend_channel',
+       {channelId:data.channelId, channelNumber:data.channelNumber})
     })
 
     socket.on('disconnect', async () => {

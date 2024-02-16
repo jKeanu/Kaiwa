@@ -1,7 +1,7 @@
 import { Notice } from "../../types/generalTypes"
 import { useEffect, useState } from "react"
 
-const NoticeModal:React.FC<Notice>=({channelId, handleModalConfirm})=>{
+const NoticeModal:React.FC<Notice>=({handleModalConfirm})=>{
     const [modalVisible, setModalVisible] = useState(false)
 
     useEffect(()=>{
@@ -15,7 +15,7 @@ const NoticeModal:React.FC<Notice>=({channelId, handleModalConfirm})=>{
                 This channel is no longer accessible.
             </div>
             <div className="notice-modal-button-container">
-                <button className="confirm-button" onClick={(e)=>handleModalConfirm(e, channelId)}>Confirm</button>
+                <button className="confirm-button" onClick={(e)=>handleModalConfirm(e)}>Confirm</button>
             </div>
         </div>
     )

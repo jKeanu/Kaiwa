@@ -170,7 +170,7 @@ export type ChannelMessagesStatus={
 
 export type ChannelMemberUpdate={
     user:ChannelMember,
-    channelNumber:string,
+    channelNumber:number,
     type:string
 }
 
@@ -204,19 +204,20 @@ export type UnfriendModalSettings={
         friendId:string,
         channelId:string,
     },
-    displayName:string
+    displayName:string,
+    channelNumber: number|undefined
 }
 
 export type NoticeModalSettings={
     isOpen:boolean,
-    channelId:string
+    channelId:string,
+    type:string
 
 }
 
 //Modal window props
 export type Notice={
-    channelId:string,
-    handleModalConfirm:(e:React.MouseEvent<HTMLButtonElement>, channelId:string)=>void
+    handleModalConfirm:(e:React.MouseEvent<HTMLButtonElement>)=>void
 }
 
 //Friend
@@ -267,7 +268,7 @@ export type CreateGroup={
 //Live Updates----
 export type LastMessageUpdate = {
     channelId:string,
-    channelNumber:string,
+    channelNumber: number,
     newTime:Date|number,
     message:ChannelMessage,
     channelType:string
@@ -275,7 +276,7 @@ export type LastMessageUpdate = {
 
 export type UserStatusUpdate= {
     channelId: string,
-    channelNumber: string, 
+    channelNumber: number, 
     userId: string,
     type?:string
 }
@@ -325,7 +326,8 @@ export type UnfriendProps={
     displayName:string
     handleFriendChannelDelete:(channelId:string)=>void,
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
-    setModalSettings: React.Dispatch<SetStateAction<UnfriendModalSettings>>
+    setModalSettings: React.Dispatch<SetStateAction<UnfriendModalSettings>>,
+    channelNumber:number|undefined
 }
 
 //Socket event-listener param---

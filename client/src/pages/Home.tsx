@@ -34,7 +34,7 @@ const HomePage:React.FC = ()=>{
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
         const [sentReqs, setSentReqs] = useState<SentReq[]>([])
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
-        ({isOpen:false, channelId:''})
+        ({isOpen:false, channelId:'', type:''})
         const location = useLocation()
 
 
@@ -421,27 +421,62 @@ const HomePage:React.FC = ()=>{
             }
         })
 
-        const handleModalConfirm = (e:React.MouseEvent<HTMLButtonElement>, channelId:string)=>{
+        const handleModalConfirm = (e:React.MouseEvent<HTMLButtonElement>)=>{
             e.preventDefault()
-            setChannels(prevChannels=> [...prevChannels].filter(channels=>channels._id!==channelId))
-            setNoticeModal({isOpen:false, channelId:''})
+            if(noticeModal.type==='Group'){
+                setChannels(prevChannels=> [...prevChannels].filter(channel=>channel._id!==noticeModal.channelId))
+                setNoticeModal({isOpen:false, channelId:'', type:''})
+            }else if(noticeModal.type==='Friend'){
+                setChannels(prevChannels=> [...prevChannels]
+                    .filter(channel=>channel._id!==noticeModal.channelId))
+                setFriendChannels(prevFriendChannels=> [...prevFriendChannels]
+                    .filter(channel=>channel.channel._id!==noticeModal.channelId))
+                setNoticeModal({isOpen:false, channelId:'', type:''})
+            }
         }
 
         //This executes when the group leader of a group channel deleted the group channel
         useEffect(()=>{
             if(socket){
-                const handleGroupDeletion = (data:{channelNumber:string, channelId:string}):void=>{
+                const handleGroupDeletion = (data:{channelNumber:number, channelId:string}):void=>{
                     // setChannels(prevChannels=> [...prevChannels].filter(channels=>channels._id!==channelId))
                     if(location.pathname === `/@me/channels/${data.channelNumber}`){
                         navigate('/@me')
-                        setNoticeModal({isOpen:true, channelId:data.channelNumber})
+                        setNoticeModal({isOpen:true, channelId:data.channelId, type:'Group'})
                     }else{
                         setChannels(prevChannels=> [...prevChannels].filter(channels=>channels._id!==data.channelId))
                     }
                 }
                 socket.on("delete_group_channel", handleGroupDeletion)
+                const cleanup=():void=>{
+                    socket.removeListener('delete_group_channel', handleGroupDeletion)
+                }
+                return cleanup
             }
-        })
+        }, [socket, location])
+
+        //This executes when you have been unfriended by one of your friends
+        useEffect(()=>{
+            if(socket){
+                const handleFriendDeletion = (data:{channelNumber:number, channelId:string}):void=>{
+                    if(location.pathname === `/@me/channels/${data.channelNumber}`){
+                        navigate('/@me')
+                        setNoticeModal({isOpen:true, channelId:data.channelId, type:'Friend'})
+                    }else{
+                        setChannels(prevChannels=> [...prevChannels]
+                            .filter(channel=>channel._id!==data.channelId))
+                        setFriendChannels(prevFriendChannels=> [...prevFriendChannels]
+                            .filter(channel=>channel.channel._id!==data.channelId))
+                    }
+                }
+                socket.on("delete_friend_channel", handleFriendDeletion)
+                const cleanup=():void=>{
+                    socket.removeListener('delete_friend_channel', handleFriendDeletion)
+                }
+                return cleanup
+
+            }
+        }, [socket, location])
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault()
@@ -454,7 +489,7 @@ const HomePage:React.FC = ()=>{
                     <main className='homepage'>
                         {noticeModal.isOpen&&
                         <dialog className='modal-window-container'>
-                            <NoticeModal channelId={noticeModal.channelId} handleModalConfirm={handleModalConfirm}/>
+                            <NoticeModal handleModalConfirm={handleModalConfirm}/>
                         </dialog>}
                         <LeftSection friendsInfo={myFriends} channels={channels} token={token} socket={socket}
                         handleLogout={handleLogout} currentUserData={userData} setChannels={setChannels}/>
