@@ -1,5 +1,5 @@
-import { useParams, useNavigate } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo} from 'react'
+import { useParams, useNavigate, Link } from "react-router-dom"
+import React, { useState, useEffect, useRef, useMemo, ButtonHTMLAttributes} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -7,16 +7,22 @@ import {
         ChannelSectionProps,
         ChannelMember,
         ChannelMessagesStatus,
-        ModalWindow
+        ModalWindow,
+        AddFriendStatus,
+        MemberModalSettings
     } from "../types/generalTypes"
-import { channelFetcher,  messageFetcher} from "../services/apiService"
+import { addFriend, changeGroupLeader, channelFetcher,  messageFetcher} from "../services/apiService"
 import ReactTextareaAutosize from "react-textarea-autosize"
 import useSWR, {mutate} from "swr"
 import LeaveGroupModal from "./modals/LeaveGroup"
 import DeleteGroupModal from "./modals/DeleteGroup"
 import InviteUserModal from "./modals/InviteUser"
+import { AxiosResponse } from "axios"
+import UnfriendMemberModal from "./modals/UnfriendMember"
+import ChangeLeaderModal from "./modals/ChangeLeader"
 
-const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, setChannels})=>{
+const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, setChannels,
+    fIdAndChannelInfos, handleFriendChannelDelete, setSentReqs})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag} = currentUserData
@@ -28,7 +34,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
     const [messagesLimit, setMessagesLimit] = useState<number>(15)
     const [messagesSkip, setMessagesSkip] = useState<number>(0)
-    const [modalWindow, setModalWindow] = useState<ModalWindow>()
+    const [modalWindow, setModalWindow] = useState<ModalWindow>({isOpen:false, window:''})
+    const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
+    const [memberPopUp, setMemberPopUp] = useState('')
+    const [memberModal, setMemberModal] = useState<MemberModalSettings>
+    ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:''})
+
+
     const channelCacheKey = `api/v1/channels/${channelNumber}`
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
 
@@ -53,7 +65,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
         channelFetcher(endpoint, headers)
     )
 
-
     useEffect(() => {
         if (channelData) {
             setCurrentChannel(channelData.channel);
@@ -62,7 +73,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
             navigate('/@me');
         }
     }, [channelData, channelError, channelIsLoading])
-
 
     const { data: messagesData, error: messagesError } = useSWR<ChannelMessagesStatus>(
         messageCacheKey, (endpoint:string) =>
@@ -86,6 +96,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
             }
         }
     }, [socket, channelNumber]);
+
     useEffect(() => {
         if (socket && channelNumber) {
             const handleReceiveMessage= (newMessage: ChannelMessage)  => {
@@ -264,13 +275,21 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.target === e.currentTarget) {
             e.preventDefault();
-            setModalWindow({isOpen: false, window: ''});
+            if(modalWindow.isOpen){
+                setModalWindow({isOpen: false, window: ''});
+            }else if(memberModal.isOpen){
+                setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:''})
+            }
         }
     }
     
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
-        setModalWindow({isOpen: false, window: ''})
+        if(modalWindow.isOpen){
+            setModalWindow({isOpen: false, window: ''})
+        }else if(memberModal.isOpen){
+            setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:''})
+        }
     }
 
     function formatToTodayIfCurrentDate(dateStr:string):string {
@@ -296,6 +315,78 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
       }
     }
 
+    //Popup 
+    const handlePopUp = (e:React.MouseEvent<HTMLButtonElement>, memberId:string):void=>{
+        e.preventDefault()
+        const clickX = e.nativeEvent.offsetX
+        const clickY = e.nativeEvent.offsetY
+        setPopUpPosition({clickX, clickY})
+        setMemberPopUp(memberId)
+    }
+
+
+    //this returns the channel number of the user if the user is in our friend list
+    const findMemberId = (userId:string):undefined|{channelNumber:number, channelId:string}=>{
+        const friendInfo = fIdAndChannelInfos.find(friendIdAndCN=>friendIdAndCN.friendId===userId)
+        if(friendInfo){
+            return {channelNumber:friendInfo.channelNumber, channelId:friendInfo.channelId}
+        }else{
+            return 
+        }
+    }
+
+
+    useEffect(() => {
+        // Only add the event listener if a popup is open
+        if (memberPopUp) {
+            const handleOutsideClick = (event:MouseEvent) => {
+                const popupElement = document.querySelector('.member-popup-container') as HTMLElement;
+                const buttonClicked = (event.target as HTMLElement).closest('.member-popup-button');
+                if (popupElement && !popupElement.contains(event.target as Node) && !buttonClicked) {
+                    setMemberPopUp('');
+                }
+            };
+            document.addEventListener('mousedown', handleOutsideClick);
+            //In normal circumstances we don't need the channel number as dependency for a popup, but since when we click the send
+            //message it changes the channel, but won't cause an unmount, which will cause the MemberPopUp to still have its previous 
+            //value.
+            return () => {
+                document.removeEventListener('mousedown', handleOutsideClick);
+            };
+        }
+    }, [memberPopUp, channelNumber]);
+
+    const handleMemberSelect = (e:React.MouseEvent<HTMLButtonElement>, memberId:string, displayName:string, type:string):void => {
+        e.preventDefault()
+        if(currentChannel){
+            setMemberPopUp('')
+            const channelInfo = findMemberId(memberId)
+            if(channelInfo){
+                setMemberModal({isOpen:true, type, ids:{memberId, channelId:channelInfo.channelId}, displayName})
+            }else{
+                setMemberModal({isOpen:true, type, ids:{memberId, channelId:currentChannel._id}, displayName}) 
+            }
+        }
+    }
+
+
+    const handleAddFriendMember = async(e:React.MouseEvent<HTMLButtonElement>, displayName:string, friendTag:string):Promise<void>=>{
+        e.preventDefault()
+        setMemberPopUp('')
+        try{
+            const res:AxiosResponse<AddFriendStatus> = await addFriend(token, displayName, friendTag)
+            if(res.data.status==='success'){
+                if(socket){
+                    setSentReqs(prevSentReqs=>[...prevSentReqs, res.data.sentRequestDetails])
+                    socket.emit('friend_request_sent', 
+                    {requestedUserId:res.data.sentRequestDetails.friend._id,
+                     requestDetails:res.data.pendingRequestDetails})
+                }
+            }
+        }catch(err){
+
+        }
+    }
     return (
         <>
         {(currentChannel&&messagesData)?
@@ -383,42 +474,112 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                     />
                 </div>
             </section>
-            {modalWindow?.isOpen&&<dialog className='modal-window-container' onClick={handleModalWindowClick}>
+            {(modalWindow.isOpen||memberModal.isOpen)&&<dialog className='modal-window-container' onClick={handleModalWindowClick}>
                 {(modalWindow.window==='leaveGroup'&&currentChannel)
                 &&
-                <LeaveGroupModal token={token} channelId={currentChannel._id} socket={socket}
-                currUserId={_id} channelNumber={channelNumber}
-                handleCloseButton={handleCloseButton} setChannels={setChannels}/>
+                <LeaveGroupModal 
+                    token={token} 
+                    channelId={currentChannel._id} 
+                    socket={socket}
+                    currUserId={_id} 
+                    channelNumber={channelNumber}
+                    handleCloseButton={handleCloseButton} 
+                    setChannels={setChannels}/>
                 }
                 {(modalWindow.window==='inviteUser'&&currentChannel)
                 &&
-                <InviteUserModal handleCloseButton={handleCloseButton} channelId={currentChannel._id}
-                 token={token} friends={myFriends} currChannelMembersId={membersId} socket={socket}
-                 channelNumber={channelNumber}/>}
+                <InviteUserModal 
+                    handleCloseButton={handleCloseButton} 
+                    channelId={currentChannel._id}
+                    token={token} 
+                    friends={myFriends} 
+                    currChannelMembersId={membersId} 
+                    socket={socket}
+                    channelNumber={channelNumber}/>}
                 {(modalWindow.window==='deleteGroup'&&currentChannel)
                 &&
-                <DeleteGroupModal token={token} channelId={currentChannel._id} channelNumber={channelNumber}
-                handleCloseButton={handleCloseButton} setChannels={setChannels} socket={socket}
-                membersId={membersId}
+                <DeleteGroupModal 
+                    token={token} 
+                    channelId={currentChannel._id} 
+                    channelNumber={channelNumber}
+                    handleCloseButton={handleCloseButton} 
+                    setChannels={setChannels} 
+                    socket={socket}
+                    membersId={membersId}
+                />}
+                {memberModal.type==='unfriend'&&
+                <UnfriendMemberModal
+                    setModalSettings={setMemberModal}
+                    token={token}
+                    socket={socket}
+                    displayName={memberModal.displayName}
+                    handleCloseButton={handleCloseButton}
+                    channelNumber={currentChannel.channelNumber}
+                    handleFriendChannelDelete={handleFriendChannelDelete}
+                    {...memberModal.ids}
+                    />}
+                {memberModal.type==='changeLeader'&&
+                <ChangeLeaderModal 
+                    token={token}
+                    setModalSettings={setMemberModal}
+                    socket={socket}
+                    displayName={memberModal.displayName}
+                    channelNumber={currentChannel.channelNumber}
+                    handleCloseButton={handleCloseButton}
+                    {...memberModal.ids}
                 />}
             </dialog>}
             <section className="channel-members-section">
-                <h2 className="channel-members-header">Members</h2>
-                <ul className="member-list">
-                {
-                    sortedMembers.map((member, i)=>(
-                      <li className='member-container' key={`member-${i}`}>
-                        <button className="member-popup-button">
-                            <div className="member-profile-status">
-                                <img className='member-profile-photo' src={`/img/${member.photo}`}/>
-                                <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
-                            </div>
-                            <span className="member-name">{member.displayName}</span>
-                        </button>
-                      </li>  
-                    ))
-                    }
-                </ul>
+                <h2 className="channel-members-header">
+                    Members
+                </h2>
+                {currentChannel.channelType==='Group'?
+                    <ul className="member-list">
+                    {
+                        sortedMembers.map((member, i)=>(
+                            <li className='member-container member-popup' key={`member-${i}`}>
+                                <button className="member-popup-button" onClick={(e)=>handlePopUp(e, member._id)}>
+                                    <div className="member-profile-status">
+                                        <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                                        <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
+                                    </div>
+                                    <span className="member-name">{member.displayName}</span>
+                                </button>
+                                {memberPopUp===member._id&&member._id!==_id&&
+                                <div className="member-popup-container" style={{top:popUpPosition.clickY,
+                                 left:popUpPosition.clickX-(popUpPosition.clickX<=115?-5:115)}}>
+                                    {findMemberId(member._id)?
+                                    <>
+                                    <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link">Send Message</Link>
+                                    <button onClick={(e)=>handleMemberSelect(e, member._id, member.displayName, 'unfriend')} className="member-unfriend-button">
+                                        Remove Friend
+                                    </button>
+                                    </>:
+                                    <button className="member-add-friend" onClick={(e)=>handleAddFriendMember(e, member.displayName, member.friendTag)}>
+                                        Add Friend
+                                    </button>}
+                                    {currentChannel.groupLeader===_id&&
+                                    <button className="member-set-leader" onClick={(e)=>handleMemberSelect(e, member._id, member.displayName, 'changeLeader')}>
+                                        Set as Group Leader
+                                    </button>}
+                                </div>}
+                            </li>  
+                        ))
+                        }
+                    </ul>
+                    :
+                    <ul className="member-list">
+                        {sortedMembers.map((member, i)=>(
+                            <li key={`member-${i}`} className="member-container friend-member-container">
+                                <div className="member-profile-status">
+                                    <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                                    <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}>
+                                    </div>
+                                </div>
+                                <span className="member-name">{member.displayName}</span>
+                            </li>
+                        ))}
+                    </ul>}
             </section>
         </section>:
         <section className="right-home-section">

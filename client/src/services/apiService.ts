@@ -59,6 +59,16 @@ export const leaveGroup = async(token:string, channelId:string):Promise<AxiosRes
     return axios.delete(`${API_URL}/api/v1/me/groups/${channelId}/leave`, config)
 }
 
+export const changeGroupLeader = async(token:string, channelId:string, userId:string):Promise<AxiosResponse<{status:string}>>=>{
+    const config ={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    return axios.patch(`${API_URL}/api/v1/groups/${channelId}/changeleader`, {userId}, config)
+}
+
+
 export const addFriend = async(token:string, displayName:string, friendTag:string):Promise<AxiosResponse<AddFriendStatus>>=>{
     const config={
         headers:{

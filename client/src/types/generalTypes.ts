@@ -17,7 +17,7 @@ export type Channel = {
     id: string,
     lastMessage: number | Date,
     photo:string,
-    _id:string
+    _id:string,
 }
 
 export type Friend = {
@@ -89,6 +89,12 @@ export type AddFriendStatus={
     sentRequestDetails:SentReq
 }
 
+export type FIdChannelInfo={
+    channelNumber: number,
+    friendId: string,
+    channelId: string
+}
+
 //props
 export type LeftSectionProps ={
     channels: Channel[],  // Assuming Channel is a defined type or interface
@@ -105,7 +111,10 @@ export type ChannelSectionProps={
     socket: Socket|undefined,
     currentUserData: User,
     myFriends:FriendDetails[],
-    setChannels: React.Dispatch<SetStateAction<Channel[]>>
+    setChannels: React.Dispatch<SetStateAction<Channel[]>>,
+    fIdAndChannelInfos: FIdChannelInfo[],
+    handleFriendChannelDelete:(channelId:string)=>void,
+    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>
 }
 
 export type HomeSectionProps={
@@ -154,8 +163,7 @@ export type CurrentChannel={
     channelType: string,
     channelNumber: number,
     photo?: string,
-    lastMessage:number,
-    messages?:ChannelMessage[]
+    lastMessage:number
 }
 
 export type ChannelDataStatus={
@@ -206,6 +214,16 @@ export type UnfriendModalSettings={
     },
     displayName:string,
     channelNumber: number|undefined
+}
+
+export type MemberModalSettings={
+    isOpen:boolean,
+    type:string
+    ids:{
+        memberId:string,
+        channelId:string,
+    },
+    displayName:string
 }
 
 export type NoticeModalSettings={
@@ -328,6 +346,18 @@ export type UnfriendProps={
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
     setModalSettings: React.Dispatch<SetStateAction<UnfriendModalSettings>>,
     channelNumber:number|undefined
+}
+
+export type MemberUnfriendProps ={
+    token:string,
+    channelId:string,
+    memberId:string,
+    socket:Socket|undefined,
+    displayName:string
+    handleFriendChannelDelete:(channelId:string)=>void,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
+    channelNumber:number|undefined 
 }
 
 //Socket event-listener param---

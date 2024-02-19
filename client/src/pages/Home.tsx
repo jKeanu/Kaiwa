@@ -9,7 +9,8 @@ import {User, Channel,
         Friend, UserDataStatus, 
         FriendDetails, ChannelDataStatus, 
         ChannelMemberUpdate, LastMessageUpdate,
-        ChannelMessagesStatus, UserStatusUpdate, FriendReq, SentReq, FriendRequestAccepted, NoticeModalSettings} 
+        ChannelMessagesStatus, UserStatusUpdate, FriendReq, SentReq, FriendRequestAccepted, NoticeModalSettings,
+        FIdChannelInfo} 
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
 import { getCurrentUser } from '../services/apiService'
@@ -29,7 +30,6 @@ const HomePage:React.FC = ()=>{
         //the type would be Channel[] | undefined
         const [channels, setChannels] = useState<Channel[]>([])
         const [socket, setSocket] = useState<Socket>()
-        // const [myFriends, setMyFreinds] = useState<FriendDetails[]>([])
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
         const [sentReqs, setSentReqs] = useState<SentReq[]>([])
@@ -44,6 +44,12 @@ const HomePage:React.FC = ()=>{
         
         const myFriends:FriendDetails[] = useMemo(()=>{
             return [...friendChannels].map(friend=>friend.friend)
+        }, [friendChannels])
+
+        const fIdAndChannelInfos:FIdChannelInfo[] = useMemo(()=>{
+            return [...friendChannels].map(friend=>{
+                return {friendId:friend.friend._id, channelNumber:friend.channel.channelNumber, channelId:friend.channel._id}
+            })
         }, [friendChannels])
 
         //join rooms based on the channel id, so when there's an update in the channel
@@ -501,6 +507,9 @@ const HomePage:React.FC = ()=>{
                             friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
                             <Route path="channels/:channelNumber"
                             element={<ChannelSection
+                            fIdAndChannelInfos={fIdAndChannelInfos}
+                            setSentReqs={setSentReqs}
+                            handleFriendChannelDelete={handleFriendChannelDelete}
                             socket={socket}
                             currentUserData={userData}
                             token={token}

@@ -1,7 +1,6 @@
 import { FriendListProps, UnfriendModalSettings } from "../../types/generalTypes";
 import { Link } from "react-router-dom";
 import { useState, useMemo} from "react";
-import { AxiosResponse } from "axios";import { removeFriend } from "../../services/apiService";
 import Unfriend from "../modals/Unfriend";
 import { useEffect } from "react";
 
@@ -75,7 +74,9 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
         <section className="friend-list-container">
             {modalSettings.isOpen&&
             <dialog className="modal-window-container" onClick={handleModalWindowClick}>
-                <Unfriend {...modalSettings.ids} displayName={modalSettings.displayName}
+                <Unfriend 
+                {...modalSettings.ids}
+                displayName={modalSettings.displayName}
                 channelNumber={modalSettings.channelNumber}
                 handleCloseButton={handleCloseButton}
                 socket={socket} handleFriendChannelDelete={handleFriendChannelDelete} 
