@@ -6,7 +6,8 @@ import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
 
-const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton, setChannels, socket, membersId, channelNumber})=>{
+const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton, setChannels, 
+    socket, membersId, channelNumber, setModalDisabled})=>{
     const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
@@ -14,6 +15,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
 
     const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
+        setModalDisabled(true)
         setLoading(true)
         try{
             const res:AxiosResponse<void> = await deleteGroup(token, channelId)
@@ -25,11 +27,13 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
                     socket.emit('group_channel_deleted', {channelId, membersId, channelNumber})
                 }
                 navigate('/@me')
+                setModalDisabled(false)
                 
             }
         }catch(err){
             setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
             setLoading(false)
+            setModalDisabled(false)
         }
     }
     useEffect(()=>{

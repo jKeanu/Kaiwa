@@ -190,6 +190,11 @@ export default (httpServer) => {
        {channelId:data.channelId, channelNumber:data.channelNumber})
     })
 
+    //When a group channel leader changed the leader of the group channel.
+    socket.on("group_channel_leader_change", (data)=>{
+      socket.to(`user-${data.memberId}`).emit("new_group_leader", {channelNumber:data.channelNumber, newLeaderId:data.memberId})
+    })
+
     socket.on('disconnect', async () => {
       const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
       if(decrStatusCount<=0){

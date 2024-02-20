@@ -4,7 +4,17 @@ import { AxiosResponse } from "axios"
 import { useEffect } from "react"
 import { useState} from "react"
 
-const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currChannelMembersId, socket, channelNumber, handleCloseButton})=>{
+const InviteUserModal:React.FC<InviteFriend>=({
+        friends,
+        channelId, 
+        token, 
+        currChannelMembersId, 
+        socket, 
+        channelNumber,
+        modalDisabled,
+        handleCloseButton,
+        setModalDisabled,
+        setChannels})=>{
     const [modalVisible, setModalVisible] = useState(false)
     const [loadings, setLoadings] = useState<string[]>([])
     const [error, setError] = useState<{isError:boolean, users:string[]}>({isError:false, users:[]})
@@ -16,23 +26,51 @@ const InviteUserModal:React.FC<InviteFriend>=({friends, channelId, token, currCh
     const isFriendInGroup:FriendDetails[] = friends.filter(friend => !currChannelMembersId.includes(friend._id))
     const handleInvite = async (e:React.MouseEvent<HTMLButtonElement>, friend:FriendDetails):Promise<void> => {
         e.preventDefault()
+        if(!modalDisabled){
+            setModalDisabled(true)
+        }
         setLoadings(prevLoadings=>[...prevLoadings, `${friend._id}`])
         setError(prevError=>{
             return {isError:false, users:[...prevError.users].filter(user=>user!==`${friend._id}`)}
         })
         try{
-            const res:AxiosResponse<{status:string}> = await inviteFriendtoGroup(token, channelId, friend._id)
+            const newTime = Date.now()
+            const res:AxiosResponse<{status:string}> = await inviteFriendtoGroup(token, newTime, channelId, friend._id)
             if(res.data.status === 'success'){
+                setChannels(prevChannels=>{
+                    const updateChannels = [...prevChannels]
+                    const currChannel = updateChannels.find(channel=>channel._id===channelId)
+                    if(currChannel){
+                        currChannel.lastMessage = newTime
+                    }
+                    const sortedChannels = updateChannels.sort((a, b) => {
+                        const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
+                        const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
+                        return dateB - dateA; // Compare the millisecond values
+                    })
+                    return sortedChannels
+                })
                 if(socket && channelId && channelNumber){
                     socket.emit('user_invite_success', {inviteUser:friend._id, channelId, channelNumber})
                 }
+                setLoadings(prevLoadings=>{
+                    if(prevLoadings.length===1){
+                        setModalDisabled(false)
+                    }
+                    return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)
+                })
             }
         }
         catch(err){
             setError(prevError=>{
                 return {isError:true, users:[...prevError.users, `${friend._id}`]}
             })
-            setLoadings(prevLoadings=>[...prevLoadings].filter(loading=>loading!==`${friend._id}`))
+            setLoadings(prevLoadings=>{
+                if(prevLoadings.length===1){
+                    setModalDisabled(false)
+                }
+                return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)
+            })
         }
     }
 

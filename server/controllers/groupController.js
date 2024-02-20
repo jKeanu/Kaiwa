@@ -200,6 +200,7 @@ export const inviteMember = catchAsync(async (req, res, next)=>{
             user.groups.push(groupChannel._id)
             //updating the group member
             groupChannel.members.push(user._id)
+            groupChannel.lastMessage = req.body.newTime
             await groupChannel.save({session})
             await user.save({session, validateBeforeSave:false})
             await session.commitTransaction();
@@ -263,6 +264,7 @@ export const leaveGroup = catchAsync(async (req, res, next)=>{
 export const changeGroupLeader =  catchAsync(async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();
+    console.log(req.params.groupId, '------')
     try{
         const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"}).session(session)
         if (!groupChannel){

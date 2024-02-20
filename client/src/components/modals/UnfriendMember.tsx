@@ -4,7 +4,7 @@ import { removeFriend } from "../../services/apiService"
 import { useEffect, useState } from "react"
 
 const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token, socket, handleFriendChannelDelete,
-    handleCloseButton, displayName, setModalSettings, channelNumber})=>{
+    handleCloseButton, displayName, setModalSettings, channelNumber, setModalDisabled})=>{
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
@@ -12,19 +12,22 @@ const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token,
     const handleUnfriend = async (e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
         setIsLoading(true)
+        setModalDisabled(true)
         try{
             const res:AxiosResponse<void> = await removeFriend(token, memberId)
             if(res.status===204){
                 handleFriendChannelDelete(channelId)
                 if(socket){
-                    socket.emit("remove_friend", {channelId, memberId, channelNumber})
+                    socket.emit("remove_friend", {channelId, friendId:memberId, channelNumber})
                 }
-                setModalSettings({isOpen:false, ids:{channelId:'', memberId:''}, displayName:'', type:''})
+                setModalSettings({isOpen:false, ids:{channelId:'', memberId:''}, displayName:'', type:'', channelNumber:undefined})
                 setIsLoading(false)
+                setModalDisabled(false)
             }
         }catch(err){
             setIsLoading(false)
             setErrorMsg({isError:true, message:'An unknown error occurred. Please try again later.'})
+            setModalDisabled(false)
         }
     }
 

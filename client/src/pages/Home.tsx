@@ -140,6 +140,7 @@ const HomePage:React.FC = ()=>{
             }
         }, [token, navigate])
 
+
         //We need this function specifically when we acccept a friend request, or someone accepted ours,
         //to create a new channel
         const handleNewFriendChannel = (friendInfo:Friend):void=>{
@@ -239,7 +240,6 @@ const HomePage:React.FC = ()=>{
                 return cleanup
             }
         }, [socket, sentReqs])
-
 
         //If someone sends a message on a channel, this updates the order of the channel list
         useEffect(()=>{
@@ -425,7 +425,7 @@ const HomePage:React.FC = ()=>{
                 }
                 return cleanup
             }
-        })
+        }, [socket])
 
         const handleModalConfirm = (e:React.MouseEvent<HTMLButtonElement>)=>{
             e.preventDefault()
@@ -484,6 +484,22 @@ const HomePage:React.FC = ()=>{
             }
         }, [socket, location])
 
+        //When someone assigned you as a new leader of a group channel
+        useEffect(()=>{
+            if(socket){
+                socket.on("new_group_leader", (data:{channelNumber:number, newLeaderId:string}):void=>{
+                    mutate(`api/v1/channels/${data.channelNumber}`, (prevChannelDataStatus:ChannelDataStatus|undefined)=>{
+                        if(!prevChannelDataStatus){
+                            return
+                        }
+                        const updateChannelData = {...prevChannelDataStatus.channel}
+                        updateChannelData.groupLeader = data.newLeaderId
+                        return {status:prevChannelDataStatus.status, channel:updateChannelData}
+                    }, false)
+                })
+            }
+        }, [socket])
+
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault()
             localStorage.removeItem('token')
@@ -491,39 +507,39 @@ const HomePage:React.FC = ()=>{
         };
         return(
             <>
-                {userData&&token?
-                    <main className='homepage'>
-                        {noticeModal.isOpen&&
-                        <dialog className='modal-window-container'>
-                            <NoticeModal handleModalConfirm={handleModalConfirm}/>
-                        </dialog>}
-                        <LeftSection friendsInfo={myFriends} channels={channels} token={token} socket={socket}
-                        handleLogout={handleLogout} currentUserData={userData} setChannels={setChannels}/>
-                        <Routes>
-                            <Route index element={<HomeSection friendReqs={friendReqs} 
-                            handleFriendChannelDelete={handleFriendChannelDelete}
-                            handleNewFriendChannel={handleNewFriendChannel}
-                            setFriendReqs={setFriendReqs} setSentReqs={setSentReqs} 
-                            friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
-                            <Route path="channels/:channelNumber"
-                            element={<ChannelSection
-                            fIdAndChannelInfos={fIdAndChannelInfos}
-                            setSentReqs={setSentReqs}
-                            handleFriendChannelDelete={handleFriendChannelDelete}
-                            socket={socket}
-                            currentUserData={userData}
-                            token={token}
-                            setChannels={setChannels}
-                            myFriends={myFriends}/>}/>
-                        </Routes>
-                    </main>
-                    :
+            {userData&&token?
                 <main className='homepage'>
-                    <section className='left-home-section'></section>
-                    <section className='home-section-container'></section>
+                    {noticeModal.isOpen&&
+                    <dialog className='modal-window-container'>
+                        <NoticeModal handleModalConfirm={handleModalConfirm}/>
+                    </dialog>}
+                    <LeftSection friendsInfo={myFriends} channels={channels} token={token} socket={socket}
+                    handleLogout={handleLogout} currentUserData={userData} setChannels={setChannels}/>
+                    <Routes>
+                        <Route index element={<HomeSection friendReqs={friendReqs} 
+                        handleFriendChannelDelete={handleFriendChannelDelete}
+                        handleNewFriendChannel={handleNewFriendChannel}
+                        setFriendReqs={setFriendReqs} setSentReqs={setSentReqs} 
+                        friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
+                        <Route path="channels/:channelNumber"
+                        element={<ChannelSection
+                        fIdAndChannelInfos={fIdAndChannelInfos}
+                        setSentReqs={setSentReqs}
+                        handleFriendChannelDelete={handleFriendChannelDelete}
+                        socket={socket}
+                        currentUserData={userData}
+                        token={token}
+                        setChannels={setChannels}
+                        myFriends={myFriends}/>}/>
+                    </Routes>
                 </main>
-                }
-            </>
+                :
+            <main className='homepage'>
+                <section className='left-home-section'></section>
+                <section className='home-section-container'></section>
+            </main>
+            }
+        </>
     )   
 }
 

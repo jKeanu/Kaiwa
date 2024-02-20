@@ -223,7 +223,8 @@ export type MemberModalSettings={
         memberId:string,
         channelId:string,
     },
-    displayName:string
+    displayName:string,
+    channelNumber:number|undefined
 }
 
 export type NoticeModalSettings={
@@ -246,7 +247,8 @@ export type InviteFriend={
     channelId: string,
     currChannelMembersId:string[]
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
-    channelNumber:string|undefined
+    channelNumber:string|undefined,
+    setChannels:React.Dispatch<SetStateAction<Channel[]>>
 }
 
 
@@ -281,6 +283,41 @@ export type CreateGroup={
     setChannels:React.Dispatch<SetStateAction<Channel[]>>,
     setIsDisabled: React.Dispatch<SetStateAction<boolean>>,
     setModal: React.Dispatch<SetStateAction<boolean>>
+}
+
+export type UnfriendProps={
+    token:string,
+    channelId:string,
+    friendId:string,
+    socket:Socket|undefined,
+    displayName:string
+    handleFriendChannelDelete:(channelId:string)=>void,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    setModalSettings: React.Dispatch<SetStateAction<UnfriendModalSettings>>,
+    channelNumber:number|undefined
+}
+
+export type MemberUnfriend ={
+    token:string,
+    channelId:string,
+    memberId:string,
+    socket:Socket|undefined,
+    displayName:string
+    handleFriendChannelDelete:(channelId:string)=>void,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
+    channelNumber:number|undefined 
+}
+
+export type ChangeLeader={
+    token: string,
+    channelId: string,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    channelNumber: number|undefined,
+    socket: Socket | undefined,
+    setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
+    memberId: string,
+    displayName:string
 }
 
 //Live Updates----
@@ -336,29 +373,6 @@ export type AddFriendProps={
     setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>
 }
 
-export type UnfriendProps={
-    token:string,
-    channelId:string,
-    friendId:string,
-    socket:Socket|undefined,
-    displayName:string
-    handleFriendChannelDelete:(channelId:string)=>void,
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
-    setModalSettings: React.Dispatch<SetStateAction<UnfriendModalSettings>>,
-    channelNumber:number|undefined
-}
-
-export type MemberUnfriendProps ={
-    token:string,
-    channelId:string,
-    memberId:string,
-    socket:Socket|undefined,
-    displayName:string
-    handleFriendChannelDelete:(channelId:string)=>void,
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
-    setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
-    channelNumber:number|undefined 
-}
 
 //Socket event-listener param---
 export type FriendRequestAccepted={

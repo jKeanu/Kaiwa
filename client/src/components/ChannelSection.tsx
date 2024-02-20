@@ -37,8 +37,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     const [modalWindow, setModalWindow] = useState<ModalWindow>({isOpen:false, window:''})
     const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
     const [memberPopUp, setMemberPopUp] = useState('')
+    const [modalDisabled, setModalDisabled] = useState(false)
     const [memberModal, setMemberModal] = useState<MemberModalSettings>
-    ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:''})
+    ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
 
 
     const channelCacheKey = `api/v1/channels/${channelNumber}`
@@ -69,8 +70,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
         if (channelData) {
             setCurrentChannel(channelData.channel);
             setCurrentChannelMembers(channelData.channel.members);
-        }else if (channelError) {
-            navigate('/@me');
+        }else if (channelError){
+            navigate('/@me')
         }
     }, [channelData, channelError, channelIsLoading])
 
@@ -275,10 +276,12 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.target === e.currentTarget) {
             e.preventDefault();
-            if(modalWindow.isOpen){
-                setModalWindow({isOpen: false, window: ''});
-            }else if(memberModal.isOpen){
-                setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:''})
+            if(!modalDisabled){
+                if(modalWindow.isOpen){
+                    setModalWindow({isOpen: false, window: ''});
+                }else if(memberModal.isOpen){
+                    setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
+                }
             }
         }
     }
@@ -288,7 +291,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
         if(modalWindow.isOpen){
             setModalWindow({isOpen: false, window: ''})
         }else if(memberModal.isOpen){
-            setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:''})
+            setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
         }
     }
 
@@ -356,15 +359,15 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
         }
     }, [memberPopUp, channelNumber]);
 
-    const handleMemberSelect = (e:React.MouseEvent<HTMLButtonElement>, memberId:string, displayName:string, type:string):void => {
+    const handleMemberSelect = (e:React.MouseEvent<HTMLButtonElement>, channelNumber:number|undefined, memberId:string, displayName:string, type:string):void => {
         e.preventDefault()
         if(currentChannel){
             setMemberPopUp('')
             const channelInfo = findMemberId(memberId)
-            if(channelInfo){
-                setMemberModal({isOpen:true, type, ids:{memberId, channelId:channelInfo.channelId}, displayName})
-            }else{
-                setMemberModal({isOpen:true, type, ids:{memberId, channelId:currentChannel._id}, displayName}) 
+            if(channelInfo&&type==='unfriend'){
+                setMemberModal({isOpen:true, type, ids:{memberId, channelId:channelInfo.channelId}, displayName, channelNumber})
+            }else if(type==='changeLeader'){
+                setMemberModal({isOpen:true, type, ids:{memberId, channelId:currentChannel._id}, displayName, channelNumber}) 
             }
         }
     }
@@ -484,7 +487,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                     currUserId={_id} 
                     channelNumber={channelNumber}
                     handleCloseButton={handleCloseButton} 
-                    setChannels={setChannels}/>
+                    setChannels={setChannels}
+                    setModalDisabled={setModalDisabled}/>
                 }
                 {(modalWindow.window==='inviteUser'&&currentChannel)
                 &&
@@ -495,7 +499,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                     friends={myFriends} 
                     currChannelMembersId={membersId} 
                     socket={socket}
-                    channelNumber={channelNumber}/>}
+                    channelNumber={channelNumber}
+                    setChannels={setChannels}
+                    modalDisabled={modalDisabled}
+                    setModalDisabled={setModalDisabled}/>}
                 {(modalWindow.window==='deleteGroup'&&currentChannel)
                 &&
                 <DeleteGroupModal 
@@ -506,6 +513,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                     setChannels={setChannels} 
                     socket={socket}
                     membersId={membersId}
+                    setModalDisabled={setModalDisabled}
                 />}
                 {memberModal.type==='unfriend'&&
                 <UnfriendMemberModal
@@ -514,8 +522,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                     socket={socket}
                     displayName={memberModal.displayName}
                     handleCloseButton={handleCloseButton}
-                    channelNumber={currentChannel.channelNumber}
+                    channelNumber={memberModal.channelNumber}
                     handleFriendChannelDelete={handleFriendChannelDelete}
+                    setModalDisabled={setModalDisabled}
                     {...memberModal.ids}
                     />}
                 {memberModal.type==='changeLeader'&&
@@ -524,8 +533,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                     setModalSettings={setMemberModal}
                     socket={socket}
                     displayName={memberModal.displayName}
-                    channelNumber={currentChannel.channelNumber}
+                    channelNumber={memberModal.channelNumber}
                     handleCloseButton={handleCloseButton}
+                    setModalDisabled={setModalDisabled}
                     {...memberModal.ids}
                 />}
             </dialog>}
@@ -550,16 +560,17 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                                  left:popUpPosition.clickX-(popUpPosition.clickX<=115?-5:115)}}>
                                     {findMemberId(member._id)?
                                     <>
-                                    <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link">Send Message</Link>
-                                    <button onClick={(e)=>handleMemberSelect(e, member._id, member.displayName, 'unfriend')} className="member-unfriend-button">
-                                        Remove Friend
-                                    </button>
-                                    </>:
+                                        <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link">Send Message</Link>
+                                        <button onClick={(e)=>handleMemberSelect(e, findMemberId(member._id)?.channelNumber, member._id, member.displayName, 'unfriend')} className="member-unfriend-button">
+                                            Remove Friend
+                                        </button>
+                                    </>
+                                    :
                                     <button className="member-add-friend" onClick={(e)=>handleAddFriendMember(e, member.displayName, member.friendTag)}>
                                         Add Friend
                                     </button>}
                                     {currentChannel.groupLeader===_id&&
-                                    <button className="member-set-leader" onClick={(e)=>handleMemberSelect(e, member._id, member.displayName, 'changeLeader')}>
+                                    <button className="member-set-leader" onClick={(e)=>handleMemberSelect(e, currentChannel.channelNumber, member._id, member.displayName, 'changeLeader')}>
                                         Set as Group Leader
                                     </button>}
                                 </div>}

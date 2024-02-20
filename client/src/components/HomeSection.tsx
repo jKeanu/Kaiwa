@@ -3,7 +3,6 @@ import { HomeSectionProps } from "../types/generalTypes"
 import FriendList from "./sub/FriendList"
 import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
-import Unfriend from "./modals/Unfriend"
 
 const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, friendReqs,
      handleNewFriendChannel, setFriendReqs, setSentReqs, handleFriendChannelDelete})=>{

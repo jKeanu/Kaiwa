@@ -7,7 +7,7 @@ import { changeGroupLeader } from "../../services/apiService"
 
 
 const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseButton, socket,
-    memberId, channelNumber, setModalSettings, displayName})=>{
+    memberId, channelNumber, setModalSettings, displayName, setModalDisabled})=>{
     const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
@@ -15,6 +15,7 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
     const handleLeaderChange = async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
         setLoading(true)
+        setModalDisabled(true)
         try{
             const res:AxiosResponse<{status:string}> = await changeGroupLeader(token, channelId, memberId)
             if(res.data.status==="success"){
@@ -29,7 +30,9 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
                     }, false)
                     socket.emit("group_channel_leader_change", {memberId, channelNumber})
                 }
-                setModalSettings({isOpen:false, ids:{channelId:'', memberId:''}, displayName:'', type:''})
+                setModalDisabled(false)
+                setLoading(false)
+                setModalSettings({isOpen:false, ids:{channelId:'', memberId:''}, displayName:'', type:'', channelNumber:undefined})
             }
         }catch{
             setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
@@ -57,7 +60,10 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
                 <button className="cancel-button" onClick={handleCloseButton} disabled={loading}>
                     Cancel
                 </button>
-                {errorMsg.isError&&<span className="s-modal-err">{errorMsg.message}</span>}
+                {errorMsg.isError&&
+                <span className="s-modal-err">
+                    {errorMsg.message}
+                </span>}
             </div>
         </div>
     )
