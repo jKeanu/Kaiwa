@@ -17,7 +17,7 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.button===0 && e.target === e.currentTarget) {
-            e.preventDefault();
+            e.preventDefault()
             if(!isDisabled){
                 setModal(false)
             }
@@ -47,13 +47,19 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
                 </Link>
             </div>
             <div className='create-group-container'>
-                <button className='create-group-button' onClick={()=>setModal(true)}>
+                <button className='create-group-modal-button' onClick={()=>setModal(true)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -5 24 24" fill="none" 
-                    stroke="#b9b9b9 " strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="create-group-image">
+                    stroke="#b9b9b9 " strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'
+                    className="create-group-image">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87">
                         </path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
+                    <div className='create-group-tooltip'>
+                        <span className='create-group-tooltip-text'>
+                            Create Group
+                        </span>
+                    </div>
                 </button>
             </div>
             <div className='search-conversation-container'>

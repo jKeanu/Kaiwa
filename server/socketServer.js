@@ -59,8 +59,8 @@ export default (httpServer) => {
     }
 
     //JOIN ROOM
-    socket.on('personal_live_update', (userId)=>{
-      socket.join(`user-${userId}`)
+    socket.on('personal_live_update', ()=>{
+      socket.join(`user-${verifiedCurrentUserId}`)
     })
 
     socket.on('join_channel_room', (channelNumber) => {
@@ -74,8 +74,8 @@ export default (httpServer) => {
     })
 
     //Leave Room
-    socket.on('leave_personal_live_update', (userId)=>{
-      socket.leave(`user-${userId}`)
+    socket.on('leave_personal_live_update', ()=>{
+      socket.leave(`user-${verifiedCurrentUserId}`)
     })
 
     socket.on('leave_channel_room', (channelNumber) => {
@@ -168,6 +168,10 @@ export default (httpServer) => {
        {newFriendId:data.newFriendId, newChannelInfo:data.newChannelInfo})
     })
 
+    //When a user declined a friend-request live update
+      socket.on("declined_pending_friend_request", (data)=>{
+        socket.to(`user-${data.declinedUser}`).emit("friend_request_declined", {userId:data.userId})
+      })
 
     //When a new group channel has been created
     socket.on("new_group_channel_created", (data)=>{

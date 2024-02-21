@@ -9,9 +9,11 @@ import {
         ChannelMessagesStatus,
         ModalWindow,
         AddFriendStatus,
-        MemberModalSettings
+        MemberModalSettings,
+        AcceptFriendStatus,
+        Friend
     } from "../types/generalTypes"
-import { addFriend, changeGroupLeader, channelFetcher,  messageFetcher} from "../services/apiService"
+import { acceptFriend, addFriend, changeGroupLeader, channelFetcher,  declineFriend,  messageFetcher} from "../services/apiService"
 import ReactTextareaAutosize from "react-textarea-autosize"
 import useSWR, {mutate} from "swr"
 import LeaveGroupModal from "./modals/LeaveGroup"
@@ -21,8 +23,19 @@ import { AxiosResponse } from "axios"
 import UnfriendMemberModal from "./modals/UnfriendMember"
 import ChangeLeaderModal from "./modals/ChangeLeader"
 
-const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserData, myFriends, setChannels,
-    fIdAndChannelInfos, handleFriendChannelDelete, setSentReqs})=>{
+const ChannelSection:React.FC<ChannelSectionProps>=({
+        token,
+        socket, 
+        currentUserData, 
+        myFriends, 
+        sentReqs,
+        friendReqs, 
+        setChannels,
+        fIdAndChannelInfos, 
+        handleFriendChannelDelete, 
+        setSentReqs,
+        setFriendReqs,
+        handleNewFriendChannel})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag} = currentUserData
@@ -338,7 +351,26 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
         }
     }
 
+    const alreadyAdded = (memberId:string):boolean=>{
+        const isSent = [...sentReqs].find(sentReq => sentReq.friend._id === memberId)
+        if(isSent){
+            return true
+        }else{
+            return false
+        }
+    }
 
+    //the isPending._id is the id of an object that contains your status with the other user,
+    //and userInfo
+    const alreadyPending = (memberId:string):false|string=>{
+        const isPending = [...friendReqs].find(friendReq => friendReq.friend._id===memberId)
+        if(isPending){
+            return isPending._id
+        }else{
+            return false
+        }
+    }
+    
     useEffect(() => {
         // Only add the event listener if a popup is open
         if (memberPopUp) {
@@ -359,9 +391,18 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
         }
     }, [memberPopUp, channelNumber]);
 
+    //we need this useEffect since, if we clicked send message on the member popup, it changes channel, yes, but it does not
+    //cause an unmount; this won't delete the previous value of the state variable.
+    //when we go back to the previous group channel, the popup will show if we don't implement this.
+    useEffect(()=>{
+        if(channelNumber){
+            setMemberPopUp('')
+        }
+    }, [channelNumber])
+
     const handleMemberSelect = (e:React.MouseEvent<HTMLButtonElement>, channelNumber:number|undefined, memberId:string, displayName:string, type:string):void => {
         e.preventDefault()
-        if(currentChannel){
+        if(currentChannel&&channelNumber){
             setMemberPopUp('')
             const channelInfo = findMemberId(memberId)
             if(channelInfo&&type==='unfriend'){
@@ -390,6 +431,73 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
 
         }
     }
+
+    //friendId is the object that contains the channel info and the user info and your status with that user
+    const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string, friendId:string|false):Promise<void>=>{
+        e.preventDefault()
+        setMemberPopUp('')
+        if(friendId){
+            try{
+                const res:AxiosResponse<AcceptFriendStatus>= await acceptFriend(token, memberId)
+                if(res.data.status==="success"){
+                    const fetchedNewChannelData = {...res.data.newChannel}
+                    //we sort it this way to make the pending user always on the index 0
+                    const sortMembers = fetchedNewChannelData.members.sort((a,b)=>{
+                        return (a._id === memberId && b._id !== memberId)?-1:1
+                    })
+                    const newChannel:Friend = {
+                        channel:{
+                            channelType:fetchedNewChannelData.channelType,
+                            channelNumber:fetchedNewChannelData.channelNumber,
+                            lastMessage:fetchedNewChannelData.lastMessage,
+                            _id:fetchedNewChannelData._id,
+                            id: fetchedNewChannelData.id
+                        },
+                        friend:{
+                            ...sortMembers[0]
+                        },
+                        status:"Friend",
+                        _id:friendId
+                    }
+                    handleNewFriendChannel(newChannel)
+                    setFriendReqs(prevUserReqs=>{
+                        const updateUserReqs = [...prevUserReqs]
+                        return updateUserReqs.filter(userReqs=>userReqs.friend._id!==memberId)
+                    })
+                    if(socket){
+                        socket.emit('accepted_pending_friend_request', {
+                            newChannelInfo: newChannel.channel,
+                            pendingUserId: memberId,
+                            newFriendId: _id
+                        })
+                    }
+                }
+            }catch(err){
+    
+            }
+        }
+        }
+    
+    const handleDeclineRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string):Promise<void>=>{
+        e.preventDefault()
+        setMemberPopUp('')
+        try{
+            const res:AxiosResponse<void>=await declineFriend(token, memberId)
+            if(res.status===204){
+                setFriendReqs(prevUserReqs=>{
+                    const updateUserReqs = [...prevUserReqs]
+                    return updateUserReqs.filter(userReqs=>userReqs.friend._id!==memberId)
+                })
+                if(socket){
+                    socket.emit("declined_pending_friend_request", {declinedUser: memberId, userId:_id})
+                }
+            }
+        }catch(err){
+
+        }
+    }
+
+
     return (
         <>
         {(currentChannel&&messagesData)?
@@ -411,15 +519,37 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                             <h2 className="channel-nav-header">{currentChannel?.channelName}</h2>
                         </div>
                     }
+                    <div className="nav-button-container">
                     {currentChannel?.channelType==='Group'&&
-                    <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'inviteUser')}>
-                        <img src="/img/invite-member.svg"/>
-                    </button>
+                        <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'inviteUser')}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
+                            strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="invite-user-img">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8.5" cy="7" r="4"></circle>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="23" y1="11" x2="17" y2="11"></line>
+                            </svg>
+                            <div className='channel-nav-button-tooltip'>
+                                <span className='channel-nav-button-tooltip-text'>
+                                    Invite Friend
+                                </span>
+                            </div>
+                        </button>
                     }
                     {(currentChannel?.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
-                    <button onClick={(e)=>handleNavButtonClick(e, 'leaveGroup')} className="nav-button">
-                       <img src="/img/leave-group-icon.svg"/>
-                    </button>}
+                        <button onClick={(e)=>handleNavButtonClick(e, 'leaveGroup')} className="nav-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" 
+                        strokeLinejoin="round" className="leave-group-img">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <div className='channel-nav-button-tooltip'>
+                            <span className='channel-nav-button-tooltip-text'>
+                                Leave Group
+                            </span>
+                        </div>
+                        </button>}
                     {(
                         currentChannel?.channelType==="Group"
                         &&currentChannel?.groupLeader===_id)
@@ -428,6 +558,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                             Disband Group
                         </button>
                     }
+                    </div>
                 </nav>
                 <div className="message-box" ref={messageBoxRef}>
                     {
@@ -558,6 +689,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                                 {memberPopUp===member._id&&member._id!==_id&&
                                 <div className="member-popup-container" style={{top:popUpPosition.clickY,
                                  left:popUpPosition.clickX-(popUpPosition.clickX<=115?-5:115)}}>
+                                    <div className="popup-member-info-container">
+                                        <img src={`/img/${member.photo}`} />
+                                        <div className="popup-member-info">
+                                            <span className="popup-member-name">{member.displayName}</span>
+                                            <span className="popup-member-friend-tag">#{member.friendTag}</span>
+                                        </div>
+                                    </div>
                                     {findMemberId(member._id)?
                                     <>
                                         <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link">Send Message</Link>
@@ -566,9 +704,21 @@ const ChannelSection:React.FC<ChannelSectionProps>=({token, socket, currentUserD
                                         </button>
                                     </>
                                     :
+                                    alreadyAdded(member._id)?
+                                    <div className="req-sent-text">Request Sent</div>:
+                                    alreadyPending(member._id)?
+                                    <>
+                                        <button className="member-accept-friend-request" onClick={(e)=>handleAcceptRequest(e, member._id, alreadyPending(member._id))}>
+                                            Accept Request
+                                        </button>
+                                        <button className="member-decline-friend-request" onClick={(e)=>handleDeclineRequest(e, member._id)}>
+                                            Decline Request
+                                        </button>
+                                    </>:
                                     <button className="member-add-friend" onClick={(e)=>handleAddFriendMember(e, member.displayName, member.friendTag)}>
                                         Add Friend
-                                    </button>}
+                                    </button>
+                                    }
                                     {currentChannel.groupLeader===_id&&
                                     <button className="member-set-leader" onClick={(e)=>handleMemberSelect(e, currentChannel.channelNumber, member._id, member.displayName, 'changeLeader')}>
                                         Set as Group Leader

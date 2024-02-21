@@ -114,7 +114,11 @@ export type ChannelSectionProps={
     setChannels: React.Dispatch<SetStateAction<Channel[]>>,
     fIdAndChannelInfos: FIdChannelInfo[],
     handleFriendChannelDelete:(channelId:string)=>void,
-    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>
+    handleNewFriendChannel: (friendInfo:Friend)=>void,
+    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>,
+    setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
+    friendReqs:FriendReq[],
+    sentReqs: SentReq[]
 }
 
 export type HomeSectionProps={
@@ -249,6 +253,8 @@ export type InviteFriend={
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
     channelNumber:string|undefined,
     setChannels:React.Dispatch<SetStateAction<Channel[]>>
+    setModalDisabled:React.Dispatch<SetStateAction<boolean>>,
+    modalDisabled: boolean
 }
 
 
@@ -261,6 +267,7 @@ export type DeleteGroup={
     socket: Socket|undefined,
     membersId:string[],
     channelNumber: string|undefined
+    setModalDisabled:React.Dispatch<SetStateAction<boolean>>
 }
 
 
@@ -272,6 +279,7 @@ export type LeaveGroup={
     socket: Socket|undefined,
     currUserId: string,
     channelNumber: string | undefined
+    setModalDisabled:React.Dispatch<SetStateAction<boolean>>
 }
 
 export type CreateGroup={
@@ -307,6 +315,7 @@ export type MemberUnfriend ={
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
     setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
     channelNumber:number|undefined 
+    setModalDisabled:React.Dispatch<SetStateAction<boolean>>
 }
 
 export type ChangeLeader={
@@ -318,6 +327,7 @@ export type ChangeLeader={
     setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
     memberId: string,
     displayName:string
+    setModalDisabled:React.Dispatch<SetStateAction<boolean>>
 }
 
 //Live Updates----

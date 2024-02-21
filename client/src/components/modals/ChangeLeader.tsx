@@ -37,6 +37,7 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
         }catch{
             setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
             setLoading(false)
+            setModalDisabled(false)
         }
     }
     

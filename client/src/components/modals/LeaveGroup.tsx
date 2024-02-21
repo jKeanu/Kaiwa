@@ -4,19 +4,23 @@ import { leaveGroup } from "../../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton, socket, channelNumber})=>{
+const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton, 
+    socket, channelNumber, setModalDisabled})=>{
     const [modalVisible, setModalVisible] = useState(false)
     const navigate = useNavigate()
     const [isLoading, setIsLoading]  = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
+    
     const handleLeaveGroup=async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
         setIsLoading(true)
+        setModalDisabled(true)
         try{
             const res:AxiosResponse<void> = await leaveGroup(token, channelId)
             if(res.status===204){
                 navigate('/@me')
                 setIsLoading(false)
+                setModalDisabled(false)
                 if(socket){
                     socket.emit('leave_group', {channelId, channelNumber})
                 }
@@ -24,6 +28,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
         }catch(err){
             setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
             setIsLoading(false)
+            setModalDisabled(false)
         }
     }
     useEffect(()=>{

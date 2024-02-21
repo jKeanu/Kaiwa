@@ -9,7 +9,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
     const [loading, setLoading] = useState([''])
     const [error, setError] = useState([''])
 
-    //friendId is the object that contains the channel info and the user info and your status with that user
+    //friendId is the object that contains the user info and your status with that user
     const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string, friendId:string):Promise<void>=>{
         e.preventDefault()
         setLoading(prevLoading=>[...prevLoading, `req-${pendingUserId}`])
@@ -76,6 +76,9 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
                     const updateUserReqs = [...prevUserReqs]
                     return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
                 })
+                if(socket){
+                    socket.emit("declined_pending_friend_request", {declinedUser: pendingUserId, userId:currUserId})
+                }
             }
         }catch(err){
             setLoading(prevLoading=>{

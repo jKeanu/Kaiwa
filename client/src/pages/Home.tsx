@@ -197,10 +197,10 @@ const HomePage:React.FC = ()=>{
 
         //LIVE UPDATES
         useEffect(()=>{
-            if(socket&&userData){
-                socket.emit('personal_live_update', userData._id)
+            if(socket){
+                socket.emit('personal_live_update')
                 return ()=>{
-                    socket.emit('leave_personal_live_update', userData._id)
+                    socket.emit('leave_personal_live_update')
                 }
             }
         }, [userData, socket])
@@ -240,6 +240,21 @@ const HomePage:React.FC = ()=>{
                 return cleanup
             }
         }, [socket, sentReqs])
+
+        //When someone declined your friend request
+        useEffect(()=>{
+            if(socket){
+                const handleRequestDeclined = (data:{userId:string}):void=>{
+                    console.log(data.userId, '123123123123')
+                    setSentReqs(prevSentReqs=>[...prevSentReqs].filter(sentReq=>sentReq.friend._id!==data.userId))
+                }
+                socket.on("friend_request_declined", handleRequestDeclined)
+                const cleanup = ():void=>{
+                    socket.removeListener('friend_request_declined', handleRequestDeclined)
+                }
+                return cleanup
+            }
+        }, [sentReqs, socket])
 
         //If someone sends a message on a channel, this updates the order of the channel list
         useEffect(()=>{
@@ -516,15 +531,23 @@ const HomePage:React.FC = ()=>{
                     <LeftSection friendsInfo={myFriends} channels={channels} token={token} socket={socket}
                     handleLogout={handleLogout} currentUserData={userData} setChannels={setChannels}/>
                     <Routes>
-                        <Route index element={<HomeSection friendReqs={friendReqs} 
+                        <Route index element={<HomeSection
+                        friendReqs={friendReqs} 
                         handleFriendChannelDelete={handleFriendChannelDelete}
                         handleNewFriendChannel={handleNewFriendChannel}
-                        setFriendReqs={setFriendReqs} setSentReqs={setSentReqs} 
-                        friendChannels={friendChannels} token={token} socket={socket} currUserId={userData._id}/>}/>
+                        setFriendReqs={setFriendReqs} 
+                        setSentReqs={setSentReqs} 
+                        friendChannels={friendChannels} 
+                        token={token} socket={socket} 
+                        currUserId={userData._id}/>}/>
                         <Route path="channels/:channelNumber"
                         element={<ChannelSection
+                        friendReqs={friendReqs}
+                        sentReqs={sentReqs}
+                        setFriendReqs={setFriendReqs}
+                        setSentReqs={setSentReqs} 
+                        handleNewFriendChannel={handleNewFriendChannel}
                         fIdAndChannelInfos={fIdAndChannelInfos}
-                        setSentReqs={setSentReqs}
                         handleFriendChannelDelete={handleFriendChannelDelete}
                         socket={socket}
                         currentUserData={userData}

@@ -117,7 +117,6 @@
                 display: flex
                 align-items: center
                 column-gap: 0.5rem
-                justify-content: space-between
                 margin-right: auto
                 margin-left: 0.5rem
                 .channel-nav-header
@@ -129,14 +128,45 @@
                     height: 2rem
                     border-radius: 1rem
                     object-fit: cover
-            .nav-button
-                background-color: transparent
-                width: 2rem
-                height: 2rem
-                border: none
-                img
-                    width: 100%
-                    height: 100%
+            .nav-button-container
+                display: flex
+                .nav-button
+                    background-color: transparent
+                    width: 2rem
+                    height: 2rem
+                    border: none
+                    cursor: pointer
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    position: relative
+                    .channel-nav-button-tooltip
+                        position: absolute
+                        padding: 0.35rem
+                        background-color: #1d222d
+                        opacity: 0
+                        display: flex
+                        justify-content: center
+                        align-items: center
+                        transition: opacity 0.2s ease-in
+                        top: 120%
+                        height: fit-content
+                        z-index: 1   
+                        border-radius: 0.15rem
+                        pointer-events: none
+                    .channel-nav-button-tooltip-text
+                        font-family: 'Open Sans', sans-serif
+                        font-size: 0.6rem
+                        width: 4rem
+                    svg
+                        align-self: center
+                        width: 100%
+                        height: 100%
+                    &:hover > svg
+                        fill: $white-text
+                    &:hover > .channel-nav-button-tooltip
+                        opacity: 1
+                        pointer-events: auto
         .message-box
             padding: 0 2rem 2rem 2rem
             overflow-y: auto
@@ -301,19 +331,59 @@
                         height: fit-content
                         position: absolute
                         background-color: #1b232e
+                        box-shadow: 1px 3px 10px 4px #0000007f
+                        overflow: hidden
                         width: 6.8rem
-                        font-family: 'Open Sans', sans-serif
                         z-index: 1
                         display: flex
-                        padding: 0.2rem 0.5rem
                         flex-direction: column
                         border-radius: 0.5rem
+                        .popup-member-info-container
+                            height: 3rem
+                            display: flex
+                            align-items: center
+                            padding: 0.5rem
+                            img
+                                min-width: 2rem
+                                width: 2rem
+                                height: 2rem
+                                border-radius: 1rem
+                                object-fit: cover
+                                margin-right: 0.8rem
+                            .popup-member-info
+                                display: flex
+                                flex-direction: column
+                                .popup-member-name
+                                    font-size: 0.8rem
+                                    font-family: 'Raleway', sans-serif
+                                .popup-member-friend-tag
+                                    font-size: 0.6rem
+                                    font-family: 'Open Sans', sans-serif
+
+                            
                         button
+                            font-family: 'Open Sans', sans-serif
                             font-size: 0.7rem
                             background: transparent
                             border: none
                             cursor: pointer
                             padding: 0.2rem 0.5rem
+                        .req-sent-text
+                            text-align: center
+                            padding: 0.2rem 0.5rem
+                            font-size: 0.7rem
+                            font-family: 'Open Sans', sans-serif
+                            cursor: default
+                        .member-accept-friend-request
+                            color: #14d31eca
+                            &:hover
+                                background-color: #14d31eca
+                                color: white
+                        .member-decline-friend-request
+                            color: $error-message
+                            &:hover
+                                background-color: $error-message
+                                color: white
                         .member-add-friend
                             &:hover
                                 background-color: #2e3b4db7
@@ -321,8 +391,9 @@
                             color: $error-message
                             &:hover
                                 background-color: $error-message
-                                color: $white-text
+                                color: white
                         .member-message-link
+                            text-align: center
                             color: $white-text
                             text-decoration: none
                             width: 100%

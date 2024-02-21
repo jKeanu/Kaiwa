@@ -180,18 +180,39 @@
             justify-content: end
             align-items: center
             margin-bottom: 0.1rem
-            .create-group-button
+            .create-group-modal-button
                 background-color: transparent
                 cursor: pointer
                 border: none
                 width: 2rem
                 height: 2rem
                 border-radius: 1rem
+                position: relative
                 &:hover > .create-group-image
                     fill: $white-text
-                .create-group-image
-                    transition: all 0.15s ease
-                    align-self: center
+                &:hover > .create-group-tooltip
+                    opacity: 1
+                    pointer-events: auto
+                .create-group-tooltip
+                    position: absolute
+                    padding: 0.35rem
+                    background-color: #1d222d
+                    opacity: 0
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    transition: opacity 0.2s ease-in
+                    bottom: 90%
+                    height: fit-content
+                    z-index: 1
+                    left: 50%
+                    border-radius: 0.15rem
+                    transform: translateX(-50%)
+                    pointer-events: none
+                    .create-group-tooltip-text
+                        font-family: 'Open Sans', sans-serif
+                        font-size: 0.6rem
+                        width: 4rem
         .logo-container
             height: 2rem
         .search-conversation-container
