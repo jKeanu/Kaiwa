@@ -308,6 +308,7 @@ const HomePage:React.FC = ()=>{
                             return undefined
                         }
                         if(data.type==='Joined'){
+                            //Update the channels when someone joined the channel
                             const updateChannelDataCache = {...channelDataCache.channel}
                             updateChannelDataCache.members = [...updateChannelDataCache.members, data.user]
                             return {status:channelDataCache.status, channel:updateChannelDataCache}
@@ -317,6 +318,22 @@ const HomePage:React.FC = ()=>{
                             return {status:channelDataCache.status, channel:updateChannelDataCache}
                         }
                     }, false)
+                    if(data.type==='Joined'){
+                        //update the channels when someone joined the channel
+                        setChannels(prevChannels=>{
+                            const updateChannels = [...prevChannels]
+                            const currChannel = updateChannels.find(channel=>channel.channelNumber===data.channelNumber)
+                            if(currChannel){
+                                currChannel.lastMessage = Date.now()
+                            }
+                            const sortedChannels = updateChannels.sort((a, b) => {
+                                const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
+                                const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
+                                return dateB - dateA; // Compare the millisecond values
+                            })
+                            return sortedChannels
+                        })
+                    }
                 }
                 socket.on(`channel_member_update`, handleChannelMemberUpdate)
                 const cleanup = ():void  =>{

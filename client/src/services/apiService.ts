@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
-import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus } from '../types/generalTypes';
+import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus, ChannelMessagesStatus } from '../types/generalTypes';
 import { ChannelMessage } from '../types/generalTypes';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -106,13 +106,25 @@ export const removeFriend = async(token:string, friendId:string):Promise<AxiosRe
     return axios.delete(`${API_URL}/api/v1/me/friends/${friendId}/unfriend`, config)
 }
 
-export const channelFetcher = (endpoint: string, headers: Record<string, string> = {}) => 
-    axios.get(`${API_URL}/${endpoint}`, { headers}).then(res => res.data);
+export const channelFetcher = async (endpoint: string, token:string) => {
+    const headers = {
+        'Authorization': `Bearer ${token}`
+    }
+    return axios.get(`${API_URL}/${endpoint}`, { headers}).then(res => res.data);
+}
 
 
-export const messageFetcher = (endpoint: string, limit: number, skip: number, headers: Record<string, string> = {}) => 
-    axios.get<{status: string, messages: ChannelMessage[]}>(`${API_URL}/${endpoint}?limit=${limit}&skip=${skip}`, { headers })
-            .then(response => response.data);
+export const messageFetcher = async (endpoint: string, limit: number, skip: number, token:string):Promise<ChannelMessagesStatus> => {
+    const headers = {
+        'Authorization': `Bearer ${token}`
+    }
+    console.log('LIMIT: ', limit, 'SKIP: ', skip)
+    return axios.get(`${API_URL}/${endpoint}?limit=${limit}&skip=${skip}`, { headers })
+            .then(response => {
+                return response.data
+            });
+}
+
 
 export const getCurrentUser = async(token:string|null):Promise<AxiosResponse<UserDataStatus>> => {
     const config ={

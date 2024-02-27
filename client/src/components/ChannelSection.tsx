@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo, ButtonHTMLAttributes} from 'react'
+import React, { useState, useEffect, useRef, useMemo} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -13,15 +13,18 @@ import {
         AcceptFriendStatus,
         Friend
     } from "../types/generalTypes"
-import { acceptFriend, addFriend, changeGroupLeader, channelFetcher,  declineFriend,  messageFetcher} from "../services/apiService"
+import { acceptFriend, addFriend,  channelFetcher,  declineFriend,  messageFetcher} from "../services/apiService"
 import ReactTextareaAutosize from "react-textarea-autosize"
-import useSWR, {mutate} from "swr"
+import useSWR, {useSWRConfig} from "swr"
 import LeaveGroupModal from "./modals/LeaveGroup"
 import DeleteGroupModal from "./modals/DeleteGroup"
 import InviteUserModal from "./modals/InviteUser"
 import { AxiosResponse } from "axios"
 import UnfriendMemberModal from "./modals/UnfriendMember"
 import ChangeLeaderModal from "./modals/ChangeLeader"
+import throttle from 'lodash.throttle'
+
+
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
@@ -45,19 +48,21 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
-    const [messagesLimit, setMessagesLimit] = useState<number>(15)
+    const [messagesLimit, setMessagesLimit] = useState<number>(12)
     const [messagesSkip, setMessagesSkip] = useState<number>(0)
     const [modalWindow, setModalWindow] = useState<ModalWindow>({isOpen:false, window:''})
     const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
     const [memberPopUp, setMemberPopUp] = useState('')
     const [modalDisabled, setModalDisabled] = useState(false)
+    const [isPrepFinish, setIsPrepFinish] = useState(false)
     const [memberModal, setMemberModal] = useState<MemberModalSettings>
     ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
-
-
-    const channelCacheKey = `api/v1/channels/${channelNumber}`
+    const [allMessagesFetched, setAllMessagesFetched] = useState(false)
+    const [msgFetchLoading, setMsgFetchLoading] = useState(false)
+    const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
-
+   
+    const channelCacheKey = `api/v1/channels/${channelNumber}`
     
     const membersId:string[] = useMemo(()=>{
         return [...currentChannelMembers].map(member=>member._id)
@@ -69,16 +74,21 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         });
     }, [currentChannelMembers]);
 
-    const headers = {
-        'Authorization': `Bearer ${token}`
-    }
-
     //fetching channel data 
     const {data:channelData, error: channelError, isLoading:channelIsLoading} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
-        channelFetcher(endpoint, headers)
+        channelFetcher(endpoint, token),
     )
 
+    useEffect(()=>{
+        setMessagesSkip(0)
+        setMessageReceived([])
+        setMsgFetchLoading(false)
+        setAllMessagesFetched(false)
+    }, [channelNumber])
+
+
+    
     useEffect(() => {
         if (channelData) {
             setCurrentChannel(channelData.channel);
@@ -88,17 +98,27 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }, [channelData, channelError, channelIsLoading])
 
-    const { data: messagesData, error: messagesError } = useSWR<ChannelMessagesStatus>(
+    const { data: messagesData, error: messagesError} = useSWR<ChannelMessagesStatus>(
+        //if there's already a data in the cache, we no longer need to fetch 
         messageCacheKey, (endpoint:string) =>
-        messageFetcher(endpoint, messagesLimit, messagesSkip, headers)
+        messageFetcher(endpoint, 12, 0, token),
+        {
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+            revalidateIfStale: false,
+            revalidateOnMount: !cache.get(messageCacheKey)
+        }
     )
     useEffect(()=>{
         if(messagesData){
-            setMessageReceived(messagesData.messages)
+            if(messageReceived.length===0&&messagesData.messages.length>0){
+                setMessageReceived([...messagesData.messages].slice(0, messagesLimit+messagesSkip))
+            }
         }else if(messagesError){
-            console.log('ERRORZZZZ')
+            console.log('-------------ERROR')
         }
-    }, [messagesData, messagesError])
+    }, [messagesData, messagesError, messageReceived])
+
 
     useEffect(() => {
         if (socket && channelNumber) {
@@ -137,13 +157,17 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     if (newMessage.updated){
                     //Update the last message or handle appropriately if the array is empty
                       updatedMessages[0] = newMessage
+                      return {status:currMsgCachedData.status, messages:updatedMessages}
                     }else{
                     //Append new message
                       updatedMessages.unshift(newMessage)
+                      return {status:currMsgCachedData.status, messages:updatedMessages}
                     }
                     // Update the messages array in the channel data
-                    return {status:currMsgCachedData.status, messages:updatedMessages}
                   }, false); // false tells the SWR to not re-fetch the data from the server after updating the cache
+                if(messageBoxRef.current){
+                    if(messageBoxRef.current.scrollTop*-1<=800) messageBoxRef.current.scrollTop=0
+                }
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
@@ -158,6 +182,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     }, [socket, channelNumber]);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
     useEffect(()=>{
         if(textareaRef.current){
             textareaRef.current.focus()
@@ -171,14 +196,15 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     }, [channelNumber])
 
     const messageBoxRef = useRef<HTMLDivElement>(null);
-    // useEffect(() => {
-    //     //messageBoxRef.current indicates the actual div element
-    //     if (messageBoxRef.current) {
-    //         //scrollTop indicates the current position of the scrollbar in pixels
-    //         //scrollHeight indicates the total height of the scrollable content in pixels
-    //         messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
-    //     }
-    //   }, [messageReceived]);
+
+    useEffect(() => {
+        //messageBoxRef.current indicates the actual div element
+        if (messageBoxRef.current) {
+            //scrollTop indicates the current position of the scrollbar in pixels
+            //scrollHeight indicates the total height of the scrollable content in pixels
+            messageBoxRef.current.scrollTop = 0;
+        }
+      }, [channelNumber]);
 
     function formatDate(timestamp: number): string {
         const date = new Date(timestamp);
@@ -258,18 +284,17 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 sender:{
                     photo, displayName, _id:_id, friendTag
             }}
-            
             socket.emit("send_message", {
                 ...messageContents,
                 channelNumber,
                 channelType: currentChannel.channelType
             })
+            setMessageReceived((prevMessages) => {
+                return [messageContents, ...prevMessages]
+            })
             //Since in the message that we sent, the socket only sends
             //the message to the user besides the sender, we 
             //update the MessageReceived manually.
-            setMessageReceived((prevMessages) => {
-                    return [messageContents, ...prevMessages]
-            })
             mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
                 if (!currMsgCachedData) {
                     return undefined;
@@ -280,6 +305,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }, false)
         }
         setInputMessage('')
+        if(messageBoxRef.current){
+            messageBoxRef.current.scrollTop=0
+        }
     }
     const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
         e.preventDefault()
@@ -413,7 +441,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }
 
-
     const handleAddFriendMember = async(e:React.MouseEvent<HTMLButtonElement>, displayName:string, friendTag:string):Promise<void>=>{
         e.preventDefault()
         setMemberPopUp('')
@@ -497,6 +524,88 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }
 
+    const handleScroll = throttle(()=>{
+            const container = messageBoxRef.current
+            if(container){
+                // container.clientHeight represents the height of the visible portion of the container, 
+                // which is the part of the container that is currently displayed on the screen
+                const isTop = (container.scrollTop*-1) + container.clientHeight === container.scrollHeight ||
+                (container.scrollTop*-1) + container.clientHeight === container.scrollHeight -1
+                if((isTop && !allMessagesFetched && !msgFetchLoading)){
+                    console.log('SUCCESS PASS')
+                    setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
+                }
+            }
+    }, 300)
+
+    useEffect(()=>{
+        const fetchMoreMessages = ():void =>{
+            if(messagesSkip > 0){
+                setMsgFetchLoading(true)
+                mutate(messageCacheKey, async (prevMessageData:ChannelMessagesStatus|undefined)=>{
+                    if(!prevMessageData){
+                        return
+                    }
+                    //Determine the difference between the current rendered messages' length and the 
+                    //messages data in the cache
+                    const lenDifference = prevMessageData.messages.length - messageReceived.length
+                    //if there's a difference, it means there is messages data in the cache that we can 
+                    //get without fetching 
+                    if(lenDifference>0){
+                        //Since every scroll up, we render additional 15 messages(messagesLimit),
+                        //if the difference between the rendered messages and messages in the cache's length is
+                        //less than 15, we can fetch the remaining messages to make up for the additional 15 messages
+                        if(lenDifference<messagesLimit){
+                            const newMessagesData = await messageFetcher(
+                                messageCacheKey,
+                                messagesLimit-lenDifference,
+                                messagesSkip+lenDifference,
+                                token
+                            )
+                            if(newMessagesData.messages.length < messagesLimit-lenDifference){
+                                setAllMessagesFetched(true)
+                            }
+                            console.log('1')
+                            setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
+                            return {status:prevMessageData.status,
+                                    messages:[...prevMessageData.messages, ...newMessagesData.messages]}
+                        //if its higher than 15, we can just get additional 15 messages from the cache
+                        }else{
+                            console.log('2')
+                            setMessageReceived(prevMessages=>{
+                                return [...[...prevMessageData.messages].slice(0, prevMessages.length+messagesLimit)]
+                            })
+                            return {...prevMessageData}
+                        }
+                    }
+                    //This executes when the length of the rendered messages is equal to the length of the messages
+                    //in the cache, if so, we can fetch another messages data.
+                    const newMessagesData = await messageFetcher(
+                        messageCacheKey,
+                        messagesLimit,
+                        messagesSkip,
+                        token
+                    )
+                    if(newMessagesData.messages.length<messagesLimit){
+                        setAllMessagesFetched(true)
+                    }
+                    //Since the cached data and the rendered data is identical we can just add allMessages
+                    //to both 
+                    console.log('3')
+                    const allMessages = [...prevMessageData.messages, ...newMessagesData.messages]
+                    setMessageReceived(allMessages)
+                    return {status:prevMessageData.status, messages:allMessages}
+                }, false)
+            setMsgFetchLoading(false)
+            }
+        }
+
+        if(!msgFetchLoading){
+            fetchMoreMessages()
+        }
+
+    }, [messagesSkip])
+
 
     return (
         <>
@@ -560,9 +669,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     }
                     </div>
                 </nav>
-                <div className="message-box" ref={messageBoxRef}>
+                <div className="message-box" ref={messageBoxRef} onScroll={handleScroll}>
                     {
-                    messageReceived.length>=1?
+                    messageReceived?
                         messageReceived.map((message, index)=>(
                             <div 
                                 className={message.sender._id===_id?"my-message-info-container user-message-info-container"
@@ -705,7 +814,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                     </>
                                     :
                                     alreadyAdded(member._id)?
-                                    <div className="req-sent-text">Request Sent</div>:
+                                    <div className="req-sent-text">Request Sent</div>
+                                    :
                                     alreadyPending(member._id)?
                                     <>
                                         <button className="member-accept-friend-request" onClick={(e)=>handleAcceptRequest(e, member._id, alreadyPending(member._id))}>

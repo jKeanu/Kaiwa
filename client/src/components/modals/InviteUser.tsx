@@ -51,7 +51,7 @@ const InviteUserModal:React.FC<InviteFriend>=({
                     return sortedChannels
                 })
                 if(socket && channelId && channelNumber){
-                    socket.emit('user_invite_success', {inviteUser:friend._id, channelId, channelNumber})
+                    socket.emit('user_invite_success', {inviteUser:friend._id, channelId, channelNumber:Number(channelNumber)})
                 }
                 setLoadings(prevLoadings=>{
                     if(prevLoadings.length===1){
