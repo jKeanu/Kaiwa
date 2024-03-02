@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     displayName:{
         type:String,
         required:[true, 'Must have a display name'],
-        maxlength:[10, 'Display Name must contain no more than 10 characters'],
+        maxlength:[12, 'Display Name must contain no more than 10 characters'],
         minlength:[1, 'Please provide a display name']
     },
     friendTag:{

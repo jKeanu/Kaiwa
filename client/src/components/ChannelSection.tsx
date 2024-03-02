@@ -364,6 +364,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         e.preventDefault()
         const clickX = e.nativeEvent.offsetX
         const clickY = e.nativeEvent.offsetY
+        console.log(clickX, '------')
         setPopUpPosition({clickX, clickY})
         setMemberPopUp(memberId)
     }
@@ -556,50 +557,57 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         //if the difference between the rendered messages and messages in the cache's length is
                         //less than 15, we can fetch the remaining messages to make up for the additional 15 messages
                         if(lenDifference<messagesLimit){
-                            const newMessagesData = await messageFetcher(
-                                messageCacheKey,
-                                messagesLimit-lenDifference,
-                                messagesSkip+lenDifference,
-                                token
-                            )
-                            if(newMessagesData.messages.length < messagesLimit-lenDifference){
-                                setAllMessagesFetched(true)
+                            try{
+                                const newMessagesData = await messageFetcher(
+                                    messageCacheKey,
+                                    messagesLimit-lenDifference,
+                                    messagesSkip+lenDifference,
+                                    token
+                                )
+                                if(newMessagesData.messages.length < messagesLimit-lenDifference){
+                                    setAllMessagesFetched(true)
+                                }
+                                setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
+                                setMsgFetchLoading(false)
+                                return {status:prevMessageData.status,
+                                        messages:[...prevMessageData.messages, ...newMessagesData.messages]}
+                            }catch(err){
+
                             }
-                            console.log('1')
-                            setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
-                            return {status:prevMessageData.status,
-                                    messages:[...prevMessageData.messages, ...newMessagesData.messages]}
                         //if its higher than 15, we can just get additional 15 messages from the cache
                         }else{
-                            console.log('2')
                             setMessageReceived(prevMessages=>{
                                 return [...[...prevMessageData.messages].slice(0, prevMessages.length+messagesLimit)]
                             })
+                            setMsgFetchLoading(false)
                             return {...prevMessageData}
                         }
                     }
+                    try{
                     //This executes when the length of the rendered messages is equal to the length of the messages
                     //in the cache, if so, we can fetch another messages data.
-                    const newMessagesData = await messageFetcher(
-                        messageCacheKey,
-                        messagesLimit,
-                        messagesSkip,
-                        token
-                    )
-                    if(newMessagesData.messages.length<messagesLimit){
-                        setAllMessagesFetched(true)
-                    }
+                        const newMessagesData = await messageFetcher(
+                            messageCacheKey,
+                            messagesLimit,
+                            messagesSkip,
+                            token
+                        )
+                        if(newMessagesData.messages.length<messagesLimit){
+                            setAllMessagesFetched(true)
+                        }
                     //Since the cached data and the rendered data is identical we can just add allMessages
                     //to both 
-                    console.log('3')
-                    const allMessages = [...prevMessageData.messages, ...newMessagesData.messages]
-                    setMessageReceived(allMessages)
-                    return {status:prevMessageData.status, messages:allMessages}
+                        const allMessages = [...prevMessageData.messages, ...newMessagesData.messages]
+                        setMessageReceived(allMessages)
+                        setMsgFetchLoading(false)
+                        return {status:prevMessageData.status, messages:allMessages}
+                    }catch(err){
+                        
+                    }
                 }, false)
-            setMsgFetchLoading(false)
+
             }
         }
-
         if(!msgFetchLoading){
             fetchMoreMessages()
         }
@@ -611,8 +619,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         <>
         {(currentChannel&&messagesData)?
         <section className='right-home-section'>
-            <section className="message-section">
-                <nav className="channel-nav">
+            <nav className="channel-nav">
                     {
                         currentChannel?.channelType==='Friend'?
                         <div className="channel-nav-info-container">
@@ -646,29 +653,30 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         </button>
                     }
                     {(currentChannel?.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
-                        <button onClick={(e)=>handleNavButtonClick(e, 'leaveGroup')} className="nav-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" 
-                        strokeLinejoin="round" className="leave-group-img">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        <div className='channel-nav-button-tooltip'>
-                            <span className='channel-nav-button-tooltip-text'>
-                                Leave Group
-                            </span>
-                        </div>
+                        <button onClick={(e)=>handleNavButtonClick(e, 'leaveGroup')} className="nav-button last-nav-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" 
+                            strokeLinejoin="round" className="leave-group-img">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            <div className='channel-nav-button-tooltip'>
+                                <span className='channel-nav-button-tooltip-text'>
+                                    Leave Group
+                                </span>
+                            </div>
                         </button>}
                     {(
                         currentChannel?.channelType==="Group"
                         &&currentChannel?.groupLeader===_id)
                         &&
-                        <button onClick={(e)=>handleNavButtonClick(e, 'deleteGroup')} className="disband-group-button">
+                        <button onClick={(e)=>handleNavButtonClick(e, 'deleteGroup')} className="disband-group-button last-nav-button">
                             Disband Group
                         </button>
                     }
                     </div>
-                </nav>
+            </nav>
+            <section className="message-section">
                 <div className="message-box" ref={messageBoxRef} onScroll={handleScroll}>
                     {
                     messageReceived?
@@ -780,9 +788,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 />}
             </dialog>}
             <section className="channel-members-section">
-                <h2 className="channel-members-header">
-                    Members
-                </h2>
                 {currentChannel.channelType==='Group'?
                     <ul className="member-list">
                     {
@@ -796,8 +801,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                     <span className="member-name">{member.displayName}</span>
                                 </button>
                                 {memberPopUp===member._id&&member._id!==_id&&
-                                <div className="member-popup-container" style={{top:popUpPosition.clickY,
-                                 left:popUpPosition.clickX-(popUpPosition.clickX<=115?-5:115)}}>
+                                <div className="member-popup-container" style={{top:popUpPosition.clickY+15,
+                                 left:popUpPosition.clickX-(popUpPosition.clickX>=86?popUpPosition.clickX>=125?120:30:-15)}}>
                                     <div className="popup-member-info-container">
                                         <img src={`/img/${member.photo}`} />
                                         <div className="popup-member-info">

@@ -19,7 +19,7 @@
 @mixin modal($border-radius)
     position: absolute
     top: 40%
-    background-color: #151a26
+    background-color: #232a31
     padding: 1.5rem
     border-radius: $border-radius
     min-height: 10rem
@@ -97,10 +97,9 @@
             left: 0
             top: 105%
 
-
-@mixin scroll($scroll-color)
+@mixin scroll($scroll-color, $w)
     &::-webkit-scrollbar
-        width: 0.4rem
+        width: $w
     &::-webkit-scrollbar-thumb
         background-color: $scroll-color
         border-radius: 0.2rem
@@ -115,3 +114,52 @@
     background: var(--_g) 0%   50%, var(--_g) 50%  50%, var(--_g) 100% 50%
     background-size: calc(100%/3) 50%
     animation: l3 1s infinite linear
+
+
+@mixin input($w)
+    position: relative
+    margin: 1.2rem 0
+    width: $w
+    .input-field
+        font-size: 1rem
+        width: 100%
+        border: none
+        border-bottom: 1px solid $white-line
+        padding: 5px 0
+        background-color: transparent
+        outline: none
+        font-family: 'Open Sans', sans-serif
+        &:focus ~ .input-label,
+        &:not(:placeholder-shown) ~ .input-label
+            top:-20px
+            font-size: 16px
+        &:focus ~ .input-highlight,
+        &:not(:placeholder-shown) ~ .input-highlight
+            transform: scaleX(1)
+    .input-label
+        position: absolute
+        top: 5px
+        left: 0
+        color: $white-text
+        transition: all 0.3s ease
+        pointer-events: none
+        font-family: 'Raleway', sans-serif
+        will-change: top, font-size
+    .input-highlight
+        position: absolute
+        bottom: 0
+        left: 0
+        height: 2px
+        width: 100%
+        transform-origin: left
+        background-color: $primary-bg
+        transform: scaleX(0)
+        transition: all 0.3s ease
+        will-change: transform
+    .input-error-message
+        position: absolute
+        top: 105%
+        left: 0
+        font-family: 'Raleway', sans-serif
+        font-size: 0.7rem
+        color: $error-message

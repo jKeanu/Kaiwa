@@ -1,4 +1,4 @@
-import { useState} from 'react';
+import React, { useState} from 'react';
 import { Link } from 'react-router-dom';
 import axios, {AxiosResponse} from 'axios';
 import {useNavigate} from 'react-router-dom'
@@ -78,6 +78,10 @@ const RegisterPage = () => {
         })
     }
 
+    const datez=(e:React.ChangeEvent<HTMLInputElement>):void=>{
+        e.preventDefault()
+        console.log(e.target.value)
+    }
 
     return (
         <div className='register-page-container'>
@@ -92,16 +96,18 @@ const RegisterPage = () => {
                             ?'#c93a3a':'rgba(142, 142, 142, 0.5)'}`}}
                             />
                             <label htmlFor="email" className="input-label">Email</label>
+                            {errorMessage?.type!=='email'&&<span className='input-highlight'></span>}
                             {(errorMessage&&(errorMessage.type==='email'||errorMessage.type==='other'))
                             &&
                             <span className='input-error-message'>{errorMessage.message}</span>}
                         </div>
                         <div className="input-container">
-                            <input type="text" className='input-field' id='displayName' placeholder=" "
+                            <input type="text" maxLength={12} className='input-field' id='displayName' placeholder=" "
                             value={formData.displayName} onChange={handleChange} name='displayName'required
                             style={{borderBottomColor:`${(errorMessage&&(errorMessage.type==='displayName'||errorMessage.type==='other'))
                             ?'#c93a3a':'rgba(142, 142, 142, 0.5)'}`}}/>
                             <label htmlFor="displayName" className="input-label">Display Name</label>
+                            {errorMessage?.type!=='displayName'&&<span className='input-highlight'></span>}
                             {(errorMessage&&(errorMessage.type==='displayName'||errorMessage.type==='other'))
                             &&
                             <span className='input-error-message'>{errorMessage.message}</span>}
@@ -112,6 +118,7 @@ const RegisterPage = () => {
                             style={{borderBottomColor:`${(errorMessage&&(errorMessage.type==='password'||errorMessage.type==='other'))
                             ?'#c93a3a':'rgba(142, 142, 142, 0.5)'}`}}/>
                             <label htmlFor="password" className="input-label">Password</label>
+                            {errorMessage?.type!=='password'&&<span className='input-highlight'></span>}
                             {(errorMessage&&(errorMessage.type==='password'||errorMessage.type==='other'))
                             &&
                             <span className='input-error-message'>{errorMessage.message}</span>}
@@ -122,11 +129,11 @@ const RegisterPage = () => {
                             style={{borderBottomColor:`${(errorMessage&&(errorMessage.type==='password'||errorMessage.type==='other'))
                             ?'#c93a3a':'rgba(142, 142, 142, 0.5)'}`}}/>
                             <label htmlFor="passwordConfirm" className="input-label">Confirm password</label>
+                            {errorMessage?.type!=='password'&&<span className='input-highlight'></span>}
                             {(errorMessage&&(errorMessage.type==='password'||errorMessage.type==='other'))
                             &&
                             <span className='input-error-message'>{errorMessage.message}</span>}
                         </div>
-                    
                         <button type="submit">Register</button>
                     </form>
                 </div>

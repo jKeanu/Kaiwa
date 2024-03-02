@@ -118,7 +118,6 @@ export const messageFetcher = async (endpoint: string, limit: number, skip: numb
     const headers = {
         'Authorization': `Bearer ${token}`
     }
-    console.log('LIMIT: ', limit, 'SKIP: ', skip)
     return axios.get(`${API_URL}/${endpoint}?limit=${limit}&skip=${skip}`, { headers })
             .then(response => {
                 return response.data

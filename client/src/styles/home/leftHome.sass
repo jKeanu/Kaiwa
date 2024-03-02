@@ -2,11 +2,11 @@
     background-color: $primary-bg
     border-right: 1px solid rgba(142, 142, 142, 0.3)
     font-family: 'Open Sans', sans-serif
-    width: 17rem
+    width: 14rem
     flex-shrink: 0 //or min-width
     display: flex
     flex-direction: column
-    max-width: 17rem
+    max-width: 14rem
     height: 100vh
     max-height: 100vh
     .modal-window-container
@@ -59,7 +59,7 @@
                 .create-group-modal-friend-list
                     height: 25rem
                     overflow-y: scroll
-                    @include scroll(rgb(81, 84, 110))
+                    @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
                     box-shadow: inset 0px 10px 10px 1px #00000078
                     position: relative
                     .friend-checkbox-container
@@ -204,7 +204,7 @@
                     transition: opacity 0.2s ease-in
                     bottom: 90%
                     height: fit-content
-                    z-index: 1
+                    z-index: 105
                     left: 50%
                     border-radius: 0.15rem
                     transform: translateX(-50%)
@@ -246,7 +246,7 @@
         height: 100%
         overflow-y: scroll
         &::-webkit-scrollbar
-            width: 0.4rem
+            width: 0.3rem
         &::-webkit-scrollbar-track
             background-color: rgb(36, 47, 67)
         &::-webkit-scrollbar-thumb

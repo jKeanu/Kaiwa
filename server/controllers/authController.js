@@ -36,6 +36,9 @@ export const login = catchAsync(async (req, res, next)=>{
 
 export const signup = catchAsync(async (req, res, next)=>{
     const newUser = await User.create(req.body)
+    if(req.body.displayName.length>12){
+      return next(new AppError("Display Name can only be 12 characters or less"))
+    }
     createSendToken(newUser, 201, req, res)
 })
 

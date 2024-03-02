@@ -108,7 +108,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
                 {field==='groupName'?
                 <div className="group-name-container">  
                     <label className="group-name-label" htmlFor="group-name-input">Channel Name</label>
-                    <input id="group-name-input" className="group-name-input" value={groupName} onChange={(e)=>setGroupName(e.currentTarget.value)}/>
+                    <input id="group-name-input" maxLength={12} className="group-name-input" value={groupName} onChange={(e)=>setGroupName(e.currentTarget.value)}/>
                     {(createGroupErr.err&&createGroupErr.type==='groupName')&&
                     <div className="group-name-error">{createGroupErr.message}</div>}
                 </div>

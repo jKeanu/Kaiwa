@@ -1,7 +1,78 @@
 .right-home-section
     background-color: $secondary-bg
-    width: 100%
     display: flex
+    flex: 1
+    position: relative
+    .channel-nav
+        width: 100%
+        background-color: $secondary-bg
+        height: max-content
+        padding: 0.25rem 0.5rem
+        display: flex
+        justify-content: flex-end
+        align-items: center
+        margin-bottom: auto
+        position: absolute
+        top: 0
+        box-shadow: 1px 1px 1px 1px #0000007b
+        z-index: 101
+        .channel-nav-info-container
+            display: flex
+            align-items: center
+            column-gap: 0.5rem
+            margin-right: auto
+            margin-left: 0.5rem
+            .channel-nav-header
+                margin: 0   
+                font-family: 'Open Sans', sans-serif
+                font-weight: 300
+            .channel-nav-photo
+                width: 2rem
+                height: 2rem
+                border-radius: 1rem
+                object-fit: cover
+        .nav-button-container
+            display: flex
+            .nav-button
+                background-color: transparent
+                width: 2rem
+                height: 2rem
+                border: none
+                cursor: pointer
+                display: flex
+                justify-content: center
+                align-items: center
+                position: relative
+                &.last-nav-button
+                    .channel-nav-button-tooltip
+                        right: -15%
+                .channel-nav-button-tooltip
+                    position: absolute
+                    padding: 0.35rem
+                    background-color: #1d222d
+                    opacity: 0
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    transition: opacity 0.2s ease-in
+                    top: 120%
+                    height: fit-content
+                    z-index: 1   
+                    border-radius: 0.15rem
+                    pointer-events: none
+                .channel-nav-button-tooltip-text
+                    font-family: 'Open Sans', sans-serif
+                    font-size: 0.6rem
+                    width: 4rem
+                svg
+                    align-self: center
+                    width: 100%
+                    height: 100%
+                &:hover > svg
+                    fill: $white-text
+                &:hover > .channel-nav-button-tooltip
+                    opacity: 1
+                    pointer-events: auto
     //modal window
     .modal-window-container
         z-index: 100
@@ -41,7 +112,7 @@
                     flex-direction: column
                     height: 100%
                     overflow: auto
-                    @include scroll(rgb(81, 84, 110))
+                    @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.2rem)
                     .invite-friend-info
                         display: flex
                         justify-content: start
@@ -103,70 +174,7 @@
         display: flex
         flex-direction: column
         justify-content: end
-        position: relative
-        .channel-nav
-            width: 100%
-            background-color: $primary-bg
-            height: max-content
-            padding: 0.25rem 0.5rem
-            display: flex
-            justify-content: flex-end
-            align-items: center
-            margin-bottom: auto
-            .channel-nav-info-container
-                display: flex
-                align-items: center
-                column-gap: 0.5rem
-                margin-right: auto
-                margin-left: 0.5rem
-                .channel-nav-header
-                    margin: 0   
-                    font-family: 'Open Sans', sans-serif
-                    font-weight: 300
-                .channel-nav-photo
-                    width: 2rem
-                    height: 2rem
-                    border-radius: 1rem
-                    object-fit: cover
-            .nav-button-container
-                display: flex
-                .nav-button
-                    background-color: transparent
-                    width: 2rem
-                    height: 2rem
-                    border: none
-                    cursor: pointer
-                    display: flex
-                    justify-content: center
-                    align-items: center
-                    position: relative
-                    .channel-nav-button-tooltip
-                        position: absolute
-                        padding: 0.35rem
-                        background-color: #1d222d
-                        opacity: 0
-                        display: flex
-                        justify-content: center
-                        align-items: center
-                        transition: opacity 0.2s ease-in
-                        top: 120%
-                        height: fit-content
-                        z-index: 1   
-                        border-radius: 0.15rem
-                        pointer-events: none
-                    .channel-nav-button-tooltip-text
-                        font-family: 'Open Sans', sans-serif
-                        font-size: 0.6rem
-                        width: 4rem
-                    svg
-                        align-self: center
-                        width: 100%
-                        height: 100%
-                    &:hover > svg
-                        fill: $white-text
-                    &:hover > .channel-nav-button-tooltip
-                        opacity: 1
-                        pointer-events: auto
+        padding-right: 0.2rem
         .message-box
             padding: 0 2rem 2rem 2rem
             overflow-y: auto
@@ -176,7 +184,10 @@
             margin-top: auto
             display: flex
             flex-direction: column-reverse
-            @include scroll(rgb(81, 84, 110))
+            margin-top: 2.5rem
+            @include scroll($scroll-color:rgb(81, 84, 110), $w: 0.4rem)
+            &::-webkit-scrollbar-track
+                background-color: rgb(46, 53, 68)
             .user-message-info-container
                 display: flex
                 justify-content: flex-start
@@ -196,23 +207,23 @@
                     .message-content-container
                         display: flex
                         flex-direction: column
-                        width: 30rem
+                        width: 22rem
                         .message-content
                             margin: 0.1rem 0       
                             font-family: 'Open Sans', sans-serif
-                            font-size: 0.9rem
+                            font-size: 1rem
                             font-weight: 300
                             word-break: break-word
                             width: fit-content
                             max-width: 100%
-                            background-color: $primary-bg
+                            background-color: #2a3748
                             padding: 0.4rem
                     .message-date-displayname
                         display: flex
                         align-items: baseline
                         justify-content: flex-start                
                         .message-sender
-                            font-size: 1rem
+                            font-size: 1.1rem
                             margin-right: 0.3rem
                             font-family: 'Open Sans', sans-serif
                         .message-date
@@ -255,13 +266,13 @@
             background-color: $secondary-bg
             justify-content: center
             align-items: flex-end
-            padding-bottom: 1.5rem
+            padding: 0 7rem 1rem 7rem
             textarea
-                width: 50rem
+                width: 100%
                 background-color: $primary-bg
                 border: none
                 font-family: 'Open Sans', sans-serif
-                padding: 0.5rem 0.2rem 0.5rem 1rem
+                padding: 0.5rem 1rem
                 border-radius: 0.3rem
                 font-size: 0.8rem
                 resize: none
@@ -269,17 +280,16 @@
                     outline: none
                 &::placeholder
                     font-size: 0.8rem
-                    font-family: 'Bellefair', serif
-                    
+                    font-family: 'Bellefair', serif                   
     //members 
     .channel-members-section
-        border-left: 1px solid $white-line
-        width: 14rem
+        width: 13rem
         flex-shrink: 0
-        padding: 1rem 0 0.5rem 0
+        padding: 2rem 0.15rem 0.5rem 0
         height: 100vh
         display: flex
         flex-direction: column
+        background-color: #272d39
         .channel-members-header
             font-family: 'Open Sans', sans-serif
             font-size: 0.8rem
@@ -293,7 +303,10 @@
             overflow-x: visible
             margin:0
             margin-top: 0.5rem
-            @include scroll(rgb(81, 84, 110))
+            @include scroll($scroll-color: transparent, $w: 0.3rem)
+            &:hover
+                &::-webkit-scrollbar-thumb
+                    background-color: rgb(68, 83, 106)
             .member-container
                 height: 3rem
                 padding-left: 0.5rem
@@ -333,7 +346,7 @@
                         background-color: #1b232e
                         box-shadow: 1px 3px 10px 4px #0000007f
                         overflow: hidden
-                        width: 6.8rem
+                        width: 6.7rem
                         z-index: 1
                         display: flex
                         flex-direction: column
@@ -349,7 +362,7 @@
                                 height: 2rem
                                 border-radius: 1rem
                                 object-fit: cover
-                                margin-right: 0.8rem
+                                margin-right: 0.5rem
                             .popup-member-info
                                 display: flex
                                 flex-direction: column
@@ -436,6 +449,4 @@
                         font-size: 1.1rem
                         font-family: 'Raleway', sans-serif
                         pointer-events: none
-
-
 
