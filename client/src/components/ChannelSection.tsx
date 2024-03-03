@@ -74,6 +74,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         });
     }, [currentChannelMembers]);
 
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const memberListRef =useRef<HTMLUListElement>(null)
+
     //fetching channel data 
     const {data:channelData, error: channelError, isLoading:channelIsLoading} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
@@ -88,7 +92,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     }, [channelNumber])
 
 
-    
     useEffect(() => {
         if (channelData) {
             setCurrentChannel(channelData.channel);
@@ -181,7 +184,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }, [socket, channelNumber]);
 
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(()=>{
         if(textareaRef.current){
@@ -362,11 +364,12 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     //Popup 
     const handlePopUp = (e:React.MouseEvent<HTMLButtonElement>, memberId:string):void=>{
         e.preventDefault()
-        const clickX = e.nativeEvent.offsetX
-        const clickY = e.nativeEvent.offsetY
-        console.log(clickX, '------')
-        setPopUpPosition({clickX, clickY})
-        setMemberPopUp(memberId)
+        if(memberListRef.current){
+            const clickX = e.nativeEvent.offsetX - (e.nativeEvent.offsetX>=86?e.nativeEvent.offsetX>=125?120:30:-15)  
+            const clickY = Math.abs(memberListRef.current.clientHeight-e.nativeEvent.clientY)<=120?-120:e.nativeEvent.offsetY
+            setPopUpPosition({clickX, clickY})
+            setMemberPopUp(memberId)
+        }
     }
 
 
@@ -526,12 +529,16 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     }
 
     const handleScroll = throttle(()=>{
-            const container = messageBoxRef.current
+            const container = messageBoxRef.current 
             if(container){
                 // container.clientHeight represents the height of the visible portion of the container, 
                 // which is the part of the container that is currently displayed on the screen
                 const isTop = (container.scrollTop*-1) + container.clientHeight === container.scrollHeight ||
-                (container.scrollTop*-1) + container.clientHeight === container.scrollHeight -1
+                (container.scrollTop*-1) + container.clientHeight === container.scrollHeight -1 || 
+                Math.floor(Math.abs(container.scrollHeight - ((container.scrollTop*-1) + container.clientHeight))) === 0
+
+                console.log((container.scrollTop*-1) + container.clientHeight, '----', container.scrollHeight)
+                console.log(isTop, '-', !allMessagesFetched, '-' ,!msgFetchLoading)
                 if((isTop && !allMessagesFetched && !msgFetchLoading)){
                     console.log('SUCCESS PASS')
                     setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
@@ -619,244 +626,246 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         <>
         {(currentChannel&&messagesData)?
         <section className='right-home-section'>
-            <nav className="channel-nav">
-                    {
-                        currentChannel?.channelType==='Friend'?
-                        <div className="channel-nav-info-container">
-                            <img className="channel-nav-photo"
-                             src={`/img/${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo:currentChannel.members[1].photo}`}/>
-                            <h2 className="channel-nav-header">
-                                {currentChannel.members[0]._id!==_id?currentChannel.members[0].displayName:currentChannel.members[1].displayName}
-                            </h2>
-                        </div>
-                        :
-                        <div className="channel-nav-info-container">
-                            <img className="channel-nav-photo" src={`/img/${currentChannel?.photo}`}/>
-                            <h2 className="channel-nav-header">{currentChannel?.channelName}</h2>
-                        </div>
-                    }
-                    <div className="nav-button-container">
-                    {currentChannel?.channelType==='Group'&&
-                        <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'inviteUser')}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
-                            strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="invite-user-img">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="8.5" cy="7" r="4"></circle>
-                                <line x1="20" y1="8" x2="20" y2="14"></line>
-                                <line x1="23" y1="11" x2="17" y2="11"></line>
-                            </svg>
-                            <div className='channel-nav-button-tooltip'>
-                                <span className='channel-nav-button-tooltip-text'>
-                                    Invite Friend
-                                </span>
+            <div className="right-home-container">
+                <nav className="channel-nav">
+                        {
+                            currentChannel?.channelType==='Friend'?
+                            <div className="channel-nav-info-container">
+                                <img className="channel-nav-photo"
+                                src={`/img/${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo:currentChannel.members[1].photo}`}/>
+                                <h2 className="channel-nav-header">
+                                    {currentChannel.members[0]._id!==_id?currentChannel.members[0].displayName:currentChannel.members[1].displayName}
+                                </h2>
                             </div>
-                        </button>
-                    }
-                    {(currentChannel?.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
-                        <button onClick={(e)=>handleNavButtonClick(e, 'leaveGroup')} className="nav-button last-nav-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" 
-                            strokeLinejoin="round" className="leave-group-img">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                <polyline points="16 17 21 12 16 7"></polyline>
-                                <line x1="21" y1="12" x2="9" y2="12"></line>
-                            </svg>
-                            <div className='channel-nav-button-tooltip'>
-                                <span className='channel-nav-button-tooltip-text'>
-                                    Leave Group
-                                </span>
+                            :
+                            <div className="channel-nav-info-container">
+                                <img className="channel-nav-photo" src={`/img/${currentChannel?.photo}`}/>
+                                <h2 className="channel-nav-header">{currentChannel?.channelName}</h2>
                             </div>
-                        </button>}
-                    {(
-                        currentChannel?.channelType==="Group"
-                        &&currentChannel?.groupLeader===_id)
-                        &&
-                        <button onClick={(e)=>handleNavButtonClick(e, 'deleteGroup')} className="disband-group-button last-nav-button">
-                            Disband Group
-                        </button>
-                    }
-                    </div>
-            </nav>
-            <section className="message-section">
-                <div className="message-box" ref={messageBoxRef} onScroll={handleScroll}>
-                    {
-                    messageReceived?
-                        messageReceived.map((message, index)=>(
-                            <div 
-                                className={message.sender._id===_id?"my-message-info-container user-message-info-container"
-                                :"user-message-info-container"} 
-                                key={index}>
-                                <img className='sender-photo' src={`/img/${message.sender.photo}`}/>
-                                <div className="message-info">
-                                    <div className="message-date-displayname">
-                                        <span className="message-sender">
-                                            {message.sender.displayName}
-                                        </span>
-                                        <span className="message-date">
-                                            {formatToTodayIfCurrentDate(message.formattedDate)}
-                                        </span>
-                                    </div>
-                                    <div className="message-content-container">
-                                        {
-                                        message.content.map((m, i)=>(
-                                            <div key={i} className="message-content">
-                                                {m.split('\n').map((line, index)=>(
-                                                    <React.Fragment key={index}>
-                                                        {line}
-                                                        {index < line.length -1 && <br/>}
-                                                    </React.Fragment>
-                                                ))}
-                                            </div>
-                                        ))}
-                                    </div>
+                        }
+                        <div className="nav-button-container">
+                        {currentChannel?.channelType==='Group'&&
+                            <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'inviteUser')}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
+                                strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="invite-user-img">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="8.5" cy="7" r="4"></circle>
+                                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                                </svg>
+                                <div className='channel-nav-button-tooltip'>
+                                    <span className='channel-nav-button-tooltip-text'>
+                                        Invite Friend
+                                    </span>
                                 </div>
-                            </div>
-                        )):
-                        <div></div>
-                    }
-                </div>
-                <div className="message-input-container">
-                    <ReactTextareaAutosize 
-                        ref={textareaRef}
-                        value={inputMessage} 
-                        placeholder="Send a message..."
-                        onKeyDown={handleKeyDown}
-                        onChange={(event)=>setInputMessage(event.target.value)} 
-                        className="message-input"
-                    />
-                </div>
-            </section>
-            {(modalWindow.isOpen||memberModal.isOpen)&&<dialog className='modal-window-container' onClick={handleModalWindowClick}>
-                {(modalWindow.window==='leaveGroup'&&currentChannel)
-                &&
-                <LeaveGroupModal 
-                    token={token} 
-                    channelId={currentChannel._id} 
-                    socket={socket}
-                    currUserId={_id} 
-                    channelNumber={channelNumber}
-                    handleCloseButton={handleCloseButton} 
-                    setChannels={setChannels}
-                    setModalDisabled={setModalDisabled}/>
-                }
-                {(modalWindow.window==='inviteUser'&&currentChannel)
-                &&
-                <InviteUserModal 
-                    handleCloseButton={handleCloseButton} 
-                    channelId={currentChannel._id}
-                    token={token} 
-                    friends={myFriends} 
-                    currChannelMembersId={membersId} 
-                    socket={socket}
-                    channelNumber={channelNumber}
-                    setChannels={setChannels}
-                    modalDisabled={modalDisabled}
-                    setModalDisabled={setModalDisabled}/>}
-                {(modalWindow.window==='deleteGroup'&&currentChannel)
-                &&
-                <DeleteGroupModal 
-                    token={token} 
-                    channelId={currentChannel._id} 
-                    channelNumber={channelNumber}
-                    handleCloseButton={handleCloseButton} 
-                    setChannels={setChannels} 
-                    socket={socket}
-                    membersId={membersId}
-                    setModalDisabled={setModalDisabled}
-                />}
-                {memberModal.type==='unfriend'&&
-                <UnfriendMemberModal
-                    setModalSettings={setMemberModal}
-                    token={token}
-                    socket={socket}
-                    displayName={memberModal.displayName}
-                    handleCloseButton={handleCloseButton}
-                    channelNumber={memberModal.channelNumber}
-                    handleFriendChannelDelete={handleFriendChannelDelete}
-                    setModalDisabled={setModalDisabled}
-                    {...memberModal.ids}
-                    />}
-                {memberModal.type==='changeLeader'&&
-                <ChangeLeaderModal 
-                    token={token}
-                    setModalSettings={setMemberModal}
-                    socket={socket}
-                    displayName={memberModal.displayName}
-                    channelNumber={memberModal.channelNumber}
-                    handleCloseButton={handleCloseButton}
-                    setModalDisabled={setModalDisabled}
-                    {...memberModal.ids}
-                />}
-            </dialog>}
-            <section className="channel-members-section">
-                {currentChannel.channelType==='Group'?
-                    <ul className="member-list">
-                    {
-                        sortedMembers.map((member, i)=>(
-                            <li className='member-container member-popup' key={`member-${i}`}>
-                                <button className="member-popup-button" onClick={(e)=>handlePopUp(e, member._id)}>
-                                    <div className="member-profile-status">
-                                        <img className='member-profile-photo' src={`/img/${member.photo}`}/>
-                                        <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
-                                    </div>
-                                    <span className="member-name">{member.displayName}</span>
-                                </button>
-                                {memberPopUp===member._id&&member._id!==_id&&
-                                <div className="member-popup-container" style={{top:popUpPosition.clickY+15,
-                                 left:popUpPosition.clickX-(popUpPosition.clickX>=86?popUpPosition.clickX>=125?120:30:-15)}}>
-                                    <div className="popup-member-info-container">
-                                        <img src={`/img/${member.photo}`} />
-                                        <div className="popup-member-info">
-                                            <span className="popup-member-name">{member.displayName}</span>
-                                            <span className="popup-member-friend-tag">#{member.friendTag}</span>
+                            </button>
+                        }
+                        {(currentChannel?.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
+                            <button onClick={(e)=>handleNavButtonClick(e, 'leaveGroup')} className="nav-button last-nav-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" 
+                                strokeLinejoin="round" className="leave-group-img">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                <div className='channel-nav-button-tooltip'>
+                                    <span className='channel-nav-button-tooltip-text'>
+                                        Leave Group
+                                    </span>
+                                </div>
+                            </button>}
+                        {(
+                            currentChannel?.channelType==="Group"
+                            &&currentChannel?.groupLeader===_id)
+                            &&
+                            <button onClick={(e)=>handleNavButtonClick(e, 'deleteGroup')} className="disband-group-button last-nav-button">
+                                Disband Group
+                            </button>
+                        }
+                        </div>
+                </nav>
+                <section className="message-section">
+                    <div className="message-box" ref={messageBoxRef} onScroll={handleScroll}>
+                        {
+                        messageReceived?
+                            messageReceived.map((message, index)=>(
+                                <div 
+                                    className={message.sender._id===_id?"my-message-info-container user-message-info-container"
+                                    :"user-message-info-container"} 
+                                    key={index}>
+                                    <img className='sender-photo' src={`/img/${message.sender.photo}`}/>
+                                    <div className="message-info">
+                                        <div className="message-date-displayname">
+                                            <span className="message-sender">
+                                                {message.sender.displayName}
+                                            </span>
+                                            <span className="message-date">
+                                                {formatToTodayIfCurrentDate(message.formattedDate)}
+                                            </span>
+                                        </div>
+                                        <div className="message-content-container">
+                                            {
+                                            message.content.map((m, i)=>(
+                                                <div key={i} className="message-content">
+                                                    {m.split('\n').map((line, index)=>(
+                                                        <React.Fragment key={index}>
+                                                            {line}
+                                                            {index < line.length -1 && <br/>}
+                                                        </React.Fragment>
+                                                    ))}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                    {findMemberId(member._id)?
-                                    <>
-                                        <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link">Send Message</Link>
-                                        <button onClick={(e)=>handleMemberSelect(e, findMemberId(member._id)?.channelNumber, member._id, member.displayName, 'unfriend')} className="member-unfriend-button">
-                                            Remove Friend
-                                        </button>
-                                    </>
-                                    :
-                                    alreadyAdded(member._id)?
-                                    <div className="req-sent-text">Request Sent</div>
-                                    :
-                                    alreadyPending(member._id)?
-                                    <>
-                                        <button className="member-accept-friend-request" onClick={(e)=>handleAcceptRequest(e, member._id, alreadyPending(member._id))}>
-                                            Accept Request
-                                        </button>
-                                        <button className="member-decline-friend-request" onClick={(e)=>handleDeclineRequest(e, member._id)}>
-                                            Decline Request
-                                        </button>
-                                    </>:
-                                    <button className="member-add-friend" onClick={(e)=>handleAddFriendMember(e, member.displayName, member.friendTag)}>
-                                        Add Friend
-                                    </button>
-                                    }
-                                    {currentChannel.groupLeader===_id&&
-                                    <button className="member-set-leader" onClick={(e)=>handleMemberSelect(e, currentChannel.channelNumber, member._id, member.displayName, 'changeLeader')}>
-                                        Set as Group Leader
-                                    </button>}
-                                </div>}
-                            </li>  
-                        ))
-                        }
-                    </ul>
-                    :
-                    <ul className="member-list">
-                        {sortedMembers.map((member, i)=>(
-                            <li key={`member-${i}`} className="member-container friend-member-container">
-                                <div className="member-profile-status">
-                                    <img className='member-profile-photo' src={`/img/${member.photo}`}/>
-                                    <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}>
-                                    </div>
                                 </div>
-                                <span className="member-name">{member.displayName}</span>
-                            </li>
-                        ))}
-                    </ul>}
-            </section>
+                            )):
+                            <div></div>
+                        }
+                    </div>
+                    <div className="message-input-container">
+                        <ReactTextareaAutosize 
+                            ref={textareaRef}
+                            value={inputMessage} 
+                            placeholder="Send a message..."
+                            onKeyDown={handleKeyDown}
+                            onChange={(event)=>setInputMessage(event.target.value)} 
+                            className="message-input"
+                        />
+                    </div>
+                </section>
+                {(modalWindow.isOpen||memberModal.isOpen)&&<dialog className='modal-window-container' onClick={handleModalWindowClick}>
+                    {(modalWindow.window==='leaveGroup'&&currentChannel)
+                    &&
+                    <LeaveGroupModal 
+                        token={token} 
+                        channelId={currentChannel._id} 
+                        socket={socket}
+                        currUserId={_id} 
+                        channelNumber={channelNumber}
+                        handleCloseButton={handleCloseButton} 
+                        setChannels={setChannels}
+                        setModalDisabled={setModalDisabled}/>
+                    }
+                    {(modalWindow.window==='inviteUser'&&currentChannel)
+                    &&
+                    <InviteUserModal 
+                        handleCloseButton={handleCloseButton} 
+                        channelId={currentChannel._id}
+                        token={token} 
+                        friends={myFriends} 
+                        currChannelMembersId={membersId} 
+                        socket={socket}
+                        channelNumber={channelNumber}
+                        setChannels={setChannels}
+                        modalDisabled={modalDisabled}
+                        setModalDisabled={setModalDisabled}/>}
+                    {(modalWindow.window==='deleteGroup'&&currentChannel)
+                    &&
+                    <DeleteGroupModal 
+                        token={token} 
+                        channelId={currentChannel._id} 
+                        channelNumber={channelNumber}
+                        handleCloseButton={handleCloseButton} 
+                        setChannels={setChannels} 
+                        socket={socket}
+                        membersId={membersId}
+                        setModalDisabled={setModalDisabled}
+                    />}
+                    {memberModal.type==='unfriend'&&
+                    <UnfriendMemberModal
+                        setModalSettings={setMemberModal}
+                        token={token}
+                        socket={socket}
+                        displayName={memberModal.displayName}
+                        handleCloseButton={handleCloseButton}
+                        channelNumber={memberModal.channelNumber}
+                        handleFriendChannelDelete={handleFriendChannelDelete}
+                        setModalDisabled={setModalDisabled}
+                        {...memberModal.ids}
+                        />}
+                    {memberModal.type==='changeLeader'&&
+                    <ChangeLeaderModal 
+                        token={token}
+                        setModalSettings={setMemberModal}
+                        socket={socket}
+                        displayName={memberModal.displayName}
+                        channelNumber={memberModal.channelNumber}
+                        handleCloseButton={handleCloseButton}
+                        setModalDisabled={setModalDisabled}
+                        {...memberModal.ids}
+                    />}
+                </dialog>}
+                <section className="channel-members-section">
+                    {currentChannel.channelType==='Group'?
+                        <ul className="member-list" ref={memberListRef}>
+                        {
+                            sortedMembers.map((member, i)=>(
+                                <li className='member-container member-popup' key={`member-${i}`}>
+                                    <button className="member-popup-button" onClick={(e)=>handlePopUp(e, member._id)}>
+                                        <div className="member-profile-status">
+                                            <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                                            <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
+                                        </div>
+                                        <span className="member-name">{member.displayName}</span>
+                                    </button>
+                                    {memberPopUp===member._id&&member._id!==_id&&
+                                    <div className="member-popup-container" style={{top:popUpPosition.clickY+15,
+                                    left:popUpPosition.clickX}}>
+                                        <div className="popup-member-info-container">
+                                            <img src={`/img/${member.photo}`} />
+                                            <div className="popup-member-info">
+                                                <span className="popup-member-name">{member.displayName}</span>
+                                                <span className="popup-member-friend-tag">#{member.friendTag}</span>
+                                            </div>
+                                        </div>
+                                        {findMemberId(member._id)?
+                                        <>
+                                            <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link">Send Message</Link>
+                                            <button onClick={(e)=>handleMemberSelect(e, findMemberId(member._id)?.channelNumber, member._id, member.displayName, 'unfriend')} className="member-unfriend-button">
+                                                Remove Friend
+                                            </button>
+                                        </>
+                                        :
+                                        alreadyAdded(member._id)?
+                                        <div className="req-sent-text">Request Sent</div>
+                                        :
+                                        alreadyPending(member._id)?
+                                        <>
+                                            <button className="member-accept-friend-request" onClick={(e)=>handleAcceptRequest(e, member._id, alreadyPending(member._id))}>
+                                                Accept Request
+                                            </button>
+                                            <button className="member-decline-friend-request" onClick={(e)=>handleDeclineRequest(e, member._id)}>
+                                                Decline Request
+                                            </button>
+                                        </>:
+                                        <button className="member-add-friend" onClick={(e)=>handleAddFriendMember(e, member.displayName, member.friendTag)}>
+                                            Add Friend
+                                        </button>
+                                        }
+                                        {currentChannel.groupLeader===_id&&
+                                        <button className="member-set-leader" onClick={(e)=>handleMemberSelect(e, currentChannel.channelNumber, member._id, member.displayName, 'changeLeader')}>
+                                            Set as Group Leader
+                                        </button>}
+                                    </div>}
+                                </li>  
+                            ))
+                            }
+                        </ul>
+                        :
+                        <ul className="member-list">
+                            {sortedMembers.map((member, i)=>(
+                                <li key={`member-${i}`} className="member-container friend-member-container">
+                                    <div className="member-profile-status">
+                                        <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                                        <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}>
+                                        </div>
+                                    </div>
+                                    <span className="member-name">{member.displayName}</span>
+                                </li>
+                            ))}
+                        </ul>}
+                </section>
+            </div>
         </section>:
         <section className="right-home-section">
             <section className="message-section">

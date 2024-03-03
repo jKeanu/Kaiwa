@@ -1,32 +1,43 @@
-.homepage
-  display: flex
-  width: 100vw
-  height: 100vh
-  overflow-x: hidden
-  .modal-window-container
-    @include modal-container
-    .notice-modal-container
-      @include modal($border-radius: 0.25rem)
-    .notice-modal-button-container
-      margin-top: 1.5rem
-      display: flex
-      align-items: center
-      justify-content: end
-      button
-        border: none
-        border: 1px solid rgb(180, 50, 50) 
-        height: 2rem
-        width: 5rem
-        padding: 0.3rem 0.6rem
-        font-family: 'Open Sans', sans-serif
-        font-size: 0.9rem
-        font-weight: 300
-        background-color: transparent
-        transition: background-color 0.1s ease-in
-        display: flex
-        justify-content: center
-        align-items: center
-        &:hover
-            background-color: rgb(180, 50, 50)
-            cursor: pointer 
+=home-page-mobile
+  @media (max-width: $breakpoint-mobile)
+    position: relative
+    width: 100vw
+    height: 100vh
+    
 
+=home-page-desktop
+  @media (min-width: $breakpoint-laptop + 1px )
+    display: flex
+    width: 100vw
+    height: 100vh
+    overflow-x: hidden
+    .modal-window-container
+      @include modal-container
+      .notice-modal-container
+        @include modal($border-radius: 0.25rem)
+      .notice-modal-button-container
+        margin-top: 1.5rem
+        display: flex
+        align-items: center
+        justify-content: end
+        button
+          border: none
+          border: 1px solid rgb(180, 50, 50) 
+          height: 2rem
+          width: 5rem
+          padding: 0.3rem 0.6rem
+          font-family: 'Open Sans', sans-serif
+          font-size: 0.9rem
+          font-weight: 300
+          background-color: transparent
+          transition: background-color 0.1s ease-in
+          display: flex
+          justify-content: center
+          align-items: center
+          &:hover
+              background-color: rgb(180, 50, 50)
+              cursor: pointer 
+
+
+.homepage
+  +home-page-desktop

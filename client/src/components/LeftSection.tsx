@@ -48,7 +48,7 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
             </div>
             <div className='create-group-container'>
                 <button className='create-group-modal-button' onClick={()=>setModal(true)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -5 24 24" fill="none" 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
                     stroke="#b9b9b9 " strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'
                     className="create-group-image">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>

@@ -1,18 +1,220 @@
-.left-home-section
-    background-color: $primary-bg
-    border-right: 1px solid rgba(142, 142, 142, 0.3)
-    font-family: 'Open Sans', sans-serif
-    width: 14rem
-    flex-shrink: 0 //or min-width
-    display: flex
-    flex-direction: column
-    max-width: 14rem
-    height: 100vh
-    max-height: 100vh
-    .modal-window-container
-        @include modal-container
-        .create-group-modal-container
-            @include modal($border-radius: 0.25rem)
+=left-home-mobile
+    @media (max-width: $breakpoint-mobile)
+        width: 100vw
+        height: 100vh
+        font-family: 'Open Sans', sans-serif
+        position: relative
+        display: flex
+        flex-direction: column
+        overflow-y: hidden
+        .modal-window-container
+            height: 100vh
+            width: 100vw
+            display: block
+            background-color: #0000005c
+            .create-group-modal-container
+                padding: 1.5rem
+                position: absolute
+                top: 70%
+                left: 0
+                background-color: $secondary-bg
+                height: 100%
+                width: 100%
+                border-radius: 2rem 2rem 0 0
+                transition: top 0.1s ease-in
+                &.visible
+                    top: 2%
+                .modal-x-button-container
+                    display: flex
+                    justify-content: end
+                    align-items: center
+                    .modal-x-button
+                        background-color: transparent
+                        border: none
+                        padding: 0
+                        cursor: pointer
+                        &:hover > .x-img
+                            stroke-width: 2px
+                        .x-img
+                            width: 2rem
+                            height: 2rem
+                            transition: all 0.05s ease-in-out
+                .modal-header
+                    margin: 0.5rem 0
+                    font-family: 'Raleway', sans-serif
+                    font-size: 1rem
+                .modal-text  
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.8rem
+
+        .upper-left-section-container
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.6)
+            padding: 0 0.5rem
+            height: 5rem
+            flex-shrink: 0
+            .logo-container
+                display: none
+            .create-group-container
+                display: flex
+                justify-content: start
+                align-items: center
+                margin-bottom: 0.1rem
+                .create-group-modal-button
+                    cursor: pointer
+                    background-color: transparent
+                    border: none
+                    width: 6rem
+                    border-radius: 1rem
+                    background-color: #20293b8e
+                    display: flex
+                    align-items: center
+                    justify-content: space-around
+                    padding: 0.35rem
+                    .create-group-image
+                        fill: $white-text
+                        width: 1rem
+                        height: 1rem
+                    .create-group-tooltip
+                        pointer-events: none
+                        .create-group-tooltip-text
+                            font-family: 'Open Sans', sans-serif
+                            font-size: 0.6rem
+                            width: 4rem
+
+                        
+            .search-conversation-container
+                display: flex
+                align-content: center
+                border-style: none
+                justify-content: center
+                background-color: rgba(37, 45, 55, 1)
+                border-radius: 1rem
+                padding: 0 0.45rem
+                .search-conversation-input
+                    background-color: transparent
+                    border-radius: 0.35rem
+                    border-style: none
+                    color: $white-text
+                    padding-left: 1rem
+                    font-family: 'Open Sans', sans-serif
+                    font-size: 0.8rem
+                    height: 1.5rem
+                    &:focus
+                        outline: none
+                    &::placeholder
+                        font-size: 0.7rem
+                        font-family: 'Open Sans', sans-serif
+                .search-conversation-image
+                    height: 1.2rem
+                    width: 1.2rem
+                    align-self: center
+        .channel-list-container
+            height: 100%
+            overflow-y: scroll
+            &::-webkit-scrollbar
+                width: 0.3rem
+            &::-webkit-scrollbar-track
+                background-color: rgb(36, 47, 67)
+            &::-webkit-scrollbar-thumb
+                background-color: rgb(81, 84, 110)
+                border-radius: 0.2rem
+                transition: background-color 0.3s ease-in-out
+            width: 100%
+            .channel-links
+                display: flex
+                flex-direction: column
+                overflow: auto
+                padding: 0.5rem 0
+                .channel-link-container
+                    overflow-x: hidden
+                    .channel-link
+                        text-decoration: none
+                        display: flex
+                        align-items: center
+                        justify-content: flex-start
+                        column-gap: 0.5rem
+                        padding: 0.5rem
+                        transition: background-color 0.25s ease-in-out
+                        &:hover
+                            background-color: rgb(52, 76, 100)
+                        &.active
+                            background-color: rgb(52, 76, 100)
+                        .channel-photo
+                            width: 2.5rem
+                            height: 2.5rem
+                            object-fit: cover
+                            border-radius: 1.25rem
+                            flex-shrink: 0
+                        .channel-name
+                            font-family: 'Raleway', sans-serif
+                            color: white
+                            font-size: 1.1rem
+                            white-space: nowrap
+                            width: 100%
+        .user-info-container
+            border-top: 1px solid $white-line
+            display: flex
+            justify-content: space-between
+            align-items: center
+            padding: 1rem 0.5rem
+            height: 4rem
+            flex-shrink: 0
+            flex-grow: 0
+            .user-info
+                display: flex
+                flex-direction: row
+                justify-content: flex-start
+                align-items: center             
+                .user-info-photo
+                    width: 2.5rem
+                    height: 2.5rem
+                    object-fit: cover
+                    border-radius: 1.25rem
+                    margin-right: 0.5rem
+                .user-info-text
+                    display: flex
+                    justify-content: center
+                    align-items: flex-start
+                    flex-direction: column
+                    .display-name-info
+                        font-weight: bold
+                        color: white
+                    .friend-tag-info
+                        color: rgb(191, 191, 191)
+                        font-size: 0.7rem
+            .logout-button
+                background-color: transparent
+                color: white
+                padding: 0.6rem
+                border-radius: 2px
+                background-color: $secondary-bg
+                border: 1px solid transparent
+                cursor: pointer
+                transition: background-color 0.1s ease-in
+                font-family: 'Bebas Neue', sans-serif
+                &:hover
+                    background-color: $primary-bg
+
+
+
+    
+=left-home-desktop
+    @media (min-width: $breakpoint-laptop + 1px )
+        background-color: $primary-bg
+        border-right: 1px solid rgba(142, 142, 142, 0.3)
+        font-family: 'Open Sans', sans-serif
+        width: 14rem
+        flex-shrink: 0 //or min-width
+        display: flex
+        flex-direction: column
+        max-width: 14rem
+        height: 100vh
+        max-height: 100vh
+        .modal-window-container
+            
+            @include modal-container
+            .create-group-modal-container
+                @include modal($border-radius: 0.25rem)
             .create-group-search
                 background-color: #ffffff09
                 margin: 1rem 0 0.5rem 0
@@ -170,162 +372,169 @@
                             color: $white-text
                         .create-group-loading
                             @include loading(0, 30px) 
-    .upper-left-section-container
-        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.6)
-        padding: 0 0.5rem
-        height: 6rem
-        flex-shrink: 0
-        .create-group-container
-            display: flex
-            justify-content: end
-            align-items: center
-            margin-bottom: 0.1rem
-            .create-group-modal-button
-                background-color: transparent
-                cursor: pointer
-                border: none
-                width: 2rem
+        .upper-left-section-container
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.6)
+            padding: 0 0.5rem
+            height: 6rem
+            flex-shrink: 0
+            .create-group-container
+                display: flex
+                justify-content: end
+                align-items: center
+                margin-bottom: 0.1rem
+                .create-group-modal-button
+                    background-color: transparent
+                    cursor: pointer
+                    border: none
+                    width: 2rem
+                    height: 2rem
+                    border-radius: 1rem
+                    position: relative
+                    &:hover > .create-group-image
+                        fill: $white-text
+                    &:hover > .create-group-tooltip
+                        opacity: 1
+                        pointer-events: auto
+                    .create-group-tooltip
+                        position: absolute
+                        padding: 0.35rem
+                        background-color: #1d222d
+                        opacity: 0
+                        display: flex
+                        justify-content: center
+                        align-items: center
+                        transition: opacity 0.2s ease-in
+                        bottom: 90%
+                        height: fit-content
+                        z-index: 105
+                        left: 50%
+                        border-radius: 0.15rem
+                        transform: translateX(-50%)
+                        pointer-events: none
+                        .create-group-tooltip-text
+                            font-family: 'Open Sans', sans-serif
+                            font-size: 0.6rem
+                            width: 4rem
+            .logo-container
                 height: 2rem
+            .search-conversation-container
+                display: flex
+                align-content: center
+                border-style: none
+                justify-content: center
+                background-color: rgba(37, 45, 55, 1)
                 border-radius: 1rem
-                position: relative
-                &:hover > .create-group-image
-                    fill: $white-text
-                &:hover > .create-group-tooltip
-                    opacity: 1
-                    pointer-events: auto
-                .create-group-tooltip
-                    position: absolute
-                    padding: 0.35rem
-                    background-color: #1d222d
-                    opacity: 0
+                padding: 0 0.45rem
+                .search-conversation-input
+                    background-color: transparent
+                    border-radius: 0.35rem
+                    border-style: none
+                    color: $white-text
+                    padding-left: 1rem
+                    font-family: 'Open Sans', sans-serif
+                    font-size: 0.8rem
+                    height: 1.5rem
+                    width: 12.5rem
+                    &:focus
+                        outline: none
+                    &::placeholder
+                        font-size: 0.7rem
+                        font-family: 'Open Sans', sans-serif
+                .search-conversation-image
+                    height: 1.2rem
+                    width: 1.2rem
+                    align-self: center
+        .channel-list-container
+            height: 100%
+            overflow-y: scroll
+            &::-webkit-scrollbar
+                width: 0.3rem
+            &::-webkit-scrollbar-track
+                background-color: rgb(36, 47, 67)
+            &::-webkit-scrollbar-thumb
+                background-color: rgb(81, 84, 110)
+                border-radius: 0.2rem
+                transition: background-color 0.3s ease-in-out
+            width: 100%
+            .channel-links
+                display: flex
+                flex-direction: column
+                overflow: auto
+                padding: 0.5rem 0
+                .channel-link-container
+                    overflow-x: hidden
+                    .channel-link
+                        text-decoration: none
+                        display: flex
+                        align-items: center
+                        justify-content: flex-start
+                        column-gap: 0.5rem
+                        padding: 0.5rem
+                        transition: background-color 0.25s ease-in-out
+                        &:hover
+                            background-color: rgb(52, 76, 100)
+                        &.active
+                            background-color: rgb(52, 76, 100)
+                        .channel-photo
+                            width: 2.5rem
+                            height: 2.5rem
+                            object-fit: cover
+                            border-radius: 1.25rem
+                            flex-shrink: 0
+                        .channel-name
+                            font-family: 'Raleway', sans-serif
+                            color: white
+                            font-size: 1.1rem
+                            white-space: nowrap
+                            width: 100%
+
+        .user-info-container
+            border-top: 1px solid $white-line
+            display: flex
+            justify-content: space-between
+            align-items: center
+            padding: 1rem 0.5rem
+            height: 5rem
+            flex-shrink: 0
+            flex-grow: 0
+            .user-info
+                display: flex
+                flex-direction: row
+                justify-content: flex-start
+                align-items: center             
+                .user-info-photo
+                    width: 2.5rem
+                    height: 2.5rem
+                    object-fit: cover
+                    border-radius: 1.25rem
+                    margin-right: 0.5rem
+                .user-info-text
                     display: flex
                     justify-content: center
-                    align-items: center
-                    transition: opacity 0.2s ease-in
-                    bottom: 90%
-                    height: fit-content
-                    z-index: 105
-                    left: 50%
-                    border-radius: 0.15rem
-                    transform: translateX(-50%)
-                    pointer-events: none
-                    .create-group-tooltip-text
-                        font-family: 'Open Sans', sans-serif
-                        font-size: 0.6rem
-                        width: 4rem
-        .logo-container
-            height: 2rem
-        .search-conversation-container
-            display: flex
-            align-content: center
-            border-style: none
-            justify-content: center
-            background-color: rgba(37, 45, 55, 1)
-            border-radius: 1rem
-            padding: 0 0.45rem
-            .search-conversation-input
-                background-color: transparent
-                border-radius: 0.35rem
-                border-style: none
-                color: $white-text
-                padding-left: 1rem
-                font-family: 'Open Sans', sans-serif
-                font-size: 0.8rem
-                height: 1.5rem
-                width: 12.5rem
-                &:focus
-                    outline: none
-                &::placeholder
-                    font-size: 0.7rem
-                    font-family: 'Open Sans', sans-serif
-            .search-conversation-image
-                height: 1.2rem
-                width: 1.2rem
-                align-self: center
-    .channel-list-container
-        height: 100%
-        overflow-y: scroll
-        &::-webkit-scrollbar
-            width: 0.3rem
-        &::-webkit-scrollbar-track
-            background-color: rgb(36, 47, 67)
-        &::-webkit-scrollbar-thumb
-            background-color: rgb(81, 84, 110)
-            border-radius: 0.2rem
-            transition: background-color 0.3s ease-in-out
-        width: 100%
-        .channel-links
-            display: flex
-            flex-direction: column
-            overflow: auto
-            padding: 0.5rem 0
-            .channel-link-container
-                overflow-x: hidden
-                .channel-link
-                    text-decoration: none
-                    display: flex
-                    align-items: center
-                    justify-content: flex-start
-                    column-gap: 0.5rem
-                    padding: 0.5rem
-                    transition: background-color 0.25s ease-in-out
-                    &:hover
-                        background-color: rgb(52, 76, 100)
-                    &.active
-                        background-color: rgb(52, 76, 100)
-                    .channel-photo
-                        width: 2.5rem
-                        height: 2.5rem
-                        object-fit: cover
-                        border-radius: 1.25rem
-                        flex-shrink: 0
-                    .channel-name
-                        font-family: 'Raleway', sans-serif
+                    align-items: flex-start
+                    flex-direction: column
+                    .display-name-info
+                        font-weight: bold
                         color: white
-                        font-size: 1.1rem
-                        white-space: nowrap
-                        width: 100%
+                    .friend-tag-info
+                        color: rgb(191, 191, 191)
+                        font-size: 0.7rem
+            .logout-button
+                background-color: transparent
+                color: white
+                padding: 0.6rem
+                border-radius: 2px
+                background-color: $secondary-bg
+                border: 1px solid transparent
+                cursor: pointer
+                transition: background-color 0.1s ease-in
+                font-family: 'Bebas Neue', sans-serif
+                &:hover
+                    background-color: $primary-bg
 
-    .user-info-container
-        border-top: 1px solid $white-line
-        display: flex
-        justify-content: space-between
-        align-items: center
-        padding: 1rem 0.5rem
-        height: 5rem
-        flex-shrink: 0
-        flex-grow: 0
-        .user-info
-            display: flex
-            flex-direction: row
-            justify-content: flex-start
-            align-items: center             
-            .user-info-photo
-                width: 2.5rem
-                height: 2.5rem
-                object-fit: cover
-                border-radius: 1.25rem
-                margin-right: 0.5rem
-            .user-info-text
-                display: flex
-                justify-content: center
-                align-items: flex-start
-                flex-direction: column
-                .display-name-info
-                    font-weight: bold
-                    color: white
-                .friend-tag-info
-                    color: rgb(191, 191, 191)
-                    font-size: 0.7rem
-    .logout-button
-        background-color: transparent
-        color: white
-        padding: 0.6rem
-        border-radius: 2px
-        background-color: $secondary-bg
-        border: 1px solid transparent
-        cursor: pointer
-        transition: background-color 0.1s ease-in
-        font-family: 'Bebas Neue', sans-serif
-        &:hover
-            background-color: $primary-bg
+                
+    
+
+.left-home-section
+    +left-home-mobile
+    +left-home-desktop

@@ -131,7 +131,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
                 <div className="create-group-button-container">
                     {field==='groupName'?
                     <>
-                    <button type="button" className="group-name-confirm" onClick={handleGroupName}>Confirm</button>
+                        <button type="button" className="group-name-confirm" onClick={handleGroupName}>Confirm</button>
                     </>:
                     <>
                         <button disabled={loading} onClick={handleBackButton} className="create-group-back-button" type="button">Back</button>                        
