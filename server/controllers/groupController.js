@@ -56,7 +56,7 @@ export const createGroupChannel = catchAsync(async(req, res, next)=>{
         //check if all users listed has been updated
         if (updateStatus.modifiedCount !== req.body.members.length){
             await session.abortTransaction();
-            return next(new AppError("Failed to create a group channel. One or more of the input is invalid", 400))
+            return next(new AppError("One or more of the user is invalid", 400))
         }
         await session.commitTransaction();
         res.status(201).json({

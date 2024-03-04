@@ -10,10 +10,6 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
     const {displayName, friendTag, photo, _id} = currentUserData
     const [isDisabled, setIsDisabled] = useState(false)
     
-    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        setModal(false)
-    }
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.button===0 && e.target === e.currentTarget) {
@@ -38,7 +34,7 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
         {modal&&
         <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} >
             <CreateGroupModal token={token} currUserId={_id} friendsInfo={friendsInfo} setIsDisabled={setIsDisabled}
-             socket={socket} setModal={setModal} handleCloseButton={handleCloseButton} setChannels={setChannels}/>
+             socket={socket} setModal={setModal}  setChannels={setChannels}/>
         </dialog >}
         <div className='upper-left-section-container'>
             <div className='logo-container'>
@@ -47,6 +43,7 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
                 </Link>
             </div>
             <div className='create-group-container'>
+                <div className='messages-text'>Messages</div>
                 <button className='create-group-modal-button' onClick={()=>setModal(true)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
                     stroke="#b9b9b9 " strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'

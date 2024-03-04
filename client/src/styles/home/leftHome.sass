@@ -11,23 +11,26 @@
             height: 100vh
             width: 100vw
             display: block
-            background-color: #0000005c
+            background-color: transparent
             .create-group-modal-container
-                padding: 1.5rem
+                padding: 1rem
                 position: absolute
-                top: 70%
+                top: 90%
                 left: 0
-                background-color: $secondary-bg
+                background-color: $modal-bg
                 height: 100%
                 width: 100%
-                border-radius: 2rem 2rem 0 0
-                transition: top 0.1s ease-in
-                &.visible
-                    top: 2%
+                transition: top 0.2s ease-in-out
                 .modal-x-button-container
                     display: flex
-                    justify-content: end
+                    justify-content: space-between
                     align-items: center
+                    margin-bottom: 1.5rem
+                    .create-group-mob-header
+                        margin: 0.5rem 0
+                        font-family: 'Roboto', sans-serif
+                        font-size: 1.2rem
+                        font-weight: bold
                     .modal-x-button
                         background-color: transparent
                         border: none
@@ -39,22 +42,159 @@
                             width: 2rem
                             height: 2rem
                             transition: all 0.05s ease-in-out
+                    .create-group-button
+                        background-color: transparent
+                        border: none
+                        width: 3.5rem
+                        padding: 0
+                        display: flex
+                        align-items: center
+                        justify-content: center
+                        span
+                            color: #6f7bc0
+                            font-family: 'Open Sans'
+                            font-weight: 500
+                        .create-group-loading
+                            @include loading(0, 20px)
                 .modal-header
-                    margin: 0.5rem 0
-                    font-family: 'Raleway', sans-serif
-                    font-size: 1rem
-                .modal-text  
-                    font-family: 'Raleway', sans-serif
-                    font-size: 0.8rem
-
+                    display: none
+                .create-group-modal-name-container
+                    background-color: #0202025a
+                    padding: 0.5rem
+                    border-radius: 1rem
+                    height: 5rem
+                    position: relative
+                    .create-group-error
+                        bottom: 100%
+                        color: $error-message
+                        font-size: 0.7rem
+                        font-family: 'Open Sans', sans-serif
+                        position: absolute
+                    .modal-text  
+                        display: none
+                    .group-name-container
+                        position: relative
+                        .group-name-label
+                            display: block
+                            margin-top: 0.5rem
+                            font-family: 'Raleway', sans-serif
+                            font-size: 0.8rem
+                        .group-name-input
+                            width: 100%
+                            border: none
+                            font-size: 0.9rem
+                            font-family: 'Raleway', sans-serif
+                            background-color: #64646423
+                            padding: 0.2rem 0 0.2rem 0.3rem
+                            margin-top: 0.5rem
+                            border-radius: 0.4rem
+                            &::placeholder
+                                font-family: 'Raleway', sans-serif
+                                font-size: 0.9rem
+                    .create-group-button-container
+                        display: none
+                .create-group-modal-invite-container
+                    .modal-text
+                        display: none
+                    .create-group-search
+                        background-color: #0202025a
+                        margin: 1rem 0 0 0
+                        font-family: 'Raleway', sans-serif
+                        border-radius: 1rem
+                        border: none
+                        padding: 0.25rem 0.5rem 0.25rem 1rem
+                        width: 100%
+                        font-size: 0.8rem
+                        &::placeholder
+                            font-size: 0.8rem
+                            font-family: 'Open Sans', sans-serif
+                    .create-group-form
+                        height: 70vh
+                        .create-group-modal-friend-list
+                            border-top: 1px solid #ffffff3a
+                            margin-top: 0.7rem
+                            height: 100%
+                            overflow-y: scroll
+                            @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
+                            position: relative
+                            padding: 1rem 0 0.5rem 0
+                            .friend-checkbox-container
+                                display: flex
+                                padding: 0rem 0.7rem 0.8rem 0.7rem
+                                align-items: center
+                                cursor: default
+                                &:hover
+                                    background-color: #293549
+                                .friend-checkbox-info
+                                    display: flex
+                                    align-items: center
+                                    margin-right: auto
+                                    img
+                                        width: 1.8rem
+                                        height: 1.8rem
+                                        object-fit: cover
+                                        border-radius: 0.9rem
+                                        margin-right: 0.5rem
+                                    span
+                                        font-size: 1.1rem
+                                        font-family: 'Raleway', sans-serif
+                                .checkbox-container
+                                    display: block
+                                    position: relative
+                                    cursor: pointer
+                                    font-size: 20px
+                                    user-select: none
+                                    -webkit-tap-highlight-color: transparent
+                                    input
+                                        display: none
+                                        &:checked ~ .checkmark
+                                            background-color: #2196F3
+                                        &:checked ~ .checkmark::after
+                                            left: 0.45em
+                                            top: 0.25em
+                                            width: 0.25em
+                                            height: 0.5em
+                                            border-color: #fff0 white white #fff0
+                                            border-width: 0 0.15em 0.15em 0
+                                            border-radius: 0em
+                                            transform: rotate(45deg)
+                                    .checkmark
+                                        position: relative
+                                        top: 0
+                                        left: 0
+                                        height: 1.3em
+                                        width: 1.3em
+                                        background-color: #2196F300
+                                        border-radius: 0.25em
+                                        transition: all 0.25s
+                                        &::after
+                                            content: ""
+                                            position: absolute
+                                            transform: rotate(0deg)
+                                            border: 0.1rem solid #838383
+                                            left: 0
+                                            top: 0
+                                            width: 1.05em
+                                            height: 1.05em
+                                            border-radius: 0.25em
+                                            transition: all 0.25s, border-width 0.1s    
+                        .create-group-button-container
+                            display: none
+                &.visible
+                    top: 0
         .upper-left-section-container
             box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.6)
             padding: 0 0.5rem
-            height: 5rem
+            height: 4.5rem
             flex-shrink: 0
             .logo-container
                 display: none
             .create-group-container
+                .messages-text
+                    font-weight: 600
+                    font-size: 0.9rem
+                    margin-right: auto
+                    font-family: 'Roboto', sans-serif
                 display: flex
                 justify-content: start
                 align-items: center
@@ -63,22 +203,24 @@
                     cursor: pointer
                     background-color: transparent
                     border: none
-                    width: 6rem
+                    width: 6.5rem
                     border-radius: 1rem
-                    background-color: #20293b8e
+                    background-color: #00000049
                     display: flex
                     align-items: center
                     justify-content: space-around
                     padding: 0.35rem
+                    margin: 0.25rem 0
                     .create-group-image
                         fill: $white-text
                         width: 1rem
                         height: 1rem
+                        align-self: center
                     .create-group-tooltip
                         pointer-events: none
                         .create-group-tooltip-text
                             font-family: 'Open Sans', sans-serif
-                            font-size: 0.6rem
+                            font-size: 0.7rem
                             width: 4rem
 
                         
@@ -211,7 +353,6 @@
         height: 100vh
         max-height: 100vh
         .modal-window-container
-            
             @include modal-container
             .create-group-modal-container
                 @include modal($border-radius: 0.25rem)
@@ -382,6 +523,8 @@
                 justify-content: end
                 align-items: center
                 margin-bottom: 0.1rem
+                .messages-text
+                    display: none
                 .create-group-modal-button
                     background-color: transparent
                     cursor: pointer
