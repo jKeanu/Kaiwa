@@ -35,12 +35,12 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
         setModalVisible(true)
     },[])
     return(
-        <div className={`leave-group-modal-container s-modal ${modalVisible?"visible":""}`}>
+        <div className={`leave-group-modal-container s-modal channel-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Leave Group</h2>
             <div className="modal-text">
                 Are you sure you want to leave the group?
             </div>
-            <div className="leave-group-buttons-container s-modal-button-container">
+            <div className="leave-group-buttons-container s-modal-button-container channel-modal-button-container">
                 <button className='confirm-button' onClick={handleLeaveGroup} disabled={isLoading}>
                 {isLoading?                    
                     <div className="confirm-button-loading">

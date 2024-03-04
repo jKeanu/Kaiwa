@@ -35,12 +35,12 @@ const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token,
         setModalVisible(true)
     },[])
     return(
-        <div className={`unfriend-member-modal-container s-modal ${modalVisible?"visible":""}`}>
+        <div className={`unfriend-member-modal-container s-modal channel-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Remove Friend</h2>
             <div className="modal-text">
                 Are you sure you want to unfriend {displayName}
             </div>
-            <div className="unfriend-member-buttons-container s-modal-button-container">
+            <div className="unfriend-member-buttons-container s-modal-button-container channel-modal-button-container">
                 <button className='confirm-button' onClick={(e)=>handleUnfriend(e)} disabled={isLoading}>
                     {isLoading?                    
                     <div className="confirm-button-loading">

@@ -8,9 +8,89 @@
 
 
 .right-home-section
+    +right-home-mobile
     width: 100%
     height: 100%
-    +right-home-mobile
+     //modal window
+    .modal-window-container
+        @include modal-container
+        .channel-modal
+            @include modal($border-radius: 0.25rem)
+            .channel-modal-button-container
+                @include modal-button-container
+        .invite-modal-container
+            @include modal($border-radius: 0.25rem)
+            .invite-modal-friend-list
+                margin-top: 1.5rem
+                height: 20rem
+                box-shadow: inset 0px 10px 10px 1px #00000078
+                position: relative
+                .invite-user-err
+                    position: absolute
+                    bottom: 100%
+                    font-size: 0.7rem
+                    font-family: 'Open Sans', sans-serif
+                    color: $error-message
+                .invite-friend-list-containter
+                    padding: 0.5rem 1rem
+                    display: flex
+                    flex-direction: column
+                    height: 100%
+                    overflow: auto
+                    @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.2rem)
+                    .invite-friend-info
+                        display: flex
+                        justify-content: start
+                        width: 100%
+                        align-items: center
+                        margin: 0.2rem 0
+                        .friend-invite-display-name
+                            font-family: 'Raleway', sans-serif
+                            font-size: 1.1rem
+                        img
+                            width: 1.8rem
+                            height: 1.8rem
+                            object-fit: cover
+                            margin-right: 0.5rem
+                            border-radius: 0.9rem
+                    .friend-invite-button-err
+                        margin-left: auto
+                        border: 0
+                        background-color: transparent
+                        border: 1px solid rgb(180, 50, 50) 
+                        font-family: 'Raleway', sans-serif
+                        font-size: 0.8rem
+                        font-weight: bold
+                        width: 3.5rem
+                        padding: 0.4rem
+                        transition: background-color 0.15s ease-in
+                        cursor: pointer
+                        display: flex
+                        align-items: center
+                        justify-content: center
+                        &:hover
+                            background-color: rgb(180, 50, 50) 
+                        .invite-user-loading
+                            @include loading(0, 30px)
+                    .friend-invite-button
+                        margin-left: auto
+                        border: 0
+                        background-color: transparent
+                        border: 1px solid rgb(31, 128, 41)
+                        font-family: 'Raleway', sans-serif
+                        font-size: 0.8rem
+                        font-weight: bold
+                        width: 3.5rem
+                        padding: 0.4rem
+                        transition: background-color 0.15s ease-in
+                        cursor: pointer
+                        display: flex
+                        align-items: center
+                        justify-content: center
+                        &:hover
+                            background-color: rgb(31, 128, 41)
+                        .invite-user-loading
+                            @include loading(0, 30px)
     .right-home-container
         width: 100%
         background-color: $secondary-bg
@@ -87,99 +167,6 @@
                     &:hover > .channel-nav-button-tooltip
                         opacity: 1
                         pointer-events: auto
-        //modal window
-        .modal-window-container
-            z-index: 100
-            @include modal-container
-            .delete-group-modal-container
-                @include modal($border-radius: 0.25rem)
-                .change-leader-buttons-container
-                    @include modal-button-container
-            .leave-group-modal-container
-                @include modal($border-radius: 0.25rem)
-                .leave-group-buttons-container
-                    @include modal-button-container
-            .delete-group-modal-container
-                @include modal($border-radius: 0.25rem)
-                .delete-group-buttons-container
-                    @include modal-button-container
-            .unfriend-member-modal-container
-                @include modal($border-radius: 0.25rem)
-                .unfriend-member-buttons-container
-                    @include modal-button-container
-            .invite-modal-container
-                @include modal($border-radius: 0.25rem)
-                .invite-modal-friend-list
-                    margin-top: 1.5rem
-                    height: 20rem
-                    box-shadow: inset 0px 10px 10px 1px #00000078
-                    position: relative
-                    .invite-user-err
-                        position: absolute
-                        bottom: 100%
-                        font-size: 0.7rem
-                        font-family: 'Open Sans', sans-serif
-                        color: $error-message
-                    .invite-friend-list-containter
-                        padding: 0.5rem 1rem
-                        display: flex
-                        flex-direction: column
-                        height: 100%
-                        overflow: auto
-                        @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.2rem)
-                        .invite-friend-info
-                            display: flex
-                            justify-content: start
-                            width: 100%
-                            align-items: center
-                            margin: 0.2rem 0
-                            .friend-invite-display-name
-                                font-family: 'Raleway', sans-serif
-                                font-size: 1.1rem
-                            img
-                                width: 1.8rem
-                                height: 1.8rem
-                                object-fit: cover
-                                margin-right: 0.5rem
-                                border-radius: 0.9rem
-                        .friend-invite-button-err
-                            margin-left: auto
-                            border: 0
-                            background-color: transparent
-                            border: 1px solid rgb(180, 50, 50) 
-                            font-family: 'Raleway', sans-serif
-                            font-size: 0.8rem
-                            font-weight: bold
-                            width: 3.5rem
-                            padding: 0.4rem
-                            transition: background-color 0.15s ease-in
-                            cursor: pointer
-                            display: flex
-                            align-items: center
-                            justify-content: center
-                            &:hover
-                                background-color: rgb(180, 50, 50) 
-                            .invite-user-loading
-                                @include loading(0, 30px)
-                        .friend-invite-button
-                            margin-left: auto
-                            border: 0
-                            background-color: transparent
-                            border: 1px solid rgb(31, 128, 41)
-                            font-family: 'Raleway', sans-serif
-                            font-size: 0.8rem
-                            font-weight: bold
-                            width: 3.5rem
-                            padding: 0.4rem
-                            transition: background-color 0.15s ease-in
-                            cursor: pointer
-                            display: flex
-                            align-items: center
-                            justify-content: center
-                            &:hover
-                                background-color: rgb(31, 128, 41)
-                            .invite-user-loading
-                                @include loading(0, 30px)
                             
         //messages
         .message-section

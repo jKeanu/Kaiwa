@@ -289,7 +289,6 @@ export type CreateGroup={
     currUserId:string,
     friendsInfo:FriendDetails[],
     socket:Socket|undefined,
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
     setChannels:React.Dispatch<SetStateAction<Channel[]>>,
     setIsDisabled: React.Dispatch<SetStateAction<boolean>>,
     setModal: React.Dispatch<SetStateAction<boolean>>

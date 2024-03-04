@@ -46,12 +46,12 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
     },[])
 
     return(
-        <div className={`delete-group-modal-container s-modal ${modalVisible?"visible":""}`}>
+        <div className={`delete-group-modal-container s-modal channel-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Change Channel Leader</h2>
             <div className="modal-text">
                 {`Are you sure you want to make ${displayName} as the leader of this Channel?`}
             </div>
-            <div className="change-leader-buttons-container s-modal-button-container">
+            <div className="change-leader-buttons-container s-modal-button-container channel-modal-button-container">
                 <button onClick={handleLeaderChange} className="confirm-button" disabled={loading}>
                 {loading?                    
                     <div className="confirm-button-loading">

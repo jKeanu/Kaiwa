@@ -144,68 +144,68 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
                 }
             </div>
             <h2 className="modal-header">Create Group</h2>
-            <div className="create-group-modal-name-container">
-                <div className="modal-text">
-                    Give your channel a name. You can change it later.
-                </div>
-                {isMobile&&createGroupErr&&
-                    <div className="create-group-error">
-                        {createGroupErr.message}
+            <div className={`create-group-sections ${field==='memberSelect'?'member-select-section':'group-name-section'}`}>
+                <div className={`create-group-modal-name-container ${field==='memberSelect'?'name-container-after':''}`}>
+                    <div className="modal-text">
+                        Give your channel a name. You can change it later.
                     </div>
-                }
-                <div className="group-name-container">  
-                    <label className="group-name-label" htmlFor="group-name-input" >Channel Name</label>
-                    <input id="group-name-input" maxLength={15} className="group-name-input" value={groupName} 
-                    onChange={(e)=>setGroupName(e.currentTarget.value)} placeholder="Name Your Group"/>
-                    {!isMobile&&(createGroupErr.err&&createGroupErr.type==='groupName')&&
-                    <div className="group-name-error">{createGroupErr.message}</div>}
-                </div>
-                <div className="create-group-button-container">
-                    <button type="button" className="group-name-confirm" onClick={handleGroupName}>Confirm</button>
-                </div>
-            </div>
-            <div className="create-group-modal-invite-container">
-                <div className="modal-text">
-                    Form a new group with your friends
-                </div>
-                <input className="create-group-search" placeholder="Search friends..."
-                value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>
-                <div className="create-group-form">
-                    {!isMobile&&(createGroupErr.err&&createGroupErr.type==='createErr')&&
-                    <div className="create-group-err">{createGroupErr.message}</div>}
-                    <ul className="create-group-modal-friend-list">
-                    {filteredFriends.map((friend, index)=>(
-                        <li key={index} className="friend-checkbox-container">
-                            <div className="friend-checkbox-info">
-                                <img src={`/img/${friend.photo}`}/>
-                                <span>{friend.displayName}</span>
-                            </div>
-                            <label htmlFor={`checkbox-${friend._id}`} className="checkbox-container">
-                                <input id={`checkbox-${friend._id}`} checked={members.includes(friend._id)?true:false}
-                                type="checkbox" value={friend._id} onChange={(e)=>handleCheckBox(e)}/>
-                                <div className="checkmark"></div>
-                            </label>
-                        </li>
-                    ))}
-                    </ul>
+                    {isMobile&&createGroupErr&&
+                        <div className="create-group-error">
+                            {createGroupErr.message}
+                        </div>
+                    }
+                    <div className="group-name-container">  
+                        <label className="group-name-label" htmlFor="group-name-input" >Channel Name</label>
+                        <input id="group-name-input" maxLength={15} className="group-name-input" value={groupName} 
+                        onChange={(e)=>setGroupName(e.currentTarget.value)} placeholder="Name Your Group"/>
+                        {!isMobile&&(createGroupErr.err&&createGroupErr.type==='groupName')&&
+                        <div className="group-name-error">{createGroupErr.message}</div>}
+                    </div>
                     <div className="create-group-button-container">
-                        <button disabled={loading} onClick={handleBackButton} className="create-group-back-button" type="button">Back</button>                        
-                        <button className="create-group-button" type="submit" disabled={loading} style={{justifyContent:`${loading?"center":"space-between"}`}}>
-                        {loading?
-                        <div className="create-group-loading"></div>
-                        :
-                        <>
+                        <button type="button" className="group-name-confirm" onClick={handleGroupName}>Confirm</button>
+                    </div>
+                </div>
+                {isMobile&&
+                    <input className="create-group-search" placeholder="Search friends..."
+                    value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>}
+                <div className={`create-group-modal-invite-container ${field==='memberSelect'?'invite-container-active':''}`}>
+                    <div className="modal-text">
+                        Form a new group with your friends
+                    </div>
+                    {!isMobile&&
+                    <input className="create-group-search" placeholder="Search friends..."
+                    value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>}
+                    <div className="create-group-form">
+                        {!isMobile&&(createGroupErr.err&&createGroupErr.type==='createErr')&&
+                        <div className="create-group-err">{createGroupErr.message}</div>}
+                        <ul className="create-group-modal-friend-list">
+                        {filteredFriends.map((friend, index)=>(
+                            <li key={index} className="friend-checkbox-container">
+                                <div className="friend-checkbox-info">
+                                    <img src={`/img/${friend.photo}`}/>
+                                    <span>{friend.displayName}</span>
+                                </div>
+                                <label htmlFor={`checkbox-${friend._id}`} className="checkbox-container">
+                                    <input id={`checkbox-${friend._id}`} checked={members.includes(friend._id)?true:false}
+                                    type="checkbox" value={friend._id} onChange={(e)=>handleCheckBox(e)}/>
+                                    <div className="checkmark"></div>
+                                </label>
+                            </li>
+                        ))}
+                        </ul>
+                        <div className="create-group-button-container">
+                            <button disabled={loading} onClick={handleBackButton} className="create-group-back-button" type="button">Back</button>                        
+                            <button className="create-group-button" type="submit" disabled={loading} 
+                            style={{justifyContent:`${loading?"center":""}`}} onClick={handleCreateGroup}>
+                            {loading?
+                            <div className="create-group-loading"></div>
+                            :
                             <span>
                                 Create
                             </span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
-                            fill="none" stroke="#b9b9b9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" 
-                            className="create-plus">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                        </>}
-                        </button>
+                                }
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

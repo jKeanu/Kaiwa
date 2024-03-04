@@ -76,7 +76,7 @@ const InviteUserModal:React.FC<InviteFriend>=({
 
 
     return(
-        <div className={`invite-modal-container ${modalVisible?"visible":""}`}>
+        <div className={`invite-modal-container channel-modal ${modalVisible?"visible":""}`}>
             <div className="modal-x-button-container">
                 <button className='modal-x-button' onClick={handleCloseButton} disabled={loadings.length>0}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
