@@ -54,7 +54,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
     const [memberPopUp, setMemberPopUp] = useState('')
     const [modalDisabled, setModalDisabled] = useState(false)
-    const [isPrepFinish, setIsPrepFinish] = useState(false)
+    const [isMobile, setIsMobile] =  useState(false)
     const [memberModal, setMemberModal] = useState<MemberModalSettings>
     ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
@@ -83,6 +83,19 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         channelCacheKey, (endpoint:string) =>
         channelFetcher(endpoint, token),
     )
+
+    useEffect(() => {
+        const handleResize = () => {
+          setIsMobile(window.innerWidth < 768);
+        };
+    
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Call once initially
+    
+        return () => {
+          window.removeEventListener('resize', handleResize);
+        };
+      }, [])
 
     useEffect(()=>{
         setMessagesSkip(0)
@@ -366,7 +379,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         e.preventDefault()
         if(memberListRef.current){
             const clickX = e.nativeEvent.offsetX - (e.nativeEvent.offsetX>=86?e.nativeEvent.offsetX>=125?120:30:-15)  
-            const clickY = Math.abs(memberListRef.current.clientHeight-e.nativeEvent.clientY)<=120?-120:e.nativeEvent.offsetY
+            const clickY = Math.abs(memberListRef.current.clientHeight-e.nativeEvent.clientY)<=120?e.nativeEvent.offsetY-140:e.nativeEvent.offsetY
             setPopUpPosition({clickX, clickY})
             setMemberPopUp(memberId)
         }
@@ -533,12 +546,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             if(container){
                 // container.clientHeight represents the height of the visible portion of the container, 
                 // which is the part of the container that is currently displayed on the screen
+                const gap = Math.floor(Math.abs(container.scrollHeight - ((container.scrollTop*-1) + container.clientHeight)))
                 const isTop = (container.scrollTop*-1) + container.clientHeight === container.scrollHeight ||
                 (container.scrollTop*-1) + container.clientHeight === container.scrollHeight -1 || 
-                Math.floor(Math.abs(container.scrollHeight - ((container.scrollTop*-1) + container.clientHeight))) === 0
-
-                console.log((container.scrollTop*-1) + container.clientHeight, '----', container.scrollHeight)
-                console.log(isTop, '-', !allMessagesFetched, '-' ,!msgFetchLoading)
+                gap === 0 || gap === 1
                 if((isTop && !allMessagesFetched && !msgFetchLoading)){
                     console.log('SUCCESS PASS')
                     setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
@@ -808,8 +819,17 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                             <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
                                         </div>
                                         <span className="member-name">{member.displayName}</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
+                                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" 
+                                        className="member-more">
+                                            <circle cx="12" cy="12" r="1">
+                                            </circle>
+                                            <circle cx="19" cy="12" r="1">
+                                            </circle>
+                                            <circle cx="5" cy="12" r="1"></circle>
+                                        </svg>
                                     </button>
-                                    {memberPopUp===member._id&&member._id!==_id&&
+                                    {memberPopUp===member._id&&member._id!==_id&&!isMobile&&
                                     <div className="member-popup-container" style={{top:popUpPosition.clickY+15,
                                     left:popUpPosition.clickX}}>
                                         <div className="popup-member-info-container">

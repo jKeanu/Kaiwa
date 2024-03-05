@@ -14,7 +14,6 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId
         })
     }, [friendChannels])
 
-
     return(
         <section className="home-section-container">
             <section className="friend-section">

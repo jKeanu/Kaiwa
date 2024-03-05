@@ -1,13 +1,35 @@
+=right-home-mobile
+    @media (max-width: $breakpoint-mobile)
+        position: absolute
+        left: 0
+        top: 0
+        height: 100vh
+        width: 100vw
+        .friend-section
+            width: 100%
+            height: 100%
+            column-gap: 1.5rem
+            position: relative
+    
+=right-home-desktop
+    @media (min-width: $breakpoint-laptop + 1)
+        width: 100vw
+        height: 100vh
+        padding: 0 1.5rem
+        display: flex
+        flex-direction: column
+        .friend-section
+            width: 100%
+            height: 100%
+            display: flex
+            column-gap: 1.5rem
+            
+
 .home-section-container
     background-color: $secondary-bg
-    width: 100vw
-    padding: 0 1.5rem
-    display: flex
-    flex-direction: column
-    .friend-section
-        width: 100%
-        height: 100vh
-        display: flex
-        column-gap: 1.5rem
+    z-index: 100
+    +right-home-mobile
+    +right-home-desktop
+
         
         
