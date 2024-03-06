@@ -103,7 +103,8 @@ export type LeftSectionProps ={
     friendsInfo:FriendDetails[],
     token:string,
     socket:Socket|undefined,
-    setChannels:React.Dispatch<SetStateAction<Channel[]>>
+    setChannels:React.Dispatch<SetStateAction<Channel[]>>,
+    isMobile: boolean
 }
 
 export type ChannelSectionProps={
@@ -118,7 +119,8 @@ export type ChannelSectionProps={
     setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>,
     setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
     friendReqs:FriendReq[],
-    sentReqs: SentReq[]
+    sentReqs: SentReq[],
+    isMobile: boolean
 }
 
 export type HomeSectionProps={
@@ -291,7 +293,8 @@ export type CreateGroup={
     socket:Socket|undefined,
     setChannels:React.Dispatch<SetStateAction<Channel[]>>,
     setIsDisabled: React.Dispatch<SetStateAction<boolean>>,
-    setModal: React.Dispatch<SetStateAction<boolean>>
+    setModal: React.Dispatch<SetStateAction<boolean>>,
+    isMobile: boolean
 }
 
 export type UnfriendProps={

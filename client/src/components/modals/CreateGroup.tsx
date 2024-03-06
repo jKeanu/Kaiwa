@@ -7,7 +7,7 @@ import { createGroup } from "../../services/apiService"
 import { useNavigate } from "react-router-dom"
 
 const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, socket,
-    setChannels,setIsDisabled, setModal})=>{
+    setChannels,setIsDisabled, setModal, isMobile})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const [members, setMembers] = useState([currUserId])
     const [groupName, setGroupName] = useState('')
@@ -15,7 +15,6 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
     const [createGroupErr, setCreateGroupErr] = useState({err:false, type:'', message:''})
     const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [isMobile, setIsMobile] = useState(false)
     const navigate = useNavigate()
 
     const filteredFriends = useMemo(()=>{
@@ -90,19 +89,6 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
             setIsDisabled(false)
         }
     }
-
-    useEffect(() => {
-        const handleResize = () => {
-          setIsMobile(window.innerWidth < 768);
-        };
-    
-        window.addEventListener('resize', handleResize);
-        handleResize(); // Call once initially
-    
-        return () => {
-          window.removeEventListener('resize', handleResize);
-        };
-      }, [])
 
     useEffect(()=>{
         setModalVisible(true)

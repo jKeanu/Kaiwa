@@ -33,10 +33,12 @@ const HomePage:React.FC = ()=>{
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
         const [sentReqs, setSentReqs] = useState<SentReq[]>([])
+        const [isMobile, setIsMobile] = useState<boolean>(false)
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
         const location = useLocation()
 
+        
 
         const friendChannelIds = useMemo(()=>{
             return [...friendChannels].map(friendChannel => friendChannel.channel._id)
@@ -57,6 +59,20 @@ const HomePage:React.FC = ()=>{
         const ChannelIds:string[] = useMemo(()=>{
             return [...channels].map(channel => channel._id)
         }, [channels])
+
+        useEffect(() => {
+            const handleResize = () => {
+              setIsMobile(window.innerWidth < 768);
+            };
+        
+            window.addEventListener('resize', handleResize);
+            handleResize(); // Call once initially
+        
+            return () => {
+              window.removeEventListener('resize', handleResize);
+            };
+          }, [])
+    
 
         useEffect(() => {
             //we need to determine if the webpage is fully visible before connecting to the socket since,
@@ -512,7 +528,6 @@ const HomePage:React.FC = ()=>{
                     socket.removeListener('delete_friend_channel', handleFriendDeletion)
                 }
                 return cleanup
-
             }
         }, [socket, location])
 
@@ -545,8 +560,10 @@ const HomePage:React.FC = ()=>{
                     <dialog className='modal-window-container'>
                         <NoticeModal handleModalConfirm={handleModalConfirm}/>
                     </dialog>}
-                    <LeftSection friendsInfo={myFriends} channels={channels} token={token} socket={socket}
-                    handleLogout={handleLogout} currentUserData={userData} setChannels={setChannels}/>
+                    <LeftSection friendsInfo={myFriends} channels={channels} 
+                    token={token} socket={socket} isMobile={isMobile}
+                    handleLogout={handleLogout} currentUserData={userData}
+                    setChannels={setChannels}/>
                     <Routes>
                         <Route index element={<HomeSection
                         friendReqs={friendReqs} 
@@ -559,6 +576,7 @@ const HomePage:React.FC = ()=>{
                         currUserId={userData._id}/>}/>
                         <Route path="channels/:channelNumber"
                         element={<ChannelSection
+                        isMobile={isMobile}
                         friendReqs={friendReqs}
                         sentReqs={sentReqs}
                         setFriendReqs={setFriendReqs}

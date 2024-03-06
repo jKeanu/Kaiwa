@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import CreateGroupModal from './modals/CreateGroup';
 
 const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChannels,
-    currentUserData, friendsInfo, token, socket})=>{
+    currentUserData, friendsInfo, token, socket, isMobile})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const [modal, setModal] = useState(false)
     const {displayName, friendTag, photo, _id} = currentUserData
@@ -34,7 +34,7 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
         {modal&&
         <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} >
             <CreateGroupModal token={token} currUserId={_id} friendsInfo={friendsInfo} setIsDisabled={setIsDisabled}
-             socket={socket} setModal={setModal}  setChannels={setChannels}/>
+             socket={socket} setModal={setModal}  setChannels={setChannels} isMobile={isMobile}/>
         </dialog >}
         <div className='upper-left-section-container'>
             <div className='logo-container'>

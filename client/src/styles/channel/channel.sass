@@ -1,17 +1,43 @@
-=right-home-mobile
+=channel-mobile
     @media (max-width: $breakpoint-mobile)
         position: absolute
         top: 0
-        left: 0
+        left: 300%
         z-index: 100
-        .right-home-container
+        transition: left 0.20s ease-in-out
+        overflow: hidden
+        &.channel-section-mob
+            left: 0%
+        .channel-container
             position: relative
-            .channel-members-section
-                position: absolute
-                left: 100%
-                top: 0
-                height: 100% 
-                width: 100% !important
+            .channel-nav
+                .channel-nav-info-container
+                    margin-right: 0
+                    .channel-nav-header
+                        margin: 0
+                        width: 8rem   
+                        font-family: 'Open Sans', sans-serif
+                        font-weight: 300
+                        white-space: nowrap
+                        overflow: hidden
+                        text-overflow: ellipsis
+                
+                .channel-back-to-home-button
+                    background-color: transparent
+                    border: none
+                    display: flex
+                    align-items: center
+                    justify-content: center
+                .nav-button-container
+                    margin-left: auto
+                    transition: opacity 0.2s ease-in-out
+                    .channel-to-member-button
+                        background-color: transparent
+                        border: none
+                        display: flex
+                        justify-content: center
+                        align-items: center
+                    
             .message-section
                 .message-box
                     padding: 0 0.5rem 0.5rem 0.5rem
@@ -26,18 +52,24 @@
                     padding: 0 2rem 1rem 2rem!important
             //members
             .channel-members-section
-                padding: 2rem 0.15rem 0.5rem 0
-                flex-shrink: 0
-                height: 100%
+                position: absolute
+                left: 100%
+                top: 0
+                height: 100% 
+                width: 100% !important
+                padding: 3rem 0.15rem 0.5rem 0
                 @include scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
                 overflow-y: scroll
+                transition: left 0.2s ease-in-out
+                &.mob-member-visible
+                    left: 0%
                 .member-list
                     flex: 1
                     overflow-x: visible
                     margin: 1rem 2rem 0.5rem 2rem
                     border-radius: 1rem
-                    background-color: #26324064
                     padding: 0.5rem 0
+                    background-color: #26324064
                     .member-container
                         padding: 0 1rem
                         .member-popup-button
@@ -61,11 +93,19 @@
                 
 
 
-=right-home-desktop
+=channel-desktop
     @media (min-width: $breakpoint-laptop + 1)
-        .right-home-container
+        .channel-container
             display: flex
             flex: 1
+            .channel-nav
+                justify-content: flex-end
+                .channel-nav-info-container
+                    margin-right: auto
+                    .channel-nav-header
+                        margin: 0   
+                        font-family: 'Open Sans', sans-serif
+                        font-weight: 300
             .message-section
                 padding-right: 0.2rem
                 .message-box
@@ -107,7 +147,8 @@
                                 font-size: 1.1rem
                                 font-family: 'Roboto', sans-serif
                                 pointer-events: none
-
+                            .member-more
+                                display: none
         .modal-window-container
             @include modal-container
             .channel-modal
@@ -188,24 +229,22 @@
                             .invite-user-loading
                                 @include loading(0, 30px)
         
-
-
-.right-home-section
+.channel-section
     width: 100%
     height: 100%
-    +right-home-mobile
-    +right-home-desktop
-    .right-home-container
+    +channel-mobile
+    +channel-desktop
+    .channel-container
         width: 100%
         background-color: $secondary-bg
         position: relative
         .channel-nav
+            min-height: 2.5rem
             width: 100%
             background-color: $secondary-bg
             height: max-content
             padding: 0.25rem 0.5rem
             display: flex
-            justify-content: flex-end
             align-items: center
             margin-bottom: auto
             position: absolute
@@ -216,12 +255,7 @@
                 display: flex
                 align-items: center
                 column-gap: 0.5rem
-                margin-right: auto
                 margin-left: 0.5rem
-                .channel-nav-header
-                    margin: 0   
-                    font-family: 'Open Sans', sans-serif
-                    font-weight: 300
                 .channel-nav-photo
                     width: 2rem
                     height: 2rem

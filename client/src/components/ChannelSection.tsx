@@ -27,6 +27,7 @@ import throttle from 'lodash.throttle'
 
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
+        isMobile,
         token,
         socket, 
         currentUserData, 
@@ -54,11 +55,12 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
     const [memberPopUp, setMemberPopUp] = useState('')
     const [modalDisabled, setModalDisabled] = useState(false)
-    const [isMobile, setIsMobile] =  useState(false)
     const [memberModal, setMemberModal] = useState<MemberModalSettings>
     ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
+    const [isVisible, setIsVisible] = useState(false)
+    const [isMemberVisible, setIsMemberVisible] = useState(false)
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
    
@@ -84,19 +86,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         channelFetcher(endpoint, token),
     )
 
-    useEffect(() => {
-        const handleResize = () => {
-          setIsMobile(window.innerWidth < 768);
-        };
-    
-        window.addEventListener('resize', handleResize);
-        handleResize(); // Call once initially
-    
-        return () => {
-          window.removeEventListener('resize', handleResize);
-        };
-      }, [])
-
+    useEffect(()=>{
+        setIsVisible(true)
+    }, [])
     useEffect(()=>{
         setMessagesSkip(0)
         setMessageReceived([])
@@ -134,6 +126,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             console.log('-------------ERROR')
         }
     }, [messagesData, messagesError, messageReceived])
+
 
 
     useEffect(() => {
@@ -541,6 +534,24 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }
 
+    const handleChannelBack = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setIsVisible(false)
+        setTimeout(() => {
+            navigate('/@me');
+        }, 210)
+    }
+
+    const handleMembersBack = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setIsMemberVisible(false)
+    }
+
+    const handleChannelToMembers= (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setIsMemberVisible(true)
+    }
+
     const handleScroll = throttle(()=>{
             const container = messageBoxRef.current 
             if(container){
@@ -636,7 +647,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     return (
         <>
         {(currentChannel&&messagesData)?
-        <section className='right-home-section'>
+        <section className={`channel-section ${isVisible?'channel-section-mob':''}`}>
         {(modalWindow.isOpen||memberModal.isOpen)&&
             <dialog className='modal-window-container' onClick={handleModalWindowClick}>
                     {(modalWindow.window==='leaveGroup'&&currentChannel)
@@ -700,8 +711,16 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         {...memberModal.ids}
                     />}
             </dialog>}
-            <div className="right-home-container">
+            <div className="channel-container">
                 <nav className="channel-nav">
+                        {isMobile&&
+                        <button className="channel-back-to-home-button" onClick={isMemberVisible?handleMembersBack:handleChannelBack}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
+                            strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                        </button>}
                         {
                             currentChannel?.channelType==='Friend'?
                             <div className="channel-nav-info-container">
@@ -717,7 +736,22 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 <h2 className="channel-nav-header">{currentChannel?.channelName}</h2>
                             </div>
                         }
-                        <div className="nav-button-container">
+                        <div className="nav-button-container" style={isMemberVisible&&isMobile?{opacity:0, pointerEvents:"none"}:{}}>
+                        {isMobile&&currentChannel?.channelType==='Group'&&
+                            <button className="channel-to-member-button" onClick={handleChannelToMembers}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                                stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'
+                                className="channel-to-group-image">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
+                                        </path>
+                                        <circle cx="9" cy="7" r="4">
+                                        </circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87">
+                                        </path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75">
+                                        </path>
+                                </svg>
+                        </button>}
                         {currentChannel?.channelType==='Group'&&
                             <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'inviteUser')}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
@@ -752,8 +786,19 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             currentChannel?.channelType==="Group"
                             &&currentChannel?.groupLeader===_id)
                             &&
-                            <button onClick={(e)=>handleNavButtonClick(e, 'deleteGroup')} className="disband-group-button last-nav-button">
-                                Disband Group
+                            <button onClick={(e)=>handleNavButtonClick(e, 'deleteGroup')} className="nav-button disband-group-button last-nav-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                                stroke="#b9b9b9" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" 
+                                className="feather feather-trash-2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                                <div className='channel-nav-button-tooltip'>
+                                    <span className='channel-nav-button-tooltip-text'>
+                                        Disband Group
+                                    </span>
+                                </div>
                             </button>
                         }
                         </div>
@@ -807,7 +852,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         />
                     </div>
                 </section>
-                <section className="channel-members-section">
+                <section className={`channel-members-section ${isMemberVisible&&'mob-member-visible'}`}>
                     {currentChannel.channelType==='Group'?
                         <ul className="member-list" ref={memberListRef}>
                         {
@@ -873,7 +918,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             }
                         </ul>
                         :
-                        <ul className="member-list">
+                        <ul className='member-list'>
                             {sortedMembers.map((member, i)=>(
                                 <li key={`member-${i}`} className="member-container friend-member-container">
                                     <div className="member-profile-status">
@@ -888,15 +933,23 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 </section>
             </div>
         </section>:
-        <section className="right-home-section">
-            <section className="message-section">
+        <section className={`channel-section ${isVisible?"channel-section-mob":''}`}>
+            <div className="channel-container">
                 <nav className="channel-nav">
-
+                {isMobile&&
+                    <button className="channel-back-to-home-button" onClick={isMemberVisible?handleMembersBack:handleChannelBack}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
+                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>}
                 </nav>
-            </section>
-            <section className="channel-members-section">
-                <h2 className="channel-members-header">Members</h2>
-            </section>
+                <section className="message-section">
+                </section>
+                <section className="channel-members-section">
+                </section>
+            </div>
         </section>}
         </>
     )
