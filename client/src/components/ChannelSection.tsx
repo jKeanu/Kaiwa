@@ -713,14 +713,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             </dialog>}
             <div className="channel-container">
                 <nav className="channel-nav">
-                        {isMobile&&
-                        <button className="channel-back-to-home-button" onClick={isMemberVisible?handleMembersBack:handleChannelBack}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
-                            strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
-                                <line x1="19" y1="12" x2="5" y2="12"></line>
-                                <polyline points="12 19 5 12 12 5"></polyline>
-                            </svg>
-                        </button>}
+                    <button className="channel-back-to-home-button" onClick={isMemberVisible?handleMembersBack:handleChannelBack}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
+                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
                         {
                             currentChannel?.channelType==='Friend'?
                             <div className="channel-nav-info-container">
@@ -736,8 +735,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 <h2 className="channel-nav-header">{currentChannel?.channelName}</h2>
                             </div>
                         }
-                        <div className="nav-button-container" style={isMemberVisible&&isMobile?{opacity:0, pointerEvents:"none"}:{}}>
-                        {isMobile&&currentChannel?.channelType==='Group'&&
+                        <div className={`nav-button-container ${isMemberVisible&&'nav-button-container-0'}`}>
+                        {currentChannel?.channelType==='Group'&&
                             <button className="channel-to-member-button" onClick={handleChannelToMembers}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
                                 stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'
@@ -874,7 +873,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                             <circle cx="5" cy="12" r="1"></circle>
                                         </svg>
                                     </button>
-                                    {memberPopUp===member._id&&member._id!==_id&&!isMobile&&
+                                    {memberPopUp===member._id&&member._id!==_id&&
                                     <div className="member-popup-container" style={{top:popUpPosition.clickY+15,
                                     left:popUpPosition.clickX}}>
                                         <div className="popup-member-info-container">
@@ -936,14 +935,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         <section className={`channel-section ${isVisible?"channel-section-mob":''}`}>
             <div className="channel-container">
                 <nav className="channel-nav">
-                {isMobile&&
                     <button className="channel-back-to-home-button" onClick={isMemberVisible?handleMembersBack:handleChannelBack}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
-                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
+                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="">
                             <line x1="19" y1="12" x2="5" y2="12"></line>
                             <polyline points="12 19 5 12 12 5"></polyline>
                         </svg>
-                    </button>}
+                    </button>
                 </nav>
                 <section className="message-section">
                 </section>

@@ -21,7 +21,6 @@
                         white-space: nowrap
                         overflow: hidden
                         text-overflow: ellipsis
-                
                 .channel-back-to-home-button
                     background-color: transparent
                     border: none
@@ -31,12 +30,21 @@
                 .nav-button-container
                     margin-left: auto
                     transition: opacity 0.2s ease-in-out
+                    &.nav-button-container-0
+                        opacity: 0
+                        pointer-events: none
                     .channel-to-member-button
                         background-color: transparent
                         border: none
                         display: flex
                         justify-content: center
                         align-items: center
+            .channel-members-section
+                .member-list
+                    .member-container
+                        &.member-popup
+                            .member-popup-container
+                                display: none
                     
             .message-section
                 .message-box
@@ -100,12 +108,17 @@
             flex: 1
             .channel-nav
                 justify-content: flex-end
+                .channel-back-to-home-button
+                    display: none
                 .channel-nav-info-container
                     margin-right: auto
                     .channel-nav-header
                         margin: 0   
                         font-family: 'Open Sans', sans-serif
                         font-weight: 300
+                .nav-button-container
+                    .channel-to-member-button
+                        display: none
             .message-section
                 padding-right: 0.2rem
                 .message-box
@@ -117,7 +130,6 @@
                         .message-info
                             .message-content-container
                                 width: 22rem
-                                .message-content
             .channel-members-section
                 width: 13rem
                 padding: 2rem 0.15rem 0.5rem 0
@@ -549,5 +561,4 @@
                                 height: 0.8rem
                                 border-radius: 0.4rem
                                 border: 0.2rem solid $secondary-bg
-                        .member-name
 

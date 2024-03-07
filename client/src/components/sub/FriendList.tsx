@@ -4,7 +4,7 @@ import { useState, useMemo} from "react";
 import Unfriend from "../modals/Unfriend";
 import { useEffect } from "react";
 
-const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannelDelete, socket})=>{
+const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannelDelete, socket, isMobile})=>{
     const [searchQuery, setSearchQuery] = useState<string>('')
     const [popUp, setPopUp] = useState<string>('')
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 , clickX:0, clickY:0})
@@ -85,6 +85,24 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
                 />
             </dialog>}
             <div className="friend-list-top-section">
+                <div className="friend-list-mob-top-section-container">
+                    <button className="friend-list-to-home-button ">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
+                            strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                    <h2 className="friends-header">Friends</h2>
+                    <button className="friend-list-to-more-button friend-list-mob-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
+                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="">
+                            <circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle>
+                            <circle cx="5" cy="12" r="1"></circle>
+                        </svg>
+                    </button>
+                </div>
+
                 <h2 className="friends-header">Friends</h2>
                 <input className="friend-list-search-input" placeholder="Search friends..."
                 onChange={(e)=>setSearchQuery(e.target.value)} value={searchQuery}/>

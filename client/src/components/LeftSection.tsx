@@ -1,16 +1,15 @@
 import { NavLink, Link} from 'react-router-dom';
 import {LeftSectionProps} from '../types/generalTypes';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import CreateGroupModal from './modals/CreateGroup';
 
 const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChannels,
-    currentUserData, friendsInfo, token, socket, isMobile})=>{
+    currentUserData, friendsInfo, token, socket, isMobile, friendReqs, setIsFriendsOpen})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const [modal, setModal] = useState(false)
     const {displayName, friendTag, photo, _id} = currentUserData
     const [isDisabled, setIsDisabled] = useState(false)
     
-
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.button===0 && e.target === e.currentTarget) {
             e.preventDefault()
@@ -20,6 +19,10 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
         }
     }
 
+    const handleOpenFriend= (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setIsFriendsOpen(true)
+    }
 
     const filteredChannels = useMemo(()=>{
         return channels.filter(channel=>channel.channelName.toLowerCase().includes(searchQuery.toLocaleLowerCase()))
@@ -35,14 +38,15 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
         <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} >
             <CreateGroupModal token={token} currUserId={_id} friendsInfo={friendsInfo} setIsDisabled={setIsDisabled}
              socket={socket} setModal={setModal}  setChannels={setChannels} isMobile={isMobile}/>
-        </dialog >}
+        </dialog>
+        }
         <div className='upper-left-section-container'>
             <div className='logo-container'>
                 <Link to={'/@me'}>
                     Home
                 </Link>
             </div>
-            <div className='create-group-container'>
+            <div className='create-group-container left-section-button-container-mob'>
                 <div className='messages-text'>Messages</div>
                 <button className='create-group-modal-button' onClick={()=>setModal(true)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
@@ -57,6 +61,16 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
                             Create Group
                         </span>
                     </div>
+                </button>
+                <button className="open-friend-section-button" onClick={handleOpenFriend}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#b9b9b9" 
+                    stroke="#b9b9b9" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-user">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    {friendReqs.length>0&&
+                    <div className="request-indicator">
+                    </div>}
                 </button>
             </div>
             <div className='search-conversation-container'>

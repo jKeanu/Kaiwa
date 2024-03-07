@@ -104,7 +104,9 @@ export type LeftSectionProps ={
     token:string,
     socket:Socket|undefined,
     setChannels:React.Dispatch<SetStateAction<Channel[]>>,
-    isMobile: boolean
+    isMobile: boolean,
+    friendReqs:FriendReq[], 
+    setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>
 }
 
 export type ChannelSectionProps={
@@ -124,6 +126,7 @@ export type ChannelSectionProps={
 }
 
 export type HomeSectionProps={
+    isFriendsOpen: boolean
     friendReqs:FriendReq[]
     friendChannels:Friend[],
     currUserId: string,
@@ -132,7 +135,8 @@ export type HomeSectionProps={
     handleFriendChannelDelete:(channelId:string)=>void,
     handleNewFriendChannel: (friendInfo:Friend)=>void,
     setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
-    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>
+    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>,
+    isMobile: boolean
 }
 
 export type ChannelMember={
@@ -370,6 +374,7 @@ export type FriendListProps={
     token: string,
     handleFriendChannelDelete:(channelId:string)=>void,
     socket:Socket|undefined,
+    isMobile: boolean
 }
 
 export type FriendReqProps={

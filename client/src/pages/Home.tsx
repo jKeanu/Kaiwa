@@ -34,11 +34,10 @@ const HomePage:React.FC = ()=>{
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
         const [sentReqs, setSentReqs] = useState<SentReq[]>([])
         const [isMobile, setIsMobile] = useState<boolean>(false)
+        const [isFriendsOpen, setIsFriendsOpen] = useState<boolean>(false)
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
         const location = useLocation()
-
-        
 
         const friendChannelIds = useMemo(()=>{
             return [...friendChannels].map(friendChannel => friendChannel.channel._id)
@@ -62,11 +61,11 @@ const HomePage:React.FC = ()=>{
 
         useEffect(() => {
             const handleResize = () => {
-              setIsMobile(window.innerWidth < 768);
+              setIsMobile((window.innerWidth) < 768);
             };
-        
+            console.log(window.innerWidth, window.devicePixelRatio,'--')
             window.addEventListener('resize', handleResize);
-            handleResize(); // Call once initially
+            handleResize(); 
         
             return () => {
               window.removeEventListener('resize', handleResize);
@@ -563,9 +562,10 @@ const HomePage:React.FC = ()=>{
                     <LeftSection friendsInfo={myFriends} channels={channels} 
                     token={token} socket={socket} isMobile={isMobile}
                     handleLogout={handleLogout} currentUserData={userData}
-                    setChannels={setChannels}/>
+                    setChannels={setChannels} friendReqs={friendReqs} setIsFriendsOpen={setIsFriendsOpen}/>
                     <Routes>
                         <Route index element={<HomeSection
+                        isMobile={isMobile}
                         friendReqs={friendReqs} 
                         handleFriendChannelDelete={handleFriendChannelDelete}
                         handleNewFriendChannel={handleNewFriendChannel}
@@ -573,7 +573,9 @@ const HomePage:React.FC = ()=>{
                         setSentReqs={setSentReqs} 
                         friendChannels={friendChannels} 
                         token={token} socket={socket} 
-                        currUserId={userData._id}/>}/>
+                        currUserId={userData._id}
+                        isFriendsOpen={isFriendsOpen}/>}
+/>
                         <Route path="channels/:channelNumber"
                         element={<ChannelSection
                         isMobile={isMobile}

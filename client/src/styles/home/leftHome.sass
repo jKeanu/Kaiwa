@@ -12,6 +12,7 @@
             height: 100vh
             width: 100vw
             display: block
+            z-index: 100
             background-color: transparent
             .create-group-modal-container
                 padding: 1rem
@@ -24,42 +25,46 @@
                 transition: top 0.2s ease-in-out
                 display: flex
                 flex-direction: column
-                .modal-x-button-container
-                    display: flex
-                    justify-content: space-between
-                    align-items: center
-                    margin-bottom: 1.5rem
-                    height: 2.5rem
-                    .create-group-mob-header
-                        margin: 0.5rem 0
-                        font-family: 'Roboto', sans-serif
-                        font-size: 1.2rem
-                        font-weight: bold
+                .create-group-top-container 
                     .modal-x-button
-                        background-color: transparent
-                        border: none
-                        padding: 0
-                        cursor: pointer
-                        &:hover > .x-img
-                            stroke-width: 2px
-                        .x-img
-                            width: 2rem
-                            height: 2rem
-                            transition: all 0.05s ease-in-out
-                    .create-group-button
-                        background-color: transparent
-                        border: none
-                        width: 3.5rem
-                        padding: 0
+                        display: none
+                    .create-group-top
                         display: flex
+                        justify-content: space-between
                         align-items: center
-                        justify-content: center
-                        span
-                            color: #6f7bc0
-                            font-family: 'Open Sans'
-                            font-weight: 500
-                        .create-group-loading
-                            @include loading(0, 20px)
+                        margin-bottom: 1.5rem
+                        height: 2.5rem
+                        z-index: 2
+                        .create-group-mob-header
+                            margin: 0.5rem 0
+                            font-family: 'Roboto', sans-serif
+                            font-size: 1.2rem
+                            font-weight: bold
+                        .modal-x-button-mob
+                            background-color: transparent
+                            border: none
+                            padding: 0
+                            cursor: pointer
+                            &:hover > .x-img
+                                stroke-width: 2px
+                            .x-img
+                                width: 2rem
+                                height: 2rem
+                                transition: all 0.05s ease-in-out
+                        .create-group-button
+                            background-color: transparent
+                            border: none
+                            width: 3.5rem
+                            padding: 0
+                            display: flex
+                            align-items: center
+                            justify-content: center
+                            span
+                                color: #6f7bc0
+                                font-family: 'Open Sans'
+                                font-weight: 500
+                            .create-group-loading
+                                @include loading(0, 20px)
                 .modal-header
                     display: none
                 .create-group-sections
@@ -82,6 +87,8 @@
                             display: none
                         .group-name-container
                             position: relative
+                            .group-name-error
+                                display: none
                             .group-name-label
                                 display: block
                                 margin-top: 0.5rem
@@ -118,10 +125,14 @@
                         height: 100%
                         overflow-y: scroll
                         @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
+                        .create-group-search
+                            display: none
                         .modal-text
                             display: none
                         .create-group-form
                             height: 100%
+                            .create-group-err
+                                display: none
                             .create-group-modal-friend-list
                                 position: relative
                                 padding: 1rem 0 2.5rem 0
@@ -194,16 +205,32 @@
             flex-shrink: 0
             .logo-container
                 display: none
-            .create-group-container
+            .left-section-button-container-mob
+                display: flex
+                justify-content: start
+                align-items: center
+                margin-bottom: 0.1rem
+                .open-friend-section-button
+                    background-color: transparent
+                    border: none
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    position: relative
+                    .request-indicator
+                        position: absolute
+                        width: 0.4rem
+                        height: 0.4rem
+                        border-radius: 0.25rem
+                        top: 1px
+                        right: 8px
+                        background-color: $error-message
+                        font-size: 0.6rem
                 .messages-text
                     font-weight: 600
                     font-size: 0.9rem
                     margin-right: auto
                     font-family: 'Roboto', sans-serif
-                display: flex
-                justify-content: start
-                align-items: center
-                margin-bottom: 0.1rem
                 .create-group-modal-button
                     cursor: pointer
                     background-color: transparent
@@ -227,6 +254,7 @@
                             font-family: 'Open Sans', sans-serif
                             font-size: 0.7rem
                             width: 4rem
+                    
             .search-conversation-container
                 display: flex
                 align-content: center
@@ -358,10 +386,17 @@
             @include modal-container
             .create-group-modal-container
                 @include modal($border-radius: 0.25rem)
+                .modal-x-button-container
+                    .create-group-top
+                        display: none
                 .create-group-sections
                     position: relative
                     transition: height 0.2s ease-in-out
                     overflow: hidden
+                    .create-group-error
+                        display: none
+                    .create-group-search
+                        display: none
                     &.group-name-section
                         height: 11rem
                     &.member-select-section
@@ -558,6 +593,8 @@
                 justify-content: end
                 align-items: center
                 margin-bottom: 0.1rem
+                .open-friend-section-button
+                    display: none //
                 .messages-text
                     display: none
                 .create-group-modal-button

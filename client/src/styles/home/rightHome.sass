@@ -1,11 +1,13 @@
 =right-home-mobile
     @media (max-width: $breakpoint-mobile)
         position: absolute
-        left: 0
+        left: 100%
         top: 0
         height: 100vh
         width: 100vw
-        display: none !important
+        transition: left 0.2s ease-in-out
+        &.home-section-container-mob
+            left: 0%
         .friend-section
             width: 100%
             height: 100%

@@ -96,10 +96,9 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
 
     return(
         <div className={`create-group-modal-container ${modalVisible?'visible':''}`}>
-            <div className="modal-x-button-container">
-                {isMobile?
-                <>
-                    <button disabled={loading} className='modal-x-button' onClick={handleCloseButton}>
+            <div className="modal-x-button-container create-group-top-container">
+                <div className="create-group-top">
+                    <button disabled={loading} className='modal-x-button-mob' onClick={handleCloseButton}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
                         strokeLinecap="round" strokeLinejoin="round" className="x-img">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -117,9 +116,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
                         </span>
                         }
                     </button>
-
-                </>
-                :
+                </div>
                 <button disabled={loading} className='modal-x-button' onClick={handleCloseButton}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
                     strokeLinecap="round" strokeLinejoin="round" className="x-img">
@@ -127,7 +124,6 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
-                }
             </div>
             <h2 className="modal-header">Create Group</h2>
             <div className={`create-group-sections ${field==='memberSelect'?'member-select-section':'group-name-section'}`}>
@@ -135,7 +131,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
                     <div className="modal-text">
                         Give your channel a name. You can change it later.
                     </div>
-                    {isMobile&&createGroupErr&&
+                    {createGroupErr&&
                         <div className="create-group-error">
                             {createGroupErr.message}
                         </div>
@@ -144,25 +140,23 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
                         <label className="group-name-label" htmlFor="group-name-input" >Channel Name</label>
                         <input id="group-name-input" maxLength={15} className="group-name-input" value={groupName} 
                         onChange={(e)=>setGroupName(e.currentTarget.value)} placeholder="Name Your Group"/>
-                        {!isMobile&&(createGroupErr.err&&createGroupErr.type==='groupName')&&
+                        {(createGroupErr.err&&createGroupErr.type==='groupName')&&
                         <div className="group-name-error">{createGroupErr.message}</div>}
                     </div>
                     <div className="create-group-button-container">
                         <button type="button" className="group-name-confirm" onClick={handleGroupName}>Confirm</button>
                     </div>
                 </div>
-                {isMobile&&
-                    <input className="create-group-search" placeholder="Search friends..."
-                    value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>}
+                <input className="create-group-search" placeholder="Search friends..."
+                value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>
                 <div className={`create-group-modal-invite-container ${field==='memberSelect'?'invite-container-active':''}`}>
                     <div className="modal-text">
                         Form a new group with your friends
                     </div>
-                    {!isMobile&&
                     <input className="create-group-search" placeholder="Search friends..."
-                    value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>}
+                    value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>
                     <div className="create-group-form">
-                        {!isMobile&&(createGroupErr.err&&createGroupErr.type==='createErr')&&
+                        {(createGroupErr.err&&createGroupErr.type==='createErr')&&
                         <div className="create-group-err">{createGroupErr.message}</div>}
                         <ul className="create-group-modal-friend-list">
                         {filteredFriends.map((friend, index)=>(

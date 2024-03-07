@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { HomeSectionProps } from "../types/generalTypes"
 import FriendList from "./sub/FriendList"
 import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
 
-const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, friendReqs,
-     handleNewFriendChannel, setFriendReqs, setSentReqs, handleFriendChannelDelete})=>{
+const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, friendReqs, isMobile,
+     handleNewFriendChannel, setFriendReqs, setSentReqs, handleFriendChannelDelete, isFriendsOpen})=>{
     const [currComponent, setCurrComponent] = useState<string>('addFriend')
 
     const sortedFriends = useMemo(()=>{
@@ -15,9 +15,9 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId
     }, [friendChannels])
 
     return(
-        <section className="home-section-container">
+        <section className={`home-section-container ${isFriendsOpen?'home-section-container-mob':''}`}>
             <section className="friend-section">
-                <FriendList friends={sortedFriends} token={token} socket={socket}
+                <FriendList friends={sortedFriends} token={token} socket={socket} isMobile={isMobile}
                 handleFriendChannelDelete={handleFriendChannelDelete}/>
                 <div className="friend-connection-container">
                     <div className="home-button-container">
