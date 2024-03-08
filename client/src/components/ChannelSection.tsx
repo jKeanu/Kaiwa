@@ -818,7 +818,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                                 {message.sender.displayName}
                                             </span>
                                             <span className="message-date">
-                                                {formatToTodayIfCurrentDate(message.formattedDate)}
+                                                {formatToTodayIfCurrentDate(message.formattedDate.toString())}
                                             </span>
                                         </div>
                                         <div className="message-content-container">

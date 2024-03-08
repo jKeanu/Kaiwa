@@ -3,7 +3,6 @@
     position: relative
     width: 100vw
     height: 100vh
-    
 
 =home-page-desktop
   @media (min-width: $breakpoint-laptop + 1px )
@@ -40,4 +39,6 @@
 
 
 .homepage
+  +home-page-mobile
   +home-page-desktop
+  overflow: hidden

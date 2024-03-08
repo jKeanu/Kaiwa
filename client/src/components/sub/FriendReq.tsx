@@ -5,7 +5,8 @@ import { AxiosResponse } from "axios"
 import { acceptFriend, declineFriend } from "../../services/apiService"
 
 
-const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFriendChannel, setFriendReqs, socket, currUserId})=>{
+const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFriendChannel, setFriendReqs, socket,
+     currUserId, currComponent})=>{
     const [loading, setLoading] = useState([''])
     const [error, setError] = useState([''])
 
@@ -89,7 +90,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, token, handleNewFrie
         }}
 
     return(
-        <section className="pending-request-section">
+        <section className={`pending-request-section ${currComponent==='friendReq'&&'pending-request-section-active'}`}>
             <ul className="pending-request">
                 {pendingRequests.map((request, index)=>(
                     <li className="pending-user-container" key={index}>

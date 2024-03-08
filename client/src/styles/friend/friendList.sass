@@ -6,6 +6,12 @@
         flex-direction: column
         .friend-list-top-section
             padding: 0.3rem 0.8rem
+            .friend-list-to-home-button
+                background-color: transparent
+                border: none
+                display: flex
+                justify-content: center
+                align-items: center
             .friends-header
                 display: none
             .friend-list-mob-top-section-container
@@ -30,29 +36,34 @@
                     align-items: center
 
         .friend-list
-            .friend-link-container
+            .friend-container
+                .friend-more-pop-up-container
+                    .friend-pop-up-link
+                        display: none
                 .friend-link
+                    display: none !important
+                .friend-info-container
                     .friend-information
                         .friend-photo-status-container
                             .friend-photo
-                                width: 2.5rem
-                                height: 2.5rem
-                                border-radius: 1.25rem
+                                width: 2rem
+                                height: 2rem
+                                border-radius: 1rem
                                 object-fit: cover
                             .friend-status
-                                height: 1rem
-                                width: 1rem
+                                height: 0.9rem
+                                width: 0.9rem
                                 border-radius: 0.5rem
                                 position: absolute
                                 bottom: 0px
                                 right: 1px
-                                border: solid 4px $secondary-bg
+                                border: solid 3px $secondary-bg
                         .user-displayName-status-container
                             .friend-displayName
                                 font-family: 'Raleway', sans-serif
-                                font-size: 1.3rem
+                                font-size: 1rem
                             .friend-status
-                                font-size: 0.8rem
+                                font-size: 0.6rem
                                 font-family: 'Open Sans', sans-serif
                 .friend-more-button
                     background-color: transparent !important
@@ -83,6 +94,8 @@
                 align-items: center
         .friend-list
             .friend-link-container
+                .friend-info-container
+                    display: none !important
                 .friend-link
                     .friend-information
                         .friend-photo-status-container
@@ -142,10 +155,10 @@
         height: 100%
         width: 100%
         @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
-        .friend-link-container
+        .friend-link-container, .friend-container
             width: 100%
             position: relative
-            .friend-link
+            .friend-link, .friend-info-container
                 padding: 0.6rem 0.5rem
                 width: 100%
                 display: flex

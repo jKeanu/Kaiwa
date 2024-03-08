@@ -4,7 +4,7 @@ import { useState } from "react";
 import axios, { AxiosResponse } from "axios";
 
 
-const AddFriend:React.FC<AddFriendProps>=({token, socket, setSentReqs})=>{
+const AddFriend:React.FC<AddFriendProps>=({token, socket, setSentReqs, currComponent})=>{
     const [displayName, setDisplayName] = useState('')
     const [friendTag, setFriendTag] = useState('')
     const [requestStatus, setRequestStatus] = useState<{type:string, message:string}>()
@@ -44,13 +44,16 @@ const AddFriend:React.FC<AddFriendProps>=({token, socket, setSentReqs})=>{
         }
     }
     return(
-        <section className="add-friend-section-container">
+        <section className={`add-friend-section ${currComponent==='addFriend'&&'add-friend-section-mob'}`}
+        style={{left:`${currComponent==='friendReq'?'-110%':''}`}}>
             <form className="add-friend-form" onSubmit={handleAddFriend}>
                 <div className="add-friend-input-container">
                     <label htmlFor="displayName">Username</label>
                     <input autoComplete='off' value={displayName} onChange={(e)=>setDisplayName(e.target.value)} id="displayName" className="displayName-input"/>
                     <label htmlFor="friendTag">#</label>
                     <input maxLength={6} autoComplete="off" value={friendTag} onChange={(e)=>setFriendTag(e.target.value.toUpperCase())} type="text" id="friendTag" className="friendTag-input"/>
+                </div>
+                <div className="add-friend-button-container">
                     <button type="submit" className="add-friend-submit-button">{isSending?'Sending...':'Send Friend Request'}</button>
                 </div>
             </form>

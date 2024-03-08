@@ -59,6 +59,22 @@ const HomePage:React.FC = ()=>{
             return [...channels].map(channel => channel._id)
         }, [channels])
 
+
+        function formatToTodayIfCurrentDate(dateStr:string):string {
+            const currentDate = new Date();
+            const messageDate = new Date(dateStr);
+            const currentDateStr = currentDate.toLocaleDateString();
+            const messageDateStr = messageDate.toLocaleDateString();
+            if (currentDateStr === messageDateStr) {
+                // Format the time part
+                const timeStr = dateStr.split(' ')[1] + ' ' + dateStr.split(' ')[2];
+                return `Today at ${timeStr}`;
+            } else {
+                return dateStr;
+            }
+        }
+
+
         useEffect(() => {
             const handleResize = () => {
               setIsMobile((window.innerWidth) < 768);
@@ -72,7 +88,6 @@ const HomePage:React.FC = ()=>{
             };
           }, [])
     
-
         useEffect(() => {
             //we need to determine if the webpage is fully visible before connecting to the socket since,
             //webpages have preloading feature on where they detect what you type in url or hover in the link
@@ -574,6 +589,7 @@ const HomePage:React.FC = ()=>{
                         friendChannels={friendChannels} 
                         token={token} socket={socket} 
                         currUserId={userData._id}
+                        setIsFriendsOpen={setIsFriendsOpen}
                         isFriendsOpen={isFriendsOpen}/>}
 />
                         <Route path="channels/:channelNumber"

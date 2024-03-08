@@ -7,75 +7,157 @@
         background-position:0%  50%, 50% 100%,100%   0%
     80%
         background-position:0%  50%, 50%  50%,100% 100%
-    
-    
-.pending-request-section
-    flex: 0.85
-    box-shadow: 1px 2px 1px 3px rgba(0, 0, 0, 0.4)
-    background-color: #1b1f275e
-    margin-top: 0.3rem
-    overflow-y: scroll
-    padding: 0 1rem
-    width: 30rem
-    &::-webkit-scrollbar
-        width: 0.4rem
-    &::-webkit-scrollbar-thumb
-        background-color: rgb(81, 84, 110)
-        border-radius: 0.2rem
-    .pending-request
-        display: flex
-        flex-direction: column
-        .pending-user-container
-            height: 3rem
+
+
+
+
+=pending-request-mobile
+    @media (max-width: $breakpoint-tablet)
+        background-color: #ffffff09
+        position: absolute
+        left: 110%
+        top: 0%
+        height: 100%
+        width: 100%
+        border-radius: 1rem
+        padding: 1rem 0.5rem
+        transition: left 0.2s ease-in-out
+        box-shadow: 3px 3px 3px 3px #00000064
+        overflow: scroll
+        &.pending-request-section-active
+            left: 0
+        .pending-request
             display: flex
-            padding: 0.2rem
-            align-items: center
-            justify-content: flex-start
-            border-top: 1px solid #6073a723 
-            .pending-user-information
+            flex-direction: column
+            justify-content: center
+            .pending-user-container 
+                height: 3rem
                 display: flex
+                padding: 0.2rem
                 align-items: center
-                justify-content: center
-                margin-right: auto
-                img
-                    height: 2rem
-                    width: 2rem
-                    object-fit: cover
-                    border-radius: 1rem
-                    margin-right: 0.3rem
-                span
-                    font-family: 'Raleway', sans-serif
-            .pending-request-button-container
-                display: flex
-                justify-content: center
-                align-items: center
-                position: relative
-                .pending-request-error
-                    position: absolute
-                    color: $error-message
-                    top: 30%
-                    right: 100%
-                    font-family: 'Raleway', sans-serif
-                    font-size: 0.7rem
-                    width: 6rem
-                .friend-req-button-loading
-                    @include loading(30px, 20px)
-                button
-                    width: 2.2rem
-                    height: 2.2rem
-                    border: none
-                    background-color: transparent
-                    border-radius: 1.1rem
+                justify-content: flex-start
+                .pending-user-information
                     display: flex
-                    flex-direction: row
+                    align-items: center
+                    justify-content: center
+                    margin-right: auto
+                    img
+                        height: 2rem
+                        width: 2rem
+                        object-fit: cover
+                        border-radius: 1rem
+                        margin-right: 0.3rem
+                    span
+                        font-family: 'Raleway', sans-serif
+                .pending-request-button-container
+                    display: flex
                     justify-content: center
                     align-items: center
-                    transition: all 0.15s ease
-                    cursor: pointer
-                .accept-friend-request-button
-                    margin-right: 0.5rem
-                    &:hover
-                        background-color: #14d31eca
-                .decline-friend-request-button
-                    &:hover
-                        background-color: #e91919c5
+                    position: relative
+                    .pending-request-error
+                        position: absolute
+                        color: $error-message
+                        top: 30%
+                        right: 100%
+                        font-family: 'Raleway', sans-serif
+                        font-size: 0.7rem
+                        width: 6rem
+                    .friend-req-button-loading
+                        @include loading(30px, 20px)
+                    button
+                        width: 2.2rem
+                        height: 2.2rem
+                        border: none
+                        background-color: transparent
+                        border-radius: 1.1rem
+                        display: flex
+                        flex-direction: row
+                        justify-content: center
+                        align-items: center
+                        transition: all 0.15s ease
+                        cursor: pointer
+                    .accept-friend-request-button
+                        margin-right: 0.5rem
+                        &:hover
+                            background-color: #14d31eca
+                    .decline-friend-request-button
+                        &:hover
+                            background-color: #e91919c5       
+
+=pending-request-desktop
+    @media (min-width: $breakpoint-laptop+1)
+        box-shadow: 1px 2px 1px 3px rgba(0, 0, 0, 0.4)
+        background-color: #1b1f275e
+        margin-top: 0.3rem
+        overflow-y: scroll
+        padding: 0 1rem
+        max-width: 26rem
+        min-width: 26rem
+        &::-webkit-scrollbar
+            width: 0.4rem
+        &::-webkit-scrollbar-thumb
+            background-color: rgb(81, 84, 110)
+            border-radius: 0.2rem
+        .pending-request
+            display: flex
+            flex-direction: column
+            .pending-user-container
+                height: 3rem
+                display: flex
+                padding: 0.2rem
+                align-items: center
+                justify-content: flex-start
+                border-top: 1px solid #6073a723 
+                .pending-user-information
+                    display: flex
+                    align-items: center
+                    justify-content: center
+                    margin-right: auto
+                    img
+                        height: 2rem
+                        width: 2rem
+                        object-fit: cover
+                        border-radius: 1rem
+                        margin-right: 0.3rem
+                    span
+                        font-family: 'Raleway', sans-serif
+                .pending-request-button-container
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    position: relative
+                    .pending-request-error
+                        position: absolute
+                        color: $error-message
+                        top: 30%
+                        right: 100%
+                        font-family: 'Raleway', sans-serif
+                        font-size: 0.7rem
+                        width: 6rem
+                    .friend-req-button-loading
+                        @include loading(30px, 20px)
+                    button
+                        width: 2.2rem
+                        height: 2.2rem
+                        border: none
+                        background-color: transparent
+                        border-radius: 1.1rem
+                        display: flex
+                        flex-direction: row
+                        justify-content: center
+                        align-items: center
+                        transition: all 0.15s ease
+                        cursor: pointer
+                    .accept-friend-request-button
+                        margin-right: 0.5rem
+                        &:hover
+                            background-color: #14d31eca
+                    .decline-friend-request-button
+                        &:hover
+                            background-color: #e91919c5
+
+            
+    
+.pending-request-section
+    +pending-request-mobile
+    +pending-request-desktop

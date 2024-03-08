@@ -1,10 +1,10 @@
 import { FriendListProps, UnfriendModalSettings } from "../../types/generalTypes";
 import { Link } from "react-router-dom";
-import { useState, useMemo} from "react";
+import React, { useState, useMemo} from "react";
 import Unfriend from "../modals/Unfriend";
 import { useEffect } from "react";
 
-const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannelDelete, socket, isMobile})=>{
+const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannelDelete, socket, isMobile, setIsFriendsOpen, setIsFriendConnection})=>{
     const [searchQuery, setSearchQuery] = useState<string>('')
     const [popUp, setPopUp] = useState<string>('')
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 , clickX:0, clickY:0})
@@ -13,6 +13,11 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
         setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
+    }
+
+    const handleBackToHome = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setIsFriendsOpen(false)
     }
 
     const filteredFriends = useMemo(()=>{
@@ -33,6 +38,11 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
         setModalSettings({isOpen:true, ids:{channelId, friendId}, displayName, channelNumber})
     }
 
+    const openFriendConnection = ((e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setIsFriendConnection(true)
+
+    })
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.target === e.currentTarget) {
             e.preventDefault();
@@ -86,19 +96,19 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
             </dialog>}
             <div className="friend-list-top-section">
                 <div className="friend-list-mob-top-section-container">
-                    <button className="friend-list-to-home-button ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
+                    <button className="friend-list-to-home-button" onClick={handleBackToHome}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
                             strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
                                 <line x1="19" y1="12" x2="5" y2="12"></line>
                                 <polyline points="12 19 5 12 12 5"></polyline>
                         </svg>
                     </button>
                     <h2 className="friends-header">Friends</h2>
-                    <button className="friend-list-to-more-button friend-list-mob-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
-                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="">
-                            <circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle>
-                            <circle cx="5" cy="12" r="1"></circle>
+                    <button className="friend-list-to-more-button friend-list-mob-button" onClick={openFriendConnection}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
+                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-plus">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
                 </div>
@@ -109,7 +119,7 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
             </div>
             <ul className="friend-list">
                 {filteredFriends.map(friend=>(
-                    <li key={friend.channel.channelNumber} className="friend-link-container">
+                    <li key={friend.channel.channelNumber} className="friend-link-container friend-container">
                         <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`}>
                             <div className="friend-information">
                                 <div className="friend-photo-status-container">
@@ -126,6 +136,22 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
                                 </div>
                             </div>
                         </Link>
+                        <div className="friend-info-container">
+                            <div className="friend-information">
+                                <div className="friend-photo-status-container">
+                                    <img className='friend-photo' src={`/img/${friend.friend.photo}`}/>
+                                    <div className='friend-status'
+                                    style={{backgroundColor:friend.friend.status==='Online'?'green':'#959595'}}></div>
+                                </div>
+                                <div className="user-displayName-status-container">
+                                    <span className='friend-displayName'>{friend.friend.displayName}</span>
+                                    {friend.friend.status==='Online'?
+                                    <span className="friend-status">Online</span>
+                                    :
+                                    <span className="friend-status">Offline</span>}
+                                </div>
+                            </div>
+                        </div>
                         <button className="friend-more-button" onClick={(e)=>handlePopUpClick(e, friend.friend._id)}>
                             <div className="friend-more-img-container">
                                 <img src="/img/friend-more.svg"/>
