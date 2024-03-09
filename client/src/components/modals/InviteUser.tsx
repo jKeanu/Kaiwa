@@ -1,7 +1,7 @@
 import { FriendDetails, InviteFriend } from "../../types/generalTypes"
 import { inviteFriendtoGroup } from "../../services/apiService"
 import { AxiosResponse } from "axios"
-import { useEffect } from "react"
+import React, { useEffect } from "react"
 import { useState} from "react"
 
 const InviteUserModal:React.FC<InviteFriend>=({
@@ -74,11 +74,15 @@ const InviteUserModal:React.FC<InviteFriend>=({
         }
     }
 
-
+    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        handleCloseButton(setModalVisible)
+    }
+    
     return(
         <div className={`invite-modal-container channel-modal ${modalVisible?"visible":""}`}>
             <div className="modal-x-button-container">
-                <button className='modal-x-button' onClick={handleCloseButton} disabled={loadings.length>0}>
+                <button className='modal-x-button' onClick={handleClose} disabled={loadings.length>0}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
                     strokeLinecap="round" strokeLinejoin="round" className="x-img">
                         <line x1="18" y1="6" x2="6" y2="18"></line>

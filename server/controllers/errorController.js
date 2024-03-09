@@ -20,7 +20,8 @@ const handleDuplicateFieldsDB = err => {
 
 
 const handleValidationErrorDB = err => {
-    if(Object.keys(err.errors).includes("members")||Object.keys(err.errors).includes("members.1")){
+    if(Object.keys(err.errors).includes("members.1")){
+        console.log(err.errors, '---')
         return new AppError("Invalid Input", 400)
     }
     const errors = Object.values(err.errors).map(el => el.message);

@@ -24,6 +24,11 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
         setIsFriendsOpen(true)
     }
 
+    const handleOpenCreateGroup = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setModal(true)
+    }
+
     const filteredChannels = useMemo(()=>{
         return channels.filter(channel=>channel.channelName.toLowerCase().includes(searchQuery.toLocaleLowerCase()))
     }, [channels, searchQuery])
@@ -48,7 +53,7 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
             </div>
             <div className='create-group-container left-section-button-container-mob'>
                 <div className='messages-text'>Messages</div>
-                <button className='create-group-modal-button' onClick={()=>setModal(true)}>
+                <button className='create-group-modal-button' onClick={handleOpenCreateGroup}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
                     stroke="#b9b9b9 " strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'
                     className="create-group-image">

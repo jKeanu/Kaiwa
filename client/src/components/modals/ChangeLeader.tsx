@@ -45,6 +45,11 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
         setModalVisible(true)
     },[])
 
+    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        handleCloseButton(setModalVisible)
+    }
+
     return(
         <div className={`delete-group-modal-container s-modal channel-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Change Channel Leader</h2>
@@ -58,7 +63,7 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
                     </div>:
                     'Confirm'}
                 </button>
-                <button className="cancel-button" onClick={handleCloseButton} disabled={loading}>
+                <button className="cancel-button" onClick={handleClose} disabled={loading}>
                     Cancel
                 </button>
                 {errorMsg.isError&&

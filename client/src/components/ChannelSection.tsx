@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo} from 'react'
+import React, { useState, useEffect, useRef, useMemo, SetStateAction} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -335,13 +335,15 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }
     
-    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        if(modalWindow.isOpen){
-            setModalWindow({isOpen: false, window: ''})
-        }else if(memberModal.isOpen){
-            setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
-        }
+    const handleCloseButton = (setVisible:React.Dispatch<SetStateAction<boolean>>):void=>{
+        setVisible(false)
+        setTimeout(() => {
+            if(modalWindow.isOpen){
+                setModalWindow({isOpen: false, window: ''})
+            }else if(memberModal.isOpen){
+                setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
+            }    
+        }, 150)
     }
 
     function formatToTodayIfCurrentDate(dateStr:string):string {
@@ -539,7 +541,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setIsVisible(false)
         setTimeout(() => {
             navigate('/@me');
-        }, 210)
+        }, 150)
     }
 
     const handleMembersBack = (e:React.MouseEvent<HTMLButtonElement>):void=>{

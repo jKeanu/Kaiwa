@@ -40,6 +40,12 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
         setModalVisible(true)
     },[])
 
+
+    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        handleCloseButton(setModalVisible)
+    }
+
     return(
         <div className={`delete-group-modal-container channel-modal s-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Delete Group</h2>
@@ -53,7 +59,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
                     </div>:
                     'Delete Group'}
                 </button>
-                <button className="cancel-button" onClick={handleCloseButton} disabled={loading}>
+                <button className="cancel-button" onClick={handleClose} disabled={loading}>
                     Cancel
                 </button>
                 {errorMsg.isError&&<span className="s-modal-err">{errorMsg.message}</span>}

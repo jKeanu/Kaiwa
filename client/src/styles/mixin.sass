@@ -16,6 +16,40 @@
     display: block
     z-index: 500
 
+@mixin modal-mobile()
+    position: absolute
+    top: 40%
+    left: 50%
+    transform: translate(-50%, -50%)
+    width: 90%
+    height: fit-content
+    background-color: $modal-bg
+    box-shadow: 3px 3px 3px 3px #0e0e0e6b
+    padding: 1rem
+    transition: all 0.2s ease-in-out
+    &.visible
+        top: 50%
+    .modal-x-button-container
+        display: flex
+        justify-content: end
+        align-items: center
+        .modal-x-button
+            background-color: transparent
+            border: none
+            padding: 0
+            cursor: pointer
+            &:hover > .x-img
+                stroke-width: 2px
+            .x-img
+                transition: all 0.05s ease-in-out
+    .modal-header
+        margin: 0.5rem 0
+        font-family: 'Raleway', sans-serif
+        font-size: 1rem
+    .modal-text 
+        font-size: 0.8rem 
+        font-family: 'Raleway', sans-serif
+
 @mixin modal($border-radius)
     position: absolute
     top: 40%

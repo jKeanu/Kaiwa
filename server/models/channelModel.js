@@ -22,12 +22,12 @@ const channelSchema = new mongoose.Schema({
             ref:'User'
         }],
         required:[true, "A channel must have a member"],
-        // validate: {
-        //     validator: function(v) {
-        //         return v.length >= 2;
-        //     },
-        //     message: "A channel must have at least 2 members"
-        // }
+        validate: {
+            validator: function(v) {
+                return v.length >= 2;
+            },
+            message: "A channel must have at least 2 members"
+        }
     },
     channelType: {
         type:String,

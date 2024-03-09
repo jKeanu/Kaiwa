@@ -34,6 +34,12 @@ const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token,
     useEffect(()=>{
         setModalVisible(true)
     },[])
+
+    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        handleCloseButton(setModalVisible)
+    }
+
     return(
         <div className={`unfriend-member-modal-container s-modal channel-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Remove Friend</h2>
@@ -47,7 +53,7 @@ const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token,
                     </div>:
                     'Remove Friend'}
                 </button>
-                <button className="cancel-button" onClick={handleCloseButton} disabled={isLoading}>
+                <button className="cancel-button" onClick={handleClose} disabled={isLoading}>
                     Cancel
                 </button>
                 {errorMsg.isError&&<span className="s-modal-err">{errorMsg.message}</span>}

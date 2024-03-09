@@ -16,14 +16,16 @@
             .create-group-modal-container
                 padding: 1rem
                 position: absolute
-                top: 90%
+                top: 100%
                 left: 0
                 background-color: $modal-bg
                 height: 100vh
                 width: 100vw
-                transition: top 0.2s ease-in-out
+                transition: top 0.15s ease-in-out
                 display: flex
                 flex-direction: column
+                &.visible
+                    top: 0
                 .create-group-top-container 
                     .modal-x-button
                         display: none
@@ -195,8 +197,6 @@
                                                 transition: all 0.25s, border-width 0.1s    
                             .create-group-button-container
                                 display: none
-                &.visible
-                    top: 0
         .upper-left-section-container
             box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.6)
             padding: 0 0.5rem
@@ -390,7 +390,7 @@
                         display: none
                 .create-group-sections
                     position: relative
-                    transition: height 0.2s ease-in-out
+                    transition: height 0.15s ease-in-out
                     overflow: hidden
                     .create-group-error
                         display: none
@@ -407,7 +407,7 @@
                         top: 45%
                         right: 0%
                         transform: translateY(-50%)
-                        transition: all 0.2s ease-in-out
+                        transition: all 0.15s ease-in-out
                         &.name-container-after
                             right: 100%
                         .group-name-container
@@ -455,7 +455,7 @@
                         position: absolute
                         left: 100%
                         top: 0%
-                        transition: left 0.2s ease-in-out
+                        transition: left 0.15s ease-in-out
                         &.invite-container-active
                             left: 0%
                         .create-group-search
@@ -474,7 +474,7 @@
                         .create-group-form
                             height: fit-content
                             position: relative
-                            margin-top: 0.8rem
+                            margin-top: 2rem
                             .create-group-button-container
                                 display: flex
                                 align-items: center
@@ -617,7 +617,7 @@
                         display: flex
                         justify-content: center
                         align-items: center
-                        transition: opacity 0.2s ease-in
+                        transition: opacity 0.15s ease-in
                         bottom: 90%
                         height: fit-content
                         z-index: 105

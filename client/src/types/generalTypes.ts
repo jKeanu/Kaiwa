@@ -259,7 +259,7 @@ export type InviteFriend={
     token:string,
     channelId: string,
     currChannelMembersId:string[]
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
+    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void
     channelNumber:string|undefined,
     setChannels:React.Dispatch<SetStateAction<Channel[]>>
     setModalDisabled:React.Dispatch<SetStateAction<boolean>>,
@@ -271,7 +271,7 @@ export type InviteFriend={
 export type DeleteGroup={
     token:string,
     channelId:string
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
     setChannels: React.Dispatch<SetStateAction<Channel[]>>,
     socket: Socket|undefined,
     membersId:string[],
@@ -283,7 +283,7 @@ export type DeleteGroup={
 export type LeaveGroup={
     token:string,
     channelId:string
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
     setChannels: React.Dispatch<SetStateAction<Channel[]>>,
     socket: Socket|undefined,
     currUserId: string,
@@ -321,7 +321,7 @@ export type MemberUnfriend ={
     socket:Socket|undefined,
     displayName:string
     handleFriendChannelDelete:(channelId:string)=>void,
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
     setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
     channelNumber:number|undefined 
     setModalDisabled:React.Dispatch<SetStateAction<boolean>>
@@ -330,7 +330,7 @@ export type MemberUnfriend ={
 export type ChangeLeader={
     token: string,
     channelId: string,
-    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
     channelNumber: number|undefined,
     socket: Socket | undefined,
     setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
