@@ -39,12 +39,7 @@
                         display: flex
                         justify-content: center
                         align-items: center
-            .channel-members-section
-                .member-list
-                    .member-container
-                        &.member-popup
-                            .member-popup-container
-                                display: block
+
                             
             .message-section
                 .message-box
@@ -69,9 +64,11 @@
                 @include scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
                 overflow-y: scroll
                 transition: left 0.15s ease-in-out
+
                 &.mob-member-visible
                     left: 0%
                 .member-list
+                    box-shadow: 3px 3px 3px 3px #00000064 !important
                     flex: 1
                     overflow-x: visible
                     margin: 1rem 2rem 0.5rem 2rem
@@ -79,7 +76,6 @@
                     padding: 0.5rem 0
                     background-color: #26324064
                     .member-container
-                        padding: 0 1rem
                         .member-popup-button
                             width: 100%
                             display: flex
@@ -87,6 +83,7 @@
                             background-color: transparent
                             border: none
                             column-gap: 0.8rem
+                            padding: 0.5rem 1rem
                             .member-profile-status
                                 position: relative
                                 padding: 0.05rem
@@ -109,6 +106,42 @@
                                 pointer-events: none
                             .member-more
                                 margin-left: auto !important
+                        &.member-popup
+                            .member-popup-container
+                                box-shadow: inset 1px 1px 10px 3px #0000004c
+                                height: 0
+                                display: flex
+                                background-color: $secondary-bg
+                                flex-direction: column
+                                transition: all 0.15s ease-in-out
+                                overflow-y: scroll
+                                margin: auto
+                                &.member-popup-active
+                                    height: 4.1rem
+                                .popup-member-info-container
+                                    display: none
+                                div
+                                    font-size: 0.8rem
+                                    font-family: 'Open Sans', sans-serif
+                                    padding: 0.5rem 0
+                                    width: 100%
+                                    text-align: center
+                                    padding: auto 0
+                                button
+                                    padding: auto 0
+                                    width: 100%
+                                    background-color: transparent
+                                    border: none
+                                    font-size: 0.8rem
+                                    font-family: 'Open Sans', sans-serif
+                                    padding: 0.5rem 0
+                                .member-message-link
+                                    display: none
+                                .member-accept-friend-request
+                                    color: #31be1c
+                                .member-decline-friend-request
+                                    color: $error-message
+
         .modal-window-container
             @include modal-container
             .channel-modal
@@ -239,6 +272,7 @@
                         &::-webkit-scrollbar-thumb
                             background-color: rgb(68, 83, 106)
                     .member-container
+                        height: 3rem
                         .member-popup-button
                             background-color: transparent
                             cursor: pointer
@@ -625,7 +659,6 @@
             background-color: #1c2331
             .member-list
                 .member-container
-                    height: 3rem
                     //friend-channel-member
                     &.friend-member-container
                         display: flex

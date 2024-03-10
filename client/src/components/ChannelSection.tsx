@@ -55,6 +55,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
     const [memberPopUp, setMemberPopUp] = useState('')
     const [modalDisabled, setModalDisabled] = useState(false)
+    const [activePopup, setActivePopup] = useState(false)
     const [memberModal, setMemberModal] = useState<MemberModalSettings>
     ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
@@ -373,10 +374,15 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const handlePopUp = (e:React.MouseEvent<HTMLButtonElement>, memberId:string):void=>{
         e.preventDefault()
         if(memberListRef.current){
+            setActivePopup(false)
             const clickX = e.nativeEvent.offsetX - (e.nativeEvent.offsetX>=86?e.nativeEvent.offsetX>=125?120:30:-15)  
             const clickY = Math.abs(memberListRef.current.clientHeight-e.nativeEvent.clientY)<=120?e.nativeEvent.offsetY-140:e.nativeEvent.offsetY
             setPopUpPosition({clickX, clickY})
             setMemberPopUp(memberId)
+            setTimeout(() => {
+                // This delay allows the popup to render before the animation class is added
+                setActivePopup(true);
+              }, 10)
         }
     }
 
@@ -419,6 +425,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 const buttonClicked = (event.target as HTMLElement).closest('.member-popup-button');
                 if (popupElement && !popupElement.contains(event.target as Node) && !buttonClicked) {
                     setMemberPopUp('');
+                    setActivePopup(false)
                 }
             };
             document.addEventListener('mousedown', handleOutsideClick);
@@ -876,7 +883,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                         </svg>
                                     </button>
                                     {memberPopUp===member._id&&member._id!==_id&&
-                                    <div className="member-popup-container" style={{top:popUpPosition.clickY+15,
+                                    <div className={`member-popup-container ${activePopup?'member-popup-active':''}`} style={{top:popUpPosition.clickY+15,
                                     left:popUpPosition.clickX}}>
                                         <div className="popup-member-info-container">
                                             <img src={`/img/${member.photo}`} />
