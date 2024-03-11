@@ -7,6 +7,7 @@ import { useEffect } from "react";
 const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannelDelete, socket, isMobile, setIsFriendsOpen, setIsFriendConnection})=>{
     const [searchQuery, setSearchQuery] = useState<string>('')
     const [popUp, setPopUp] = useState<string>('')
+    const [popUpActive, setPopUpActive] = useState(false)
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 , clickX:0, clickY:0})
     const [modalSettings, setModalSettings] = useState<UnfriendModalSettings>({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
 
@@ -26,10 +27,19 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
 
     const handlePopUpClick = (e:React.MouseEvent<HTMLButtonElement>, friendId:string)=>{
         e.preventDefault()
-        const clickX = e.nativeEvent.offsetX
-        const clickY = e.nativeEvent.offsetY
-        setPopUp(`user-${friendId}-popup`)
-        setPopupPosition({x:e.clientX, y:e.clientY, clickX, clickY})
+        setPopUpActive(false)
+        if(`user-${friendId}-popup`===popUp){
+            setPopUp('')
+        }else{
+            const clickX = e.nativeEvent.offsetX
+            const clickY = e.nativeEvent.offsetY
+            setPopUp(`user-${friendId}-popup`)
+            setTimeout(() => {
+                // This delay allows the popup to render before the animation class is added
+                setPopUpActive(true);
+              }, 10)
+            setPopupPosition({x:e.clientX, y:e.clientY, clickX, clickY})
+        }
     }
 
     const handleOpenModal = (e:React.MouseEvent<HTMLButtonElement>, displayName:string, channelId:string, friendId:string, channelNumber:number)=>{
@@ -64,10 +74,12 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
                 //of its ancestors match the .friend-more-button selector 
                 // If a match is found, closest returns that element. Otherwise, it returns null
                 const buttonClicked = (event.target as HTMLElement).closest('.friend-more-button');
+                const containerButtonClicked = (event.target as HTMLElement).closest('.friend-info-container-button')
                 // If click is outside the popup and not on the button, close the popup
                 //contains: Starts with the current element and checks downward among 
                 //its descendants to see if it contains a specific element.
-                if (popupElement && !popupElement.contains(event.target as Node) && !buttonClicked) {
+                if (popupElement && !popupElement.contains(event.target as Node) && !buttonClicked && !containerButtonClicked) {
+                    console.log(popupElement, '---', !popupElement.contains(event.target as Node), '---', !buttonClicked)
                     setPopUp('');
                 }
             };
@@ -130,13 +142,13 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
                                 <div className="user-displayName-status-container">
                                     <span className='friend-displayName'>{friend.friend.displayName}</span>
                                     {friend.friend.status==='Online'?
-                                    <span className="friend-status">Online</span>
+                                    <span className="friend-status-text">Online</span>
                                     :
-                                    <span className="friend-status">Offline</span>}
+                                    <span className="friend-status-text">Offline</span>}
                                 </div>
                             </div>
                         </Link>
-                        <div className="friend-info-container">
+                        <button className="friend-info-container-button" onClick={(e)=>handlePopUpClick(e, friend.friend._id)}>
                             <div className="friend-information">
                                 <div className="friend-photo-status-container">
                                     <img className='friend-photo' src={`/img/${friend.friend.photo}`}/>
@@ -146,12 +158,17 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
                                 <div className="user-displayName-status-container">
                                     <span className='friend-displayName'>{friend.friend.displayName}</span>
                                     {friend.friend.status==='Online'?
-                                    <span className="friend-status">Online</span>
+                                    <span className="friend-status-text">Online</span>
                                     :
-                                    <span className="friend-status">Offline</span>}
+                                    <span className="friend-status-text">Offline</span>}
                                 </div>
                             </div>
-                        </div>
+                            <div className="friend-more-img">
+                                <div className="friend-more-img-container">
+                                    <img src="/img/friend-more.svg"/>
+                                </div>
+                            </div>
+                        </button>
                         <button className="friend-more-button" onClick={(e)=>handlePopUpClick(e, friend.friend._id)}>
                             <div className="friend-more-img-container">
                                 <img src="/img/friend-more.svg"/>
@@ -159,7 +176,7 @@ const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannel
                         </button>
                         {popUp===`user-${friend.friend._id}-popup`
                         &&
-                        <div className="friend-more-pop-up-container" 
+                        <div className={`friend-more-pop-up-container ${popUpActive?"pop-up-active":""}`}
                         style={{left:`${popupPosition.x/1.70}px`, top:`${popupPosition.y+popupPosition.clickY+5}px`, 
                             transform: `translateY(${-popupPosition.y}px)`}}>
                             <Link to={`channels/${friend.channel.channelNumber}`} className="friend-pop-up-link">

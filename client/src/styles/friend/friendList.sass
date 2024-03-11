@@ -1,5 +1,5 @@
 =friend-list-mobile
-    @media (max-width: $breakpoint-mobile)
+    @media (max-width: $breakpoint-tablet)
         width: 100vw
         height: 100vh
         display: flex
@@ -34,7 +34,6 @@
                     margin: 0.3rem 0
                     display: flex
                     align-items: center
-
         .friend-list
             .friend-container
                 .friend-more-pop-up-container
@@ -42,7 +41,12 @@
                         display: none
                 .friend-link
                     display: none !important
-                .friend-info-container
+                .friend-info-container-button
+                    background-color: transparent
+                    border: none
+                    display: flex
+                    justify-content: center
+                    align-items: center
                     .friend-information
                         .friend-photo-status-container
                             .friend-photo
@@ -59,19 +63,50 @@
                                 right: 1px
                                 border: solid 3px $secondary-bg
                         .user-displayName-status-container
+                            display: flex
+                            flex-direction: column
+                            align-items: start
                             .friend-displayName
                                 font-family: 'Raleway', sans-serif
                                 font-size: 1rem
-                            .friend-status
+                            .friend-status-text
                                 font-size: 0.6rem
                                 font-family: 'Open Sans', sans-serif
                 .friend-more-button
-                    background-color: transparent !important
+                    display: none
+                .friend-more-pop-up-container
+                    box-shadow: inset 2px 2px 4px 2px #0000006c
+                    display: block
+                    position: static
+                    transform: none !important
+                    height: 0
+                    transition: all 0.15s ease-in-out
+                    overflow: hidden
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    background-color: $modal-bg !important
+                    &.pop-up-active
+                        height: 2.2rem
+                    .remove-friend-button
+                        width: 100%
+                        background-color: transparent
+                        border: none
+                        color: $error-message
+                        font-size: 0.8rem
+                        font-family: 'Open Sans', sans-serif
+        .modal-window-container
+            @include modal-container
+            .unfriend-modal-container
+                @include modal-mobile
+                .unfriend-buttons-container
+                    @include modal-button-container
+
 
 
 
 =friend-list-desktop
-    @media (min-width: $breakpoint-laptop + 1)
+    @media (min-width: $breakpoint-tablet + 1)
         width: 45rem
         display: flex
         flex-direction: column
@@ -92,7 +127,7 @@
                 align-items: center
         .friend-list
             .friend-link-container
-                .friend-info-container
+                .friend-info-container-button
                     display: none !important
                 .friend-link
                     .friend-information
@@ -114,9 +149,40 @@
                             .friend-displayName
                                 font-family: 'Raleway', sans-serif
                                 font-size: 1rem
-                            .friend-status
+                            .friend-status-text
                                 font-size: 0.6rem
                                 font-family: 'Open Sans', sans-serif
+                .friend-more-pop-up-container
+                    position: absolute
+                    display: flex
+                    flex-direction: column
+                    justify-content: center
+                    align-items: flex-start
+                    background-color: #141a22b7
+                    padding: 0.2rem
+                    z-index: 1
+                    width: 6.4rem
+                    .friend-pop-up-link
+                        color: $white-text
+                        text-decoration: none
+                        width: 100%
+                        font-family: 'Open Sans', sans-serif
+                        font-size: 0.7rem
+                        padding: 0.2rem 0.5rem
+                        &:hover
+                            background-color: #2e3b4db7
+                    .remove-friend-button
+                        padding: 0.2rem 0.5rem
+                        width: 100%
+                        color: $error-message
+                        background-color: transparent
+                        border: none
+                        font-family: 'Open Sans', sans-serif
+                        font-size: 0.7rem
+                        cursor: pointer
+                        &:hover
+                            color: $white-text
+                            background-color: #b53737
         .modal-window-container
             @include modal-container
             .unfriend-modal-container
@@ -155,7 +221,7 @@
         .friend-link-container, .friend-container
             width: 100%
             position: relative
-            .friend-link, .friend-info-container
+            .friend-link, .friend-info-container-button
                 padding: 0.6rem 0.5rem
                 width: 100%
                 display: flex
@@ -200,35 +266,3 @@
                     justify-content: center
                     align-items: center
                     position: relative
-            .friend-more-pop-up-container
-                position: absolute
-                display: flex
-                flex-direction: column
-                justify-content: center
-                align-items: flex-start
-                background-color: #141a22b7
-                padding: 0.2rem
-                z-index: 1
-                width: 6.4rem
-                .friend-pop-up-link
-                    color: $white-text
-                    text-decoration: none
-                    width: 100%
-                    font-family: 'Open Sans', sans-serif
-                    font-size: 0.7rem
-                    padding: 0.2rem 0.5rem
-                    &:hover
-                        background-color: #2e3b4db7
-                .remove-friend-button
-                    padding: 0.2rem 0.5rem
-                    width: 100%
-                    color: $error-message
-                    background-color: transparent
-                    border: none
-                    font-family: 'Open Sans', sans-serif
-                    font-size: 0.7rem
-                    cursor: pointer
-                    &:hover
-                        color: $white-text
-                        background-color: #b53737
-

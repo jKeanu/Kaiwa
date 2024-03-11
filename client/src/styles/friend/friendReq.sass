@@ -23,7 +23,8 @@
         padding: 1rem 0.5rem
         transition: left 0.2s ease-in-out
         box-shadow: 3px 3px 3px 3px #00000064
-        overflow: scroll
+        overflow-y: scroll
+        @include scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
         &.pending-request-section-active
             left: 0
         .pending-request
@@ -85,7 +86,7 @@
                             background-color: #e91919c5       
 
 =pending-request-desktop
-    @media (min-width: $breakpoint-laptop+1)
+    @media (min-width: $breakpoint-tablet+1)
         box-shadow: 1px 2px 1px 3px rgba(0, 0, 0, 0.4)
         background-color: #1b1f275e
         margin-top: 0.3rem

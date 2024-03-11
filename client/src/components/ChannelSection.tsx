@@ -55,6 +55,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
     const [memberPopUp, setMemberPopUp] = useState('')
     const [modalDisabled, setModalDisabled] = useState(false)
+    //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
     const [memberModal, setMemberModal] = useState<MemberModalSettings>
     ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
@@ -369,20 +370,25 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         sendMessage();
       }
     }
-
     //Popup 
     const handlePopUp = (e:React.MouseEvent<HTMLButtonElement>, memberId:string):void=>{
         e.preventDefault()
         if(memberListRef.current){
-            setActivePopup(false)
-            const clickX = e.nativeEvent.offsetX - (e.nativeEvent.offsetX>=86?e.nativeEvent.offsetX>=125?120:30:-15)  
-            const clickY = Math.abs(memberListRef.current.clientHeight-e.nativeEvent.clientY)<=120?e.nativeEvent.offsetY-140:e.nativeEvent.offsetY
-            setPopUpPosition({clickX, clickY})
-            setMemberPopUp(memberId)
-            setTimeout(() => {
-                // This delay allows the popup to render before the animation class is added
-                setActivePopup(true);
-              }, 10)
+            //this is for mobile
+            if(memberId===memberPopUp){
+                setActivePopup(false)
+                setMemberPopUp('')
+            }else{
+                setActivePopup(false)
+                const clickX = e.nativeEvent.offsetX - (e.nativeEvent.offsetX>=86?e.nativeEvent.offsetX>=125?120:30:-15)  
+                const clickY = Math.abs(memberListRef.current.clientHeight-e.nativeEvent.clientY)<=120?e.nativeEvent.offsetY-140:e.nativeEvent.offsetY
+                setPopUpPosition({clickX, clickY})
+                setMemberPopUp(memberId)
+                setTimeout(() => {
+                    // This delay allows the popup to render before the animation class is added
+                    setActivePopup(true);
+                  }, 10)
+            }
         }
     }
 
@@ -424,7 +430,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 const popupElement = document.querySelector('.member-popup-container') as HTMLElement;
                 const buttonClicked = (event.target as HTMLElement).closest('.member-popup-button');
                 if (popupElement && !popupElement.contains(event.target as Node) && !buttonClicked) {
-                    setMemberPopUp('');
+                    setTimeout(()=>{
+                        setMemberPopUp('')
+                    }, 100);
                     setActivePopup(false)
                 }
             };
@@ -451,6 +459,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         e.preventDefault()
         if(currentChannel&&channelNumber){
             setMemberPopUp('')
+            setActivePopup(false)
             const channelInfo = findMemberId(memberId)
             if(channelInfo&&type==='unfriend'){
                 setMemberModal({isOpen:true, type, ids:{memberId, channelId:channelInfo.channelId}, displayName, channelNumber})
@@ -462,7 +471,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     const handleAddFriendMember = async(e:React.MouseEvent<HTMLButtonElement>, displayName:string, friendTag:string):Promise<void>=>{
         e.preventDefault()
-        setMemberPopUp('')
+        setTimeout(()=>{
+            setMemberPopUp('')
+        }, 100);
+        setActivePopup(false)
         try{
             const res:AxiosResponse<AddFriendStatus> = await addFriend(token, displayName, friendTag)
             if(res.data.status==='success'){
@@ -481,7 +493,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     //friendId is the object that contains the channel info and the user info and your status with that user
     const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string, friendId:string|false):Promise<void>=>{
         e.preventDefault()
-        setMemberPopUp('')
+        setTimeout(()=>{
+            setMemberPopUp('')
+        }, 100);
+        setActivePopup(false)
         if(friendId){
             try{
                 const res:AxiosResponse<AcceptFriendStatus>= await acceptFriend(token, memberId)
@@ -526,7 +541,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     
     const handleDeclineRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string):Promise<void>=>{
         e.preventDefault()
-        setMemberPopUp('')
+        setTimeout(()=>{
+            setMemberPopUp('')
+        }, 100);
+        setActivePopup(false)
         try{
             const res:AxiosResponse<void>=await declineFriend(token, memberId)
             if(res.status===204){
@@ -571,7 +589,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 (container.scrollTop*-1) + container.clientHeight === container.scrollHeight -1 || 
                 gap === 0 || gap === 1
                 if((isTop && !allMessagesFetched && !msgFetchLoading)){
-                    console.log('SUCCESS PASS')
                     setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
                 }
             }
