@@ -355,18 +355,21 @@
                     .friend-tag-info
                         color: rgb(191, 191, 191)
                         font-size: 0.7rem
-            .logout-button
-                background-color: transparent
-                color: white
-                padding: 0.6rem
-                border-radius: 2px
-                background-color: $secondary-bg
-                border: 1px solid transparent
-                cursor: pointer
-                transition: background-color 0.1s ease-in
-                font-family: 'Bebas Neue', sans-serif
-                &:hover
-                    background-color: $primary-bg
+            .logout-container
+                .logout-button
+                    background-color: transparent
+                    color: white
+                    padding: 0.6rem
+                    border-radius: 2px
+                    background-color: $secondary-bg
+                    border: 1px solid transparent
+                    cursor: pointer
+                    transition: background-color 0.1s ease-in
+                    font-family: 'Bebas Neue', sans-serif
+                    &:hover
+                        background-color: $primary-bg
+                .logout-button-laptop
+                    display: none
 
 
 =left-home-laptop
@@ -584,7 +587,6 @@
                                                 transition: all 0.25s, border-width 0.1s    
 
         .upper-left-section-container
-            box-shadow: 0px 1px 3px 3px rgba(0, 0, 0, 0.6)
             padding: 0 0.5rem
             flex-shrink: 0
             display: flex
@@ -613,11 +615,12 @@
                     display: flex
                     justify-content: center
                     align-items: center
-                    &:hover > .create-group-image-1
-                        fill: $white-text
+                    transition: all 0.15s ease-in-out
                     &:hover > .create-group-tooltip
                         opacity: 1
                         pointer-events: auto
+                    &:hover
+                        background-color: #43648768
                     .create-group-image-1
                         display: none
                     .create-group-tooltip
@@ -708,27 +711,37 @@
             display: flex
             justify-content: space-between
             align-items: center
-            padding: 1rem 0.5rem
-            height: 5rem
+            flex-direction: column
+            height: 6rem
             flex-shrink: 0
             flex-grow: 0
-            justify-content: center
+            padding: 0.5rem 0
             .user-info
                 display: flex
-                flex-direction: row
-                justify-content: flex-start
+                justify-content: center
                 align-items: center             
                 .user-info-photo
                     width: 2.5rem
                     height: 2.5rem
                     object-fit: cover
                     border-radius: 1.25rem
-                    margin-right: 0.5rem
                 .user-info-text
                     display: none
-            .logout-button
-                display: none
-
+            .logout-container
+                .logout-button
+                    display: none
+                .logout-button-laptop
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    background-color: transparent
+                    border: none
+                    padding: 0
+                    cursor: pointer
+                    .logout-img
+                        align-self: center
+                        width: 1.7rem
+                        height: 1.7rem
 
     
 =left-home-desktop
@@ -1098,18 +1111,21 @@
                     .friend-tag-info
                         color: rgb(191, 191, 191)
                         font-size: 0.7rem
-            .logout-button
-                background-color: transparent
-                color: white
-                padding: 0.6rem
-                border-radius: 2px
-                background-color: $secondary-bg
-                border: 1px solid transparent
-                cursor: pointer
-                transition: background-color 0.1s ease-in
-                font-family: 'Bebas Neue', sans-serif
-                &:hover
-                    background-color: $primary-bg
+            .logout-container
+                .logout-button
+                    background-color: transparent
+                    color: white
+                    padding: 0.6rem
+                    border-radius: 2px
+                    background-color: $secondary-bg
+                    border: 1px solid transparent
+                    cursor: pointer
+                    transition: background-color 0.1s ease-in
+                    font-family: 'Bebas Neue', sans-serif
+                    &:hover
+                        background-color: $primary-bg
+                .logout-button-laptop
+                    display: none
 
                 
     
