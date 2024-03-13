@@ -5,9 +5,9 @@ import { AxiosResponse } from "axios"
 import axios from 'axios'
 import { createGroup } from "../../services/apiService"
 import { useNavigate } from "react-router-dom"
+import { useLeftCustomContext } from "../../context"
 
-const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, socket,
-    setChannels,setIsDisabled, setModal, isMobile})=>{
+const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setModal})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const [members, setMembers] = useState([currUserId])
     const [groupName, setGroupName] = useState('')
@@ -16,6 +16,8 @@ const CreateGroupModal:React.FC<CreateGroup>=({token, friendsInfo, currUserId, s
     const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
+
+    const {friendsInfo, setChannels, socket, token} = useLeftCustomContext()
 
     const filteredFriends = useMemo(()=>{
         return [...friendsInfo].filter(friends=>friends.displayName.toLowerCase().includes(searchQuery.toLocaleLowerCase()))

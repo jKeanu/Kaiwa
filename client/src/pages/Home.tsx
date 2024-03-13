@@ -16,6 +16,7 @@ import HomeSection from '../components/HomeSection'
 import { getCurrentUser } from '../services/apiService'
 import axios, {AxiosResponse} from 'axios'
 import NoticeModal from '../components/modals/Notice'
+import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
 
 
 const HomePage:React.FC = ()=>{
@@ -33,7 +34,6 @@ const HomePage:React.FC = ()=>{
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
         const [sentReqs, setSentReqs] = useState<SentReq[]>([])
-        const [isMobile, setIsMobile] = useState<boolean>(false)
         const [isFriendsOpen, setIsFriendsOpen] = useState<boolean>(false)
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
@@ -74,19 +74,6 @@ const HomePage:React.FC = ()=>{
             }
         }
 
-
-        useEffect(() => {
-            const handleResize = () => {
-              setIsMobile((window.innerWidth) < 768);
-            };
-            console.log(window.innerWidth, window.devicePixelRatio,'--')
-            window.addEventListener('resize', handleResize);
-            handleResize(); 
-        
-            return () => {
-              window.removeEventListener('resize', handleResize);
-            };
-          }, [])
     
         useEffect(() => {
             //we need to determine if the webpage is fully visible before connecting to the socket since,
@@ -574,39 +561,48 @@ const HomePage:React.FC = ()=>{
                     <dialog className='modal-window-container'>
                         <NoticeModal handleModalConfirm={handleModalConfirm}/>
                     </dialog>}
-                    <LeftSection friendsInfo={myFriends} channels={channels} 
-                    token={token} socket={socket} isMobile={isMobile}
-                    handleLogout={handleLogout} currentUserData={userData}
-                    setChannels={setChannels} friendReqs={friendReqs} setIsFriendsOpen={setIsFriendsOpen}/>
+                    <LeftSectionContext.Provider value={{setChannels, friendsInfo:myFriends, token, socket}}>
+                        <LeftSection 
+                            channels={channels} 
+                            handleLogout={handleLogout} 
+                            currentUserData={userData}
+                            friendReqs={friendReqs} 
+                            setIsFriendsOpen={setIsFriendsOpen}
+                        />
+                    </LeftSectionContext.Provider>
                     <Routes>
-                        <Route index element={<HomeSection
-                        isMobile={isMobile}
-                        friendReqs={friendReqs} 
-                        handleFriendChannelDelete={handleFriendChannelDelete}
-                        handleNewFriendChannel={handleNewFriendChannel}
-                        setFriendReqs={setFriendReqs} 
-                        setSentReqs={setSentReqs} 
-                        friendChannels={friendChannels} 
-                        token={token} socket={socket} 
-                        currUserId={userData._id}
-                        setIsFriendsOpen={setIsFriendsOpen}
-                        isFriendsOpen={isFriendsOpen}/>}
-/>
-                        <Route path="channels/:channelNumber"
-                        element={<ChannelSection
-                        isMobile={isMobile}
-                        friendReqs={friendReqs}
-                        sentReqs={sentReqs}
-                        setFriendReqs={setFriendReqs}
-                        setSentReqs={setSentReqs} 
-                        handleNewFriendChannel={handleNewFriendChannel}
-                        fIdAndChannelInfos={fIdAndChannelInfos}
-                        handleFriendChannelDelete={handleFriendChannelDelete}
-                        socket={socket}
-                        currentUserData={userData}
-                        token={token}
-                        setChannels={setChannels}
-                        myFriends={myFriends}/>}/>
+                        <Route index element={
+                            <HomeSectionContext.Provider value={{
+                                token,
+                                currUserId:userData._id,
+                                socket,
+                                handleNewFriendChannel, 
+                                setFriendReqs, 
+                                setSentReqs,
+                                handleFriendChannelDelete,
+                                setIsFriendsOpen
+                            }}>
+                            <HomeSection
+                                friendReqs={friendReqs} 
+                                friendChannels={friendChannels}  
+                                isFriendsOpen={isFriendsOpen}/>
+                            </HomeSectionContext.Provider>}
+                            />
+                            <Route path="channels/:channelNumber"
+                            element={
+                            <ChannelSectionContext.Provider value={{friends:myFriends, setChannels, handleFriendChannelDelete}}>
+                                <ChannelSection
+                                friendReqs={friendReqs}
+                                sentReqs={sentReqs}
+                                setFriendReqs={setFriendReqs}
+                                setSentReqs={setSentReqs} 
+                                handleNewFriendChannel={handleNewFriendChannel}
+                                fIdAndChannelInfos={fIdAndChannelInfos}
+                                socket={socket}
+                                currentUserData={userData}
+                                token={token}/>
+                                </ChannelSectionContext.Provider>
+                            }/>
                     </Routes>
                 </main>
                 :

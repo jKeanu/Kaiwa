@@ -3,9 +3,9 @@ import { inviteFriendtoGroup } from "../../services/apiService"
 import { AxiosResponse } from "axios"
 import React, { useEffect } from "react"
 import { useState} from "react"
+import { useChannelCustomContext } from "../../context"
 
 const InviteUserModal:React.FC<InviteFriend>=({
-        friends,
         channelId, 
         token, 
         currChannelMembersId, 
@@ -13,11 +13,11 @@ const InviteUserModal:React.FC<InviteFriend>=({
         channelNumber,
         modalDisabled,
         handleCloseButton,
-        setModalDisabled,
-        setChannels})=>{
+        setModalDisabled})=>{
     const [modalVisible, setModalVisible] = useState(false)
     const [loadings, setLoadings] = useState<string[]>([])
     const [error, setError] = useState<{isError:boolean, users:string[]}>({isError:false, users:[]})
+    const {friends, setChannels} = useChannelCustomContext()
 
     useEffect(()=>{
         setModalVisible(true)

@@ -4,14 +4,18 @@ import { deleteGroup } from "../../services/apiService"
 import { useState } from "react"
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useChannelCustomContext } from "../../context"
 
 
-const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton, setChannels, 
+const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton,
     socket, membersId, channelNumber, setModalDisabled})=>{
+
     const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     const navigate = useNavigate()
+
+    const {setChannels} = useChannelCustomContext()
 
     const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()

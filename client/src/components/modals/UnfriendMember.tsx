@@ -2,12 +2,14 @@ import { MemberUnfriend} from "../../types/generalTypes"
 import { AxiosResponse } from "axios"
 import { removeFriend } from "../../services/apiService"
 import { useEffect, useState } from "react"
+import { useChannelCustomContext } from "../../context"
 
-const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token, socket, handleFriendChannelDelete,
+const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token, socket,
     handleCloseButton, displayName, setModalSettings, channelNumber, setModalDisabled})=>{
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
+    const {handleFriendChannelDelete} = useChannelCustomContext()
 
     const handleUnfriend = async (e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()

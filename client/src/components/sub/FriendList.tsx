@@ -3,13 +3,15 @@ import { Link } from "react-router-dom";
 import React, { useState, useMemo} from "react";
 import Unfriend from "../modals/Unfriend";
 import { useEffect } from "react";
+import { useHomeCustomContext } from "../../context";
 
-const FriendList:React.FC<FriendListProps>=({friends, token, handleFriendChannelDelete, socket, isMobile, setIsFriendsOpen, setIsFriendConnection})=>{
+const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
     const [searchQuery, setSearchQuery] = useState<string>('')
     const [popUp, setPopUp] = useState<string>('')
     const [popUpActive, setPopUpActive] = useState(false)
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 , clickX:0, clickY:0})
     const [modalSettings, setModalSettings] = useState<UnfriendModalSettings>({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
+    const {setIsFriendsOpen, socket, token, handleFriendChannelDelete} = useHomeCustomContext()
 
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()

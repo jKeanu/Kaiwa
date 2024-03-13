@@ -4,8 +4,7 @@ import FriendList from "./sub/FriendList"
 import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
 
-const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId, socket, friendReqs, isMobile,
-     handleNewFriendChannel, setFriendReqs, setSentReqs, handleFriendChannelDelete, isFriendsOpen, setIsFriendsOpen})=>{
+const HomeSection:React.FC<HomeSectionProps>=({friendChannels, friendReqs, isFriendsOpen})=>{
 
     const [isFriendConnection, setIsFriendConnection] = useState(false)
     const [currComponent, setCurrComponent] = useState<string>('addFriend')
@@ -23,9 +22,7 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId
     return(
         <section className={`home-section-container ${isFriendsOpen?'home-section-container-mob':''}`}>
             <section className="friend-section">
-                <FriendList friends={sortedFriends} token={token} socket={socket} isMobile={isMobile}
-                handleFriendChannelDelete={handleFriendChannelDelete} setIsFriendsOpen={setIsFriendsOpen}
-                setIsFriendConnection={setIsFriendConnection} />
+                <FriendList friends={sortedFriends} setIsFriendConnection={setIsFriendConnection} />
                 <div className={`friend-connection-container ${isFriendConnection?'friend-connection-container-active':''}`}>
                     <button onClick={closeFriendConnection} className="connections-to-friendlist-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
@@ -48,15 +45,13 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, token, currUserId
                         </button>
                     </div>
                     <div className="friend-req-add-container">
-                        <FriendReq pendingRequests={friendReqs} socket={socket} currUserId={currUserId} currComponent={currComponent}
-                        token={token} handleNewFriendChannel={handleNewFriendChannel} setFriendReqs={setFriendReqs}/>
-                        <AddFriend token={token} socket={socket} setSentReqs={setSentReqs} currComponent={currComponent}/>
+                        <FriendReq pendingRequests={friendReqs} currComponent={currComponent}/>
+                        <AddFriend currComponent={currComponent}/>
                     </div>
                     {currComponent==='friendReq'&&
-                    <FriendReq pendingRequests={friendReqs} socket={socket} currUserId={currUserId} currComponent={currComponent}
-                    token={token} handleNewFriendChannel={handleNewFriendChannel} setFriendReqs={setFriendReqs}/>}
+                    <FriendReq pendingRequests={friendReqs} currComponent={currComponent}/>}
                     {currComponent==='addFriend'&&
-                    <AddFriend token={token} socket={socket} setSentReqs={setSentReqs} currComponent={currComponent}/>}
+                    <AddFriend currComponent={currComponent}/>}
                 </div>
             </section>
         </section>

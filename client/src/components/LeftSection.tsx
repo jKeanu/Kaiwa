@@ -3,12 +3,17 @@ import {LeftSectionProps} from '../types/generalTypes';
 import React, { useMemo, useState } from 'react';
 import CreateGroupModal from './modals/CreateGroup';
 
-const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChannels,
-    currentUserData, friendsInfo, token, socket, isMobile, friendReqs, setIsFriendsOpen})=>{
+const LeftSection:React.FC<LeftSectionProps>=({
+    channels, 
+    handleLogout, 
+    currentUserData, 
+    friendReqs, 
+    setIsFriendsOpen})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const [modal, setModal] = useState(false)
     const {displayName, friendTag, photo, _id} = currentUserData
     const [isDisabled, setIsDisabled] = useState(false)
+
     
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.button===0 && e.target === e.currentTarget) {
@@ -41,8 +46,7 @@ const LeftSection:React.FC<LeftSectionProps>=({channels, handleLogout, setChanne
     <section className='left-home-section'>
         {modal&&
         <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} >
-            <CreateGroupModal token={token} currUserId={_id} friendsInfo={friendsInfo} setIsDisabled={setIsDisabled}
-             socket={socket} setModal={setModal}  setChannels={setChannels} isMobile={isMobile}/>
+            <CreateGroupModal currUserId={_id}  setIsDisabled={setIsDisabled} setModal={setModal}  />
         </dialog>
         }
         <div className='upper-left-section-container'>

@@ -100,11 +100,6 @@ export type LeftSectionProps ={
     channels: Channel[],  // Assuming Channel is a defined type or interface
     handleLogout: (e:React.MouseEvent<HTMLButtonElement>) => void,
     currentUserData: User,
-    friendsInfo:FriendDetails[],
-    token:string,
-    socket:Socket|undefined,
-    setChannels:React.Dispatch<SetStateAction<Channel[]>>,
-    isMobile: boolean,
     friendReqs:FriendReq[], 
     setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>
 }
@@ -113,31 +108,18 @@ export type ChannelSectionProps={
     token: string,
     socket: Socket|undefined,
     currentUserData: User,
-    myFriends:FriendDetails[],
-    setChannels: React.Dispatch<SetStateAction<Channel[]>>,
     fIdAndChannelInfos: FIdChannelInfo[],
-    handleFriendChannelDelete:(channelId:string)=>void,
     handleNewFriendChannel: (friendInfo:Friend)=>void,
     setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>,
     setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
     friendReqs:FriendReq[],
     sentReqs: SentReq[],
-    isMobile: boolean
 }
 
 export type HomeSectionProps={
     isFriendsOpen: boolean
     friendReqs:FriendReq[]
     friendChannels:Friend[],
-    currUserId: string,
-    socket:Socket|undefined,
-    token:string,
-    handleFriendChannelDelete:(channelId:string)=>void,
-    handleNewFriendChannel: (friendInfo:Friend)=>void,
-    setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
-    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>,
-    setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>,
-    isMobile: boolean
 }
 
 export type ChannelMember={
@@ -254,14 +236,12 @@ export type Notice={
 
 //Friend
 export type InviteFriend={
-    friends:FriendDetails[],
     socket: Socket|undefined,
     token:string,
     channelId: string,
     currChannelMembersId:string[]
     handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void
     channelNumber:string|undefined,
-    setChannels:React.Dispatch<SetStateAction<Channel[]>>
     setModalDisabled:React.Dispatch<SetStateAction<boolean>>,
     modalDisabled: boolean
 }
@@ -272,7 +252,6 @@ export type DeleteGroup={
     token:string,
     channelId:string
     handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
-    setChannels: React.Dispatch<SetStateAction<Channel[]>>,
     socket: Socket|undefined,
     membersId:string[],
     channelNumber: string|undefined
@@ -284,7 +263,6 @@ export type LeaveGroup={
     token:string,
     channelId:string
     handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
-    setChannels: React.Dispatch<SetStateAction<Channel[]>>,
     socket: Socket|undefined,
     currUserId: string,
     channelNumber: string | undefined
@@ -292,14 +270,9 @@ export type LeaveGroup={
 }
 
 export type CreateGroup={
-    token:string,
     currUserId:string,
-    friendsInfo:FriendDetails[],
-    socket:Socket|undefined,
-    setChannels:React.Dispatch<SetStateAction<Channel[]>>,
     setIsDisabled: React.Dispatch<SetStateAction<boolean>>,
     setModal: React.Dispatch<SetStateAction<boolean>>,
-    isMobile: boolean
 }
 
 export type UnfriendProps={
@@ -320,7 +293,6 @@ export type MemberUnfriend ={
     memberId:string,
     socket:Socket|undefined,
     displayName:string
-    handleFriendChannelDelete:(channelId:string)=>void,
     handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
     setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
     channelNumber:number|undefined 
@@ -372,28 +344,15 @@ export type AcceptFriendStatus={
 //Friend
 export type FriendListProps={
     friends:Friend[],
-    token: string,
-    handleFriendChannelDelete:(channelId:string)=>void,
-    socket:Socket|undefined,
-    isMobile: boolean,
-    setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>,
     setIsFriendConnection: React.Dispatch<SetStateAction<boolean>>
 }
 
 export type FriendReqProps={
-    token:string,
     pendingRequests:FriendReq[],
-    handleNewFriendChannel: (friendInfo:Friend)=>void,
-    setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
-    socket: Socket|undefined,
-    currUserId:string,
     currComponent: string
 }
 
 export type AddFriendProps={
-    token:string,
-    socket: Socket|undefined,
-    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>,
     currComponent: string
 }
 
@@ -408,4 +367,29 @@ export type FriendRequestAccepted={
         id: string
     },
     newFriendId:string
+}
+
+//Context Api
+export type HomeContext={
+    token:string,
+    currUserId:string,
+    socket: Socket|undefined,
+    handleNewFriendChannel: (friendInfo:Friend)=>void,
+    setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
+    setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>,
+    handleFriendChannelDelete:(channelId:string)=>void,
+    setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>
+}
+
+export type ChannelContext={
+    friends: FriendDetails[],
+    setChannels:React.Dispatch<SetStateAction<Channel[]>>,
+    handleFriendChannelDelete:(channelId:string)=>void
+}
+
+export type LeftContext={
+    setChannels:React.Dispatch<SetStateAction<Channel[]>>,
+    friendsInfo:FriendDetails[],
+    token: string,
+    socket: Socket|undefined,
 }

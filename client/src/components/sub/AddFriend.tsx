@@ -2,13 +2,15 @@ import { AddFriendProps, AddFriendStatus } from "../../types/generalTypes";
 import { addFriend } from "../../services/apiService";
 import { useState } from "react";
 import axios, { AxiosResponse } from "axios";
+import { useHomeCustomContext } from "../../context";
 
 
-const AddFriend:React.FC<AddFriendProps>=({token, socket, setSentReqs, currComponent})=>{
+const AddFriend:React.FC<AddFriendProps>=({currComponent})=>{
     const [displayName, setDisplayName] = useState('')
     const [friendTag, setFriendTag] = useState('')
     const [requestStatus, setRequestStatus] = useState<{type:string, message:string}>()
     const [isSending, setIsSending] = useState(false)
+    const {token, socket, setSentReqs} = useHomeCustomContext()
     
     const handleAddFriend = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()

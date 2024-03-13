@@ -8,6 +8,7 @@ import { changeGroupLeader } from "../../services/apiService"
 
 const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseButton, socket,
     memberId, channelNumber, setModalSettings, displayName, setModalDisabled})=>{
+
     const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})

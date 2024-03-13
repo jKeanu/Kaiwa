@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo, SetStateAction} from 'react'
+import React, { useState, useEffect, useRef, useMemo, useReducer, SetStateAction} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -27,16 +27,12 @@ import throttle from 'lodash.throttle'
 
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
-        isMobile,
         token,
         socket, 
         currentUserData, 
-        myFriends, 
         sentReqs,
         friendReqs, 
-        setChannels,
         fIdAndChannelInfos, 
-        handleFriendChannelDelete, 
         setSentReqs,
         setFriendReqs,
         handleNewFriendChannel})=>{
@@ -45,29 +41,32 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const {photo, displayName, _id, friendTag} = currentUserData
     const {channelNumber} = useParams()
     const navigate = useNavigate()
+    //Messages
     const [inputMessage, setInputMessage] = useState<string>('');
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
-    const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
-    const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
-    const [messagesLimit, setMessagesLimit] = useState<number>(12)
     const [messagesSkip, setMessagesSkip] = useState<number>(0)
-    const [modalWindow, setModalWindow] = useState<ModalWindow>({isOpen:false, window:''})
-    const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
-    const [memberPopUp, setMemberPopUp] = useState('')
-    const [modalDisabled, setModalDisabled] = useState(false)
-    //This is for mobile animation
-    const [activePopup, setActivePopup] = useState(false)
-    const [memberModal, setMemberModal] = useState<MemberModalSettings>
-    ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
+    //Channel
+    const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
+    const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
+    //Modal
+    const [modalWindow, setModalWindow] = useState<ModalWindow>({isOpen:false, window:''})
+    const [modalDisabled, setModalDisabled] = useState(false)//2
+    const [memberModal, setMemberModal] = useState<MemberModalSettings>
+    ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})//2
+    //PopUp
+    const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0}) //1
+    const [memberPopUp, setMemberPopUp] = useState('')//1
+    //mobile animation
     const [isVisible, setIsVisible] = useState(false)
     const [isMemberVisible, setIsMemberVisible] = useState(false)
+    //This is for mobile animation
+    const [activePopup, setActivePopup] = useState(false)
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
-   
     const channelCacheKey = `api/v1/channels/${channelNumber}`
-    
+    const messagesLimit = 12
     const membersId:string[] = useMemo(()=>{
         return [...currentChannelMembers].map(member=>member._id)
     }, [currentChannelMembers])
@@ -685,7 +684,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         currUserId={_id} 
                         channelNumber={channelNumber}
                         handleCloseButton={handleCloseButton} 
-                        setChannels={setChannels}
                         setModalDisabled={setModalDisabled}/>
                     }
                     {(modalWindow.window==='inviteUser'&&currentChannel)
@@ -694,11 +692,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         handleCloseButton={handleCloseButton} 
                         channelId={currentChannel._id}
                         token={token} 
-                        friends={myFriends} 
                         currChannelMembersId={membersId} 
                         socket={socket}
                         channelNumber={channelNumber}
-                        setChannels={setChannels}
                         modalDisabled={modalDisabled}
                         setModalDisabled={setModalDisabled}/>}
                     {(modalWindow.window==='deleteGroup'&&currentChannel)
@@ -708,7 +704,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         channelId={currentChannel._id} 
                         channelNumber={channelNumber}
                         handleCloseButton={handleCloseButton} 
-                        setChannels={setChannels} 
                         socket={socket}
                         membersId={membersId}
                         setModalDisabled={setModalDisabled}
@@ -721,7 +716,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         displayName={memberModal.displayName}
                         handleCloseButton={handleCloseButton}
                         channelNumber={memberModal.channelNumber}
-                        handleFriendChannelDelete={handleFriendChannelDelete}
                         setModalDisabled={setModalDisabled}
                         {...memberModal.ids}
                         />}
