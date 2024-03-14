@@ -52,12 +52,12 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
     //Modal
     const [modalWindow, setModalWindow] = useState<ModalWindow>({isOpen:false, window:''})
-    const [modalDisabled, setModalDisabled] = useState(false)//2
+    const [modalDisabled, setModalDisabled] = useState(false)
     const [memberModal, setMemberModal] = useState<MemberModalSettings>
-    ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})//2
+    ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
     //PopUp
-    const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0}) //1
-    const [memberPopUp, setMemberPopUp] = useState('')//1
+    const [popUpPosition, setPopUpPosition] = useState({ clickX:0, clickY:0})
+    const [memberPopUp, setMemberPopUp] = useState('')
     //mobile animation
     const [isVisible, setIsVisible] = useState(false)
     const [isMemberVisible, setIsMemberVisible] = useState(false)
@@ -470,9 +470,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     const handleAddFriendMember = async(e:React.MouseEvent<HTMLButtonElement>, displayName:string, friendTag:string):Promise<void>=>{
         e.preventDefault()
-        setTimeout(()=>{
-            setMemberPopUp('')
-        }, 100);
+        setMemberPopUp('')
         setActivePopup(false)
         try{
             const res:AxiosResponse<AddFriendStatus> = await addFriend(token, displayName, friendTag)
@@ -492,9 +490,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     //friendId is the object that contains the channel info and the user info and your status with that user
     const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string, friendId:string|false):Promise<void>=>{
         e.preventDefault()
-        setTimeout(()=>{
-            setMemberPopUp('')
-        }, 100);
+        setMemberPopUp('')
         setActivePopup(false)
         if(friendId){
             try{
@@ -540,9 +536,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     
     const handleDeclineRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string):Promise<void>=>{
         e.preventDefault()
-        setTimeout(()=>{
-            setMemberPopUp('')
-        }, 100);
+        setMemberPopUp('')
         setActivePopup(false)
         try{
             const res:AxiosResponse<void>=await declineFriend(token, memberId)

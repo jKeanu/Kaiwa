@@ -11,7 +11,6 @@ const InviteUserModal:React.FC<InviteFriend>=({
         currChannelMembersId, 
         socket, 
         channelNumber,
-        modalDisabled,
         handleCloseButton,
         setModalDisabled})=>{
     const [modalVisible, setModalVisible] = useState(false)
@@ -19,16 +18,15 @@ const InviteUserModal:React.FC<InviteFriend>=({
     const [error, setError] = useState<{isError:boolean, users:string[]}>({isError:false, users:[]})
     const {friends, setChannels} = useChannelCustomContext()
 
+
     useEffect(()=>{
         setModalVisible(true)
-    },[])
+    }, [])
 
     const isFriendInGroup:FriendDetails[] = friends.filter(friend => !currChannelMembersId.includes(friend._id))
     const handleInvite = async (e:React.MouseEvent<HTMLButtonElement>, friend:FriendDetails):Promise<void> => {
         e.preventDefault()
-        if(!modalDisabled){
-            setModalDisabled(true)
-        }
+        setModalDisabled(true)
         setLoadings(prevLoadings=>[...prevLoadings, `${friend._id}`])
         setError(prevError=>{
             return {isError:false, users:[...prevError.users].filter(user=>user!==`${friend._id}`)}
@@ -54,9 +52,6 @@ const InviteUserModal:React.FC<InviteFriend>=({
                     socket.emit('user_invite_success', {inviteUser:friend._id, channelId, channelNumber:Number(channelNumber)})
                 }
                 setLoadings(prevLoadings=>{
-                    if(prevLoadings.length===1){
-                        setModalDisabled(false)
-                    }
                     return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)
                 })
             }
@@ -66,13 +61,17 @@ const InviteUserModal:React.FC<InviteFriend>=({
                 return {isError:true, users:[...prevError.users, `${friend._id}`]}
             })
             setLoadings(prevLoadings=>{
-                if(prevLoadings.length===1){
-                    setModalDisabled(false)
-                }
                 return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)
             })
         }
     }
+
+    useEffect(()=>{
+        if(loadings.length===0){
+            setModalDisabled(false)
+            console.log('WHAT IN THE WORLD')
+        }
+    }, [loadings])
 
     const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()

@@ -4,6 +4,10 @@ import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import Channel from '../models/channelModel.js';
 import Chat from '../models/chatModel.js';
+import { MongoServerError } from 'mongodb'
+
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 const filterObj = (obj, ...allowedfields)=>{
     const newObj = {}

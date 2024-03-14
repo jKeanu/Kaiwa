@@ -1,4 +1,4 @@
-import {useState, useEffect, useMemo} from 'react'
+import {useState, useEffect, useMemo, useCallback} from 'react'
 import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import {jwtDecode} from 'jwt-decode'
@@ -58,21 +58,6 @@ const HomePage:React.FC = ()=>{
         const ChannelIds:string[] = useMemo(()=>{
             return [...channels].map(channel => channel._id)
         }, [channels])
-
-
-        function formatToTodayIfCurrentDate(dateStr:string):string {
-            const currentDate = new Date();
-            const messageDate = new Date(dateStr);
-            const currentDateStr = currentDate.toLocaleDateString();
-            const messageDateStr = messageDate.toLocaleDateString();
-            if (currentDateStr === messageDateStr) {
-                // Format the time part
-                const timeStr = dateStr.split(' ')[1] + ' ' + dateStr.split(' ')[2];
-                return `Today at ${timeStr}`;
-            } else {
-                return dateStr;
-            }
-        }
 
     
         useEffect(() => {
@@ -160,7 +145,7 @@ const HomePage:React.FC = ()=>{
 
         //We need this function specifically when we acccept a friend request, or someone accepted ours,
         //to create a new channel
-        const handleNewFriendChannel = (friendInfo:Friend):void=>{
+        const handleNewFriendChannel = useCallback((friendInfo:Friend):void=>{
             const convertChannel:Channel = {
                 channelName:friendInfo.friend.displayName,
                 channelNumber: friendInfo.channel.channelNumber,
@@ -178,18 +163,18 @@ const HomePage:React.FC = ()=>{
             setFriendChannels(prevFriendChannels=>{
                 return [...prevFriendChannels, friendInfo]
             })
-        }
+        }, [])
         
 
         //When we remove a friend from a friend list, or someone did remove us.
-        const handleFriendChannelDelete = (channelId:string):void=>{
+        const handleFriendChannelDelete = useCallback((channelId:string):void=>{
             setFriendChannels(prevFriendChannels=>{
                 return [...prevFriendChannels].filter(friendChannels => friendChannels.channel._id!==channelId)
             })
             setChannels(prevChannels=>{
                 return [...prevChannels].filter(channels=>channels._id !==channelId)
             })
-        }
+        }, [])
 
         useEffect(() => {
             // Check if token doesn't exist, then navigate to login
