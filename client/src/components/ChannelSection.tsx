@@ -63,6 +63,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [isMemberVisible, setIsMemberVisible] = useState(false)
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
+    
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
     const channelCacheKey = `api/v1/channels/${channelNumber}`
