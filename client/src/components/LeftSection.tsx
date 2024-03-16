@@ -2,6 +2,7 @@ import { NavLink, Link} from 'react-router-dom';
 import {LeftSectionProps} from '../types/generalTypes';
 import React, { useMemo, useState } from 'react';
 import CreateGroupModal from './modals/CreateGroup';
+import ProfileSettingsModal from './modals/ProfileSettings';
 
 const LeftSection:React.FC<LeftSectionProps>=({
     channels, 
@@ -10,16 +11,16 @@ const LeftSection:React.FC<LeftSectionProps>=({
     friendReqs, 
     setIsFriendsOpen})=>{
     const [searchQuery, setSearchQuery] = useState('')
-    const [modal, setModal] = useState(false)
     const {displayName, friendTag, photo, _id} = currentUserData
+    //Modal
     const [isDisabled, setIsDisabled] = useState(false)
+    const [modal, setModal] = useState({active:false, type:''})
 
-    
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.button===0 && e.target === e.currentTarget) {
             e.preventDefault()
             if(!isDisabled){
-                setModal(false)
+                setModal({active: false, type:''})
             }
         }
     }
@@ -31,7 +32,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
 
     const handleOpenCreateGroup = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
-        setModal(true)
+        setModal({active:true, type:'createGroup'})
     }
 
     const filteredChannels = useMemo(()=>{
@@ -44,9 +45,13 @@ const LeftSection:React.FC<LeftSectionProps>=({
 
     return(
     <section className='left-home-section'>
-        {modal&&
+        {modal.active&&
         <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} >
-            <CreateGroupModal currUserId={_id}  setIsDisabled={setIsDisabled} setModal={setModal}  />
+            {
+            modal.type==='createGroup'&&
+            <CreateGroupModal currUserId={_id}  setIsDisabled={setIsDisabled} setModal={setModal}/>}
+            {modal.type==='userSetting'&&
+            <ProfileSettingsModal currUserData={currentUserData} setModal={setModal}/>}
         </dialog>
         }
         <div className='upper-left-section-container'>
@@ -110,13 +115,13 @@ const LeftSection:React.FC<LeftSectionProps>=({
             </ul>
         </div>
         <div className='user-info-container'>
-            <div className='user-info'>
+            <button className='user-info-button' onClick={()=>setModal({active:true, type:'userSetting'})}>
                 <img className='user-info-photo' alt='' src={`/img/${photo}`}/>
                 <div className='user-info-text'>
                     <span className='display-name-info'>{displayName}</span>
                     <span className='friend-tag-info'>#{friendTag}</span>
                 </div>
-            </div>
+            </button>
             <div className='logout-container'>
                 <button className='logout-button' onClick={handleLogout}>Log Out</button>
                 <button className='logout-button-laptop' onClick={handleLogout}>

@@ -5,7 +5,6 @@ import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
 
 const HomeSection:React.FC<HomeSectionProps>=({friendChannels, friendReqs, isFriendsOpen})=>{
-
     const [isFriendConnection, setIsFriendConnection] = useState(false)
     const [currComponent, setCurrComponent] = useState<string>('addFriend')
 
@@ -14,6 +13,7 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, friendReqs, isFri
             return a.friend.status === "Online" && b.friend.status !== "Online" ? -1 : 1;
         })
     }, [friendChannels])
+
     const closeFriendConnection = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
         setIsFriendConnection(false)

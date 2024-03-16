@@ -311,6 +311,13 @@ export type ChangeLeader={
     setModalDisabled:React.Dispatch<SetStateAction<boolean>>
 }
 
+//Current User 
+export type ProfileSettings={
+    currUserData: User,
+    token: string,
+    socket: Socket | undefined
+}
+
 //Live Updates----
 export type LastMessageUpdate = {
     channelId:string,

@@ -29,7 +29,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
         e.preventDefault()
         setModalVisible(false)
         setTimeout(() => {
-            setModal(false);
+            setModal({active:false, type:''});
         }, 210)
     }
     const handleCheckBox = (e:React.ChangeEvent<HTMLInputElement>)=>{
@@ -70,7 +70,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                 }
                 setIsDisabled(false)
                 navigate(`channels/${newChannel.channelNumber}`)
-                setModal(false)
+                setModal({active:false, type:''})
                 setLoading(false)
             }
         }catch(err:unknown){

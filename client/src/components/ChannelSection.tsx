@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo, useReducer, SetStateAction} from 'react'
+import React, { useState, useEffect, useRef, useMemo, SetStateAction} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -23,8 +23,6 @@ import { AxiosResponse } from "axios"
 import UnfriendMemberModal from "./modals/UnfriendMember"
 import ChangeLeaderModal from "./modals/ChangeLeader"
 import throttle from 'lodash.throttle'
-
-
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,

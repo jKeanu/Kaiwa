@@ -78,11 +78,6 @@ const RegisterPage = () => {
         })
     }
 
-    const datez=(e:React.ChangeEvent<HTMLInputElement>):void=>{
-        e.preventDefault()
-        console.log(e.target.value)
-    }
-
     return (
         <div className='register-page-container'>
             <div className={`register-container ${containerVisible?'visible':''}`}>
