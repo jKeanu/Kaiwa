@@ -138,7 +138,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 socket.emit('leave_channel_room', channelNumber);
             }
         }
-    }, [socket, channelNumber]);
+    }, [socket, channelNumber, token]);
 
     useEffect(() => {
         if (socket && channelNumber) {
@@ -188,7 +188,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
             return cleanup
         }
-    }, [socket, channelNumber]);
+    }, [socket, channelNumber, token]);
 
 
     useEffect(()=>{

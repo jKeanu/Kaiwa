@@ -12,6 +12,7 @@ const AddFriend:React.FC<AddFriendProps>=({currComponent})=>{
     const [isSending, setIsSending] = useState(false)
     const {token, socket, setSentReqs} = useHomeCustomContext()
     
+    
     const handleAddFriend = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()
         setRequestStatus({type:'', message:''})
@@ -50,10 +51,10 @@ const AddFriend:React.FC<AddFriendProps>=({currComponent})=>{
         style={{left:`${currComponent==='friendReq'?'-110%':''}`}}>
             <form className="add-friend-form" onSubmit={handleAddFriend}>
                 <div className="add-friend-input-container">
-                    <label htmlFor="displayName">Username</label>
-                    <input autoComplete='off' value={displayName} onChange={(e)=>setDisplayName(e.target.value)} id="displayName" className="displayName-input"/>
-                    <label htmlFor="friendTag">#</label>
-                    <input maxLength={6} autoComplete="off" value={friendTag} onChange={(e)=>setFriendTag(e.target.value.toUpperCase())} type="text" id="friendTag" className="friendTag-input"/>
+                    <label htmlFor="friend-displayName">Username</label>
+                    <input autoComplete='off' value={displayName} onChange={(e)=>setDisplayName(e.target.value)} id="friend-displayName" className="displayName-input"/>
+                    <label htmlFor="friend-friendTag">#</label>
+                    <input maxLength={6} autoComplete="off" value={friendTag} onChange={(e)=>setFriendTag(e.target.value.toUpperCase())} type="text" id="friend-friendTag" className="friendTag-input"/>
                 </div>
                 <div className="add-friend-button-container">
                     <button type="submit" className="add-friend-submit-button">{isSending?'Sending...':'Send Friend Request'}</button>

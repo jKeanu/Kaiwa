@@ -14,6 +14,15 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
     const [isLoading, setIsLoading] = useState(false)
     const {socket, token, setUserData, setToken} = useLeftCustomContext()
 
+
+    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setModalVisible(false)
+        setTimeout(() => {
+            setModal({active:false, type:''});
+        }, 210)
+    }
+
     const handleUserInfoSubmit = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()
         setIsLoading(true)
@@ -37,6 +46,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                         }
                     }
                 })
+                setModal({active:false, type:''})
             }
             setIsLoading(false)
         }catch(err){
@@ -54,6 +64,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
             if(res.data.status==='success'){
                 localStorage.setItem('token', res.data.token)
                 setToken(res.data.token)
+                setModal({active:false, type:''})
             }
             setIsLoading(false)
         }catch(err: unknown){
@@ -116,6 +127,17 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
 
     return(
         <div className={`profile-settings-modal-container ${modalVisible?'visible':''}`}>
+            <div className="profile-settings-x-button-container">
+                <button className="x-button" disabled={isLoading} onClick={handleCloseButton}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
+                        strokeLinecap="round" strokeLinejoin="round" className="x-img">
+                        <line x1="18" y1="6" x2="6" y2="18">
+                        </line>
+                        <line x1="6" y1="6" x2="18" y2="18">
+                        </line>
+                    </svg>
+                </button>
+            </div>
             <div className="profile-settings-buttons-container">
                 <button onClick={handleUserInfoClick} disabled={isLoading}
                 style={{borderBottom:`${currSetting==='userInfo'?'1px solid #b9b9b9':''}`}}>
@@ -130,27 +152,27 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                 <form className={`user-info-form ${currSetting==='userPassword'?'inactive':''} user-settings-form`}
                 onSubmit={handleUserInfoSubmit}>
                     <div className="user-photo-input-container">
-                        <label htmlFor="photo">
+                        <label htmlFor="user-setting-photo">
                             <img src={`/img/${currUserData.photo}`} className="user-setting-photo"/>
                             <div className="photo-input-hover">Change</div>
                         </label>
-                        <input type="file" name="photo" id="photo" className="user-setting-photo-input"/>
+                        <input type="file" name="photo" id="user-setting-photo" className="user-setting-photo-input"/>
                     </div>
                     <div className="user-info-input-containter">
-                        <label className="user-setting-input-label" htmlFor="Email">
+                        <label className="user-setting-input-label" htmlFor="user-setting-email">
                             Email
                         </label>
-                        <input className="user-email-input user-info-input" id="email" disabled={true} 
+                        <input className="user-email-input user-info-input" id="user-setting-email" disabled={true} 
                         value={currUserData.email} name="email"/>
-                        <label className="user-setting-input-label" htmlFor="displayName">
+                        <label className="user-setting-input-label" htmlFor="user-setting-displayName">
                             Display Name
                         </label>
-                        <input className="user-display-name-input user-info-input" id="displayName" 
+                        <input className="user-display-name-input user-info-input" id="user-setting-displayName" 
                         value={userInfo.displayName} name="displayName" onChange={handleUserInfoChange} required={true}/>
-                        <label className="user-setting-input-label" htmlFor="friendTag">
+                        <label className="user-setting-input-label" htmlFor="user-setting-friendTag">
                             Friend Tag
                         </label>
-                        <input className="user-friend-tag-input user-info-input" id="friendTag" maxLength={6}
+                        <input className="user-friend-tag-input user-info-input" id="user-setting-friendTag" maxLength={6}
                         value={userInfo.friendTag} name="friendTag" onChange={handleUserInfoChange} required={true}/>
                     </div>
                     <div className="user-info-button-container user-settings-button-container">
@@ -167,21 +189,21 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                 </form>
                 <form className={`user-password-form ${currSetting==='userPassword'?'active':''} user-settings-form`} onSubmit={handleUserPasswordSubmit}>
                     <div className="user-password-input-container">
-                        <label className="user-setting-input-label" htmlFor="currentPassword">
+                        <label className="user-setting-input-label" htmlFor="user-setting-currentPassword">
                             Current Password
                         </label>
                         <input type="password" className="user-password-input user-current-password-input" onChange={handleUserPasswordChange}
-                        name="currentPassword" id="currentPassword" value={userPassword.currentPassword} required={true}/>
-                        <label className="user-setting-input-label" htmlFor="password">
+                        name="currentPassword" id="user-setting-currentPassword" value={userPassword.currentPassword} required={true}/>
+                        <label className="user-setting-input-label" htmlFor="user-setting-password">
                             New Passsword
                         </label>
                         <input type="password" className="user-password-input user-password-input" onChange={handleUserPasswordChange}
-                        name="password" id="password" value={userPassword.password} required={true}/>
-                        <label className="user-setting-input-label" htmlFor="passwordConfirm">
+                        name="password" id="user-setting-password" value={userPassword.password} required={true}/>
+                        <label className="user-setting-input-label" htmlFor="user-setting-passwordConfirm">
                             Confirm Passsword
                         </label>
                         <input type="password" className="user-password-input user-password-confirm-input" onChange={handleUserPasswordChange}
-                        name="passwordConfirm" id="passwordConfirm" value={userPassword.passwordConfirm} required={true}/>
+                        name="passwordConfirm" id="user-setting-passwordConfirm" value={userPassword.passwordConfirm} required={true}/>
                     </div>
                     <div className="user-password-button-container user-settings-button-container" >
                         <button className="user-password-submit user-setting-submit" type="submit" disabled={isLoading}>
