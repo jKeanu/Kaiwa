@@ -54,6 +54,18 @@ export type AuthStatus={
     token:string
 }
 
+export type UpdateUserStatus={
+    status:string,
+    user:{
+        _id:string,
+        displayName:string,
+        email:string,
+        photo:string,
+        friendTag: string,
+        status:string
+    }
+}
+
 export type RegisterForm={
     email:string,
     password:string,
@@ -272,7 +284,7 @@ export type LeaveGroup={
 export type CreateGroup={
     currUserId:string,
     setIsDisabled: React.Dispatch<SetStateAction<boolean>>,
-    setModal: React.Dispatch<SetStateAction<boolean>>,
+    setModal: React.Dispatch<SetStateAction<{active:boolean, type:string}>>,
 }
 
 export type UnfriendProps={
@@ -314,8 +326,7 @@ export type ChangeLeader={
 //Current User 
 export type ProfileSettings={
     currUserData: User,
-    token: string,
-    socket: Socket | undefined
+    setModal: React.Dispatch<SetStateAction<{active:boolean, type:string}>>
 }
 
 //Live Updates----
@@ -399,4 +410,6 @@ export type LeftContext={
     friendsInfo:FriendDetails[],
     token: string,
     socket: Socket|undefined,
+    setUserData: React.Dispatch<SetStateAction<User|undefined>>,
+    setToken: React.Dispatch<SetStateAction<string|null>>
 }

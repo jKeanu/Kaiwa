@@ -21,7 +21,7 @@ import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '.
 
 const HomePage:React.FC = ()=>{
         //Get token from local storage
-        const token = localStorage.getItem('token')
+        const [token, setToken] = useState(localStorage.getItem('token'))
         //We use this to navigate from pages to pages
         const navigate = useNavigate()
         //This is where we saved the fetched current logged in user's data
@@ -70,8 +70,7 @@ const HomePage:React.FC = ()=>{
                 return ()=>{
                     socket.disconnect()
                 }
-            }
-            
+            }     
         }, [token])
 
         useEffect(()=>{
@@ -123,20 +122,16 @@ const HomePage:React.FC = ()=>{
                         setChannels(sortedChannels)
                     }
                 }catch(error: unknown){
-                    if (axios.isAxiosError(error)) { // Type guard for AxiosError
-                        // Now you can safely assume error is of type AxiosError
-                        console.log(error.message)
-                    }else if (error instanceof Error) {
-                        console.log(error.message)
-                    }else {
-                        console.error('An unknown error occurred:', error)
-                    }
+                    // localStorage.removeItem('token')
+                    // setToken('')
+                    // navigate('/login')
+                    console.log(error)
                 }
             }
             if (token) {
                 //if there is a token, run the currentUser data fetching function
                 currentUser();
-            } else {
+            }else {
                 //If not, go back to login page
                 navigate('/login');
             }
@@ -192,6 +187,7 @@ const HomePage:React.FC = ()=>{
                 //if expired remove the token, and navigate to login page
                 if (isExpired) {
                     navigate('/login')
+                    setToken('')
                     localStorage.removeItem('token')
                 }
             }
@@ -535,6 +531,7 @@ const HomePage:React.FC = ()=>{
 
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault()
+            setToken('')
             localStorage.removeItem('token')
             window.location.href = '/login'
         };
@@ -546,7 +543,7 @@ const HomePage:React.FC = ()=>{
                     <dialog className='modal-window-container'>
                         <NoticeModal handleModalConfirm={handleModalConfirm}/>
                     </dialog>}
-                    <LeftSectionContext.Provider value={{setChannels, friendsInfo:myFriends, token, socket}}>
+                    <LeftSectionContext.Provider value={{setChannels, friendsInfo:myFriends, token, socket, setToken, setUserData}}>
                         <LeftSection 
                             channels={channels} 
                             handleLogout={handleLogout} 
@@ -586,7 +583,7 @@ const HomePage:React.FC = ()=>{
                                 socket={socket}
                                 currentUserData={userData}
                                 token={token}/>
-                                </ChannelSectionContext.Provider>
+                            </ChannelSectionContext.Provider>
                             }/>
                     </Routes>
                 </main>

@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
-import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus, ChannelMessagesStatus } from '../types/generalTypes';
+import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus, ChannelMessagesStatus, UpdateUserStatus } from '../types/generalTypes';
 import { ChannelMessage } from '../types/generalTypes';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -125,6 +125,11 @@ export const messageFetcher = async (endpoint: string, limit: number, skip: numb
 }
 
 
+export const currUserDataFetcher = (endpoint:string, token:string|null)=>
+    axios.get<{status:string, user:User}>(`${API_URL}/${endpoint}`, {headers:{'Authorization': `Bearer ${token}`}})
+            .then(response=>response.data)
+
+
 export const getCurrentUser = async(token:string|null):Promise<AxiosResponse<UserDataStatus>> => {
     const config ={
         headers: {
@@ -134,8 +139,21 @@ export const getCurrentUser = async(token:string|null):Promise<AxiosResponse<Use
     return axios.get(`${API_URL}/api/v1/users/me`, config)
 }
 
-export const currUserDataFetcher = (endpoint:string, token:string|null)=>
-    axios.get<{status:string, user:User}>(`${API_URL}/${endpoint}`, {headers:{'Authorization': `Bearer ${token}`}})
-            .then(response=>response.data)
+export const updateCurrentUser = async (token:string, userInfo:{displayName:string, friendTag:string}):Promise<AxiosResponse<UpdateUserStatus>>=>{
+    const config ={
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    }
+    return axios.patch(`${API_URL}/api/v1/users/updateMe`, userInfo, config)
+}
 
-
+export const changeUserPassword = async (token:string, 
+    passwordInfo:{currentPassword:string, password:string, passwordConfirm:string}):Promise<AxiosResponse<{status:string, token:string}>>=>{
+        const config ={
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }
+        return axios.patch(`${API_URL}/api/v1/users/changepassword`, passwordInfo, config)  
+    }

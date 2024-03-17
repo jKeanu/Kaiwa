@@ -785,15 +785,41 @@
                     height: 100%
                     width: 100%
                     overflow: hidden
-                    .user-setting-photo-input
-                        display: none
                     .user-photo-input-container
-                        img
+                        margin-bottom: 0.5rem
+                        .user-setting-photo-input
+                            display: none
+                        label
+                            position: relative
+                            cursor: pointer
                             height: 3rem
                             width: 3rem
-                            object-fit: cover
-                            border-radius: 1.5rem
-                            
+                            display: flex
+                            justify-content: center
+                            align-items: center
+                            border-radius: 100%
+                            &:hover > .photo-input-hover
+                                opacity: 1
+                            .photo-input-hover
+                                position: absolute
+                                height: 100%
+                                width: 100%
+                                border-radius: 100%
+                                background-color: #00000090
+                                display: flex
+                                justify-content: center
+                                align-items: center
+                                color: white
+                                font-size: 0.7rem
+                                font-family: 'Raleway', sans-serif
+                                opacity: 0
+                                transition: opacity 0.15s ease-in-out
+                            img
+                                height: 100%
+                                width: 100%
+                                object-fit: cover
+                                border-radius: 100%
+                                
                     .user-settings-form
                         div
                             .user-setting-input-label
@@ -816,28 +842,76 @@
                         height: 100%
                         width: 100%
                         padding-right: 2rem
+                        transition: all 0.15s ease-in-out
+                        right: 0%
+                        display: flex
+                        flex-direction: column
+                        &.inactive
+                            right: 100%
+                        .user-sett-error
+                            position: absolute
+                            bottom: 0%
+                            color: $error-message
+                            font-size: 0.7rem
+                            font-family: 'Open Sans', sans-serif
                         .user-info-button-container
                             display: flex
                             justify-content: end
                             align-items: center
-                            margin-top: 0.7rem
+                            margin-top: auto
                             button
-                                padding: 0
                                 cursor: pointer
                                 height: 2rem
-                                width: 5rem
-                                font-weight: bold
-                                font-size: 0.9rem
+                                padding: 0 0.5rem
+                                width: 4rem
+                                font-size: 0.7rem
                                 border: 1px solid #384d69
                                 font-family: 'Open Sans', sans-serif
+                                display: flex
+                                align-items: center
+                                justify-content: center
+                                .user-setting-loading
+                                    @include loading(0, 1.5rem)
                         .user-friend-tag-input
                             width: 6rem
                     .user-password-form
+                        display: flex
+                        flex-direction: column
+                        padding-top: 1.5rem
                         position: absolute
                         left: 100%
                         top: 0%
                         height: 100%
                         width: 100%
+                        transition: all 0.15s ease-in-out
+                        padding-right: 2rem
+                        &.active
+                            left: 0%
+                        .user-sett-error
+                            position: absolute
+                            bottom: 0%
+                            color: $error-message
+                            font-size: 0.7rem
+                            font-family: 'Open Sans', sans-serif
+                        .user-password-button-container
+                            margin-top: auto
+                            display: flex
+                            justify-content: end
+                            align-items: center
+                            margin-top: auto
+                            button
+                                cursor: pointer
+                                height: 2rem
+                                width: 7.5rem
+                                font-size: 0.7rem
+                                border: 1px solid #384d69
+                                font-family: 'Open Sans', sans-serif
+                                padding: 0 0.5rem
+                                display: flex
+                                justify-content: center
+                                align-items: center
+                                .user-setting-loading
+                                    @include loading(0, 1.5rem)
                     
             .create-group-modal-container
                 @include modal($border-radius: 0.25rem)

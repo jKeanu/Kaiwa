@@ -1,22 +1,81 @@
+import axios, { AxiosResponse } from "axios"
 import { useLeftCustomContext } from "../../context"
-import { ProfileSettings } from "../../types/generalTypes"
+import { ProfileSettings, UpdateUserStatus} from "../../types/generalTypes"
 import React, { useEffect, useState } from "react"
+import { changeUserPassword, updateCurrentUser } from "../../services/apiService"
 
 
 const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=>{
-    const [userInfo, setUserInfo] = useState({displayName:currUserData.displayName, friendTag:currUserData.friendTag, photo:''})
+    const [userInfo, setUserInfo] = useState({displayName:currUserData.displayName, friendTag:currUserData.friendTag})
     const [userPassword, setUserPassword] = useState({currentPassword:'', password:'', passwordConfirm:''})
     const [currSetting, setCurrSetting] = useState('userInfo')
     const [modalVisible, setModalVisible] = useState(false)
+    const [userSettErr, setUserSettErr] = useState({err:false, message:''})
+    const [isLoading, setIsLoading] = useState(false)
+    const {socket, token, setUserData, setToken} = useLeftCustomContext()
 
-    const {socket, token} = useLeftCustomContext()
-
-    const handleUserInfoSubmit = (e:React.FormEvent<HTMLFormElement>):void=>{
-        
+    const handleUserInfoSubmit = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
+        e.preventDefault()
+        setIsLoading(true)
+        setUserSettErr({err:false, message:''})
+        try{
+            if(userInfo.friendTag===currUserData.friendTag && userInfo.displayName===currUserData.displayName){
+                setUserSettErr({err:true, message:'There is no changes in the current user information.'})
+                setIsLoading(false)
+                return 
+            }
+            const res:AxiosResponse<UpdateUserStatus> = await updateCurrentUser(token, userInfo)
+            const {displayName, friendTag, photo} = res.data.user
+            if(res.data.status==='success'){
+                setUserData(prevUserData=>{
+                    if(prevUserData){
+                        return {
+                            ...prevUserData,
+                            displayName,
+                            friendTag,
+                            photo
+                        }
+                    }
+                })
+            }
+            setIsLoading(false)
+        }catch(err){
+            setUserSettErr({err:true, message:'There was an error changing the user information.'})
+            setIsLoading(false)
+        }
     }
 
-    const handleUserPasswordSubmit = (e:React.FormEvent<HTMLFormElement>):void=>{
-
+    const handleUserPasswordSubmit = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
+        e.preventDefault()
+        setIsLoading(true)
+        setUserSettErr({err:false, message:''})
+        try{
+            const res:AxiosResponse<{status:string, token:string}>= await changeUserPassword(token, userPassword)
+            if(res.data.status==='success'){
+                localStorage.setItem('token', res.data.token)
+                setToken(res.data.token)
+            }
+            setIsLoading(false)
+        }catch(err: unknown){
+            if(axios.isAxiosError(err)){
+                if(err.response?.status === 401){
+                    setUserSettErr({err:true, message: err.response.data.message})
+                }else if(err.response?.status === 400){
+                    let errMessages = err.response.data.message
+                    if(errMessages.split('. ').length>1){
+                        errMessages = errMessages.split('. ')[1]
+                        setUserSettErr({err:true, message: errMessages})
+                    }else{
+                        setUserSettErr({err:true, message: 'There was an error changing the user password.'})
+                    }
+                }else{
+                    setUserSettErr({err:true, message: 'There was an error changing the user password.'})
+                }
+            }else{
+                setUserSettErr({err:true, message: 'There was an error changing the user password.'})
+            }
+            setIsLoading(false)
+        }
     }
 
     const handleUserInfoChange = (e:React.ChangeEvent<HTMLInputElement>):void=>{
@@ -39,16 +98,31 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
         })
     }
 
+    const handleUserInfoClick = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setCurrSetting('userInfo')
+        setUserSettErr({err:false, message:''})
+    }
+
+    const handleUserPassClick =  (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setCurrSetting('userPassword')
+        setUserSettErr({err:false, message:''})
+    }
+
     useEffect(()=>{
         setModalVisible(true)
     }, [])
+
     return(
         <div className={`profile-settings-modal-container ${modalVisible?'visible':''}`}>
             <div className="profile-settings-buttons-container">
-                <button onClick={()=>setCurrSetting('userInfo')}>
+                <button onClick={handleUserInfoClick} disabled={isLoading}
+                style={{borderBottom:`${currSetting==='userInfo'?'1px solid #b9b9b9':''}`}}>
                     User Information
                 </button>
-                <button onClick={()=>setCurrSetting('userPassword')}>
+                <button onClick={handleUserPassClick} disabled={isLoading}
+                style={{borderBottom:`${currSetting==='userPassword'?'1px solid #b9b9b9':''}`}}>
                     Change Password
                 </button>
             </div>
@@ -58,6 +132,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                     <div className="user-photo-input-container">
                         <label htmlFor="photo">
                             <img src={`/img/${currUserData.photo}`} className="user-setting-photo"/>
+                            <div className="photo-input-hover">Change</div>
                         </label>
                         <input type="file" name="photo" id="photo" className="user-setting-photo-input"/>
                     </div>
@@ -71,42 +146,54 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                             Display Name
                         </label>
                         <input className="user-display-name-input user-info-input" id="displayName" 
-                        value={userInfo.displayName} name="displayName" onChange={handleUserInfoChange}/>
+                        value={userInfo.displayName} name="displayName" onChange={handleUserInfoChange} required={true}/>
                         <label className="user-setting-input-label" htmlFor="friendTag">
                             Friend Tag
                         </label>
                         <input className="user-friend-tag-input user-info-input" id="friendTag" maxLength={6}
-                        value={userInfo.friendTag} name="friendTag" onChange={handleUserInfoChange}/>
+                        value={userInfo.friendTag} name="friendTag" onChange={handleUserInfoChange} required={true}/>
                     </div>
                     <div className="user-info-button-container user-settings-button-container">
-                        <button className="user-info-submit" type="submit">
-                            Submit
+                        <button className="user-info-submit" type="submit" disabled={isLoading}>
+                            {isLoading?
+                                <div className="user-setting-loading"></div>
+                            :'Submit'}
                         </button>
                     </div>
+                    {userSettErr.err&&
+                    <div className="user-sett-error">
+                        {userSettErr.message}
+                    </div>}
                 </form>
                 <form className={`user-password-form ${currSetting==='userPassword'?'active':''} user-settings-form`} onSubmit={handleUserPasswordSubmit}>
                     <div className="user-password-input-container">
                         <label className="user-setting-input-label" htmlFor="currentPassword">
                             Current Password
                         </label>
-                        <input className="user-password-input user-current-password-input" onChange={handleUserPasswordChange}
-                        name="currentPassword" id="currentPassword" value={userPassword.currentPassword}/>
+                        <input type="password" className="user-password-input user-current-password-input" onChange={handleUserPasswordChange}
+                        name="currentPassword" id="currentPassword" value={userPassword.currentPassword} required={true}/>
                         <label className="user-setting-input-label" htmlFor="password">
                             New Passsword
                         </label>
-                        <input className="user-password-input user-password-input" onChange={handleUserPasswordChange}
-                        name="password" id="password" value={userPassword.password}/>
+                        <input type="password" className="user-password-input user-password-input" onChange={handleUserPasswordChange}
+                        name="password" id="password" value={userPassword.password} required={true}/>
                         <label className="user-setting-input-label" htmlFor="passwordConfirm">
                             Confirm Passsword
                         </label>
-                        <input className="user-password-input user-password-confirm-input" onChange={handleUserPasswordChange}
-                        name="passwordConfirm" id="passwordConfirm" value={userPassword.passwordConfirm}/>
+                        <input type="password" className="user-password-input user-password-confirm-input" onChange={handleUserPasswordChange}
+                        name="passwordConfirm" id="passwordConfirm" value={userPassword.passwordConfirm} required={true}/>
                     </div>
-                    <div className="user-password-button-container user-settings-button-container">
-                        <button className="user-password-submit user-setting-submit" type="submit">
-                            Submit
+                    <div className="user-password-button-container user-settings-button-container" >
+                        <button className="user-password-submit user-setting-submit" type="submit" disabled={isLoading}>
+                            {isLoading?
+                                <div className="user-setting-loading"></div>
+                            :'Change Password'}
                         </button>
                     </div>
+                    {userSettErr.err&&
+                    <div className="user-sett-error" >
+                        {userSettErr.message}
+                    </div>}
                 </form>
             </div>
         </div>

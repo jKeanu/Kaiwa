@@ -12,15 +12,13 @@ function signToken(id){
 
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
-
-  // Remove password from output
+  //Remove password from output
   user.password = undefined;
   res.status(statusCode).json({
     status: 'success',
     token
   });
 };
-
 
 export const login = catchAsync(async (req, res, next)=>{
     const {email, password} = req.body
@@ -52,6 +50,7 @@ export const protect = catchAsync(async (req, res, next)=>{
   }
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
   const currentUser = await User.findById(decoded.id)
+
   if(!currentUser){
     return next(new AppError('This user no longer exists.', 404))
   }

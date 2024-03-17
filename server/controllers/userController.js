@@ -82,11 +82,10 @@ export const updateUser = catchAsync(async(req, res, next)=>{
     }
     //We can run validators since the passwordConfirm validator only works on create or save.
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
+        .select('-groups -friends -passwordChangedAt -__v')
     res.status(200).json({
         status:'success',
-        data:{
-            user: updatedUser
-        }
+        user: updatedUser
     })
 })
 
