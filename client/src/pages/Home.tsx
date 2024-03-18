@@ -201,7 +201,7 @@ const HomePage:React.FC = ()=>{
                     socket.emit('leave_personal_live_update')
                 }
             }
-        }, [userData, socket, token])
+        }, [userData, socket])
 
         useEffect(()=>{
             if(channels&&socket){
@@ -210,7 +210,7 @@ const HomePage:React.FC = ()=>{
                     socket.emit('leave_channel_live_updates', ChannelIds)
                 }
             }
-        }, [channels, socket, token])
+        }, [channels, socket])
 
         //New Friend channel
         useEffect(()=>{

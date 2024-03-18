@@ -76,7 +76,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         });
     }, [currentChannelMembers]);
 
-
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const memberListRef =useRef<HTMLUListElement>(null)
 
@@ -138,7 +137,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 socket.emit('leave_channel_room', channelNumber);
             }
         }
-    }, [socket, channelNumber, token]);
+    }, [socket, channelNumber]);
 
     useEffect(() => {
         if (socket && channelNumber) {
@@ -188,7 +187,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
             return cleanup
         }
-    }, [socket, channelNumber, token]);
+    }, [socket, channelNumber]);
 
 
     useEffect(()=>{

@@ -1,18 +1,21 @@
 import axios, { AxiosResponse } from "axios"
 import { useLeftCustomContext } from "../../context"
 import { ProfileSettings, UpdateUserStatus} from "../../types/generalTypes"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { changeUserPassword, updateCurrentUser } from "../../services/apiService"
 
 
 const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=>{
-    const [userInfo, setUserInfo] = useState({displayName:currUserData.displayName, friendTag:currUserData.friendTag})
+    const [userInfo, setUserInfo] = useState<{displayName:string, friendTag:string, profileImage:null|File}>({displayName:'', friendTag:'', profileImage:null})
     const [userPassword, setUserPassword] = useState({currentPassword:'', password:'', passwordConfirm:''})
     const [currSetting, setCurrSetting] = useState('userInfo')
     const [modalVisible, setModalVisible] = useState(false)
     const [userSettErr, setUserSettErr] = useState({err:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
     const {socket, token, setUserData, setToken} = useLeftCustomContext()
+    const profileImagePreview = useMemo(()=>{
+        return userInfo.profileImage? URL.createObjectURL(userInfo.profileImage):null
+    }, [userInfo.profileImage])
 
 
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
@@ -28,7 +31,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
         setIsLoading(true)
         setUserSettErr({err:false, message:''})
         try{
-            if(userInfo.friendTag===currUserData.friendTag && userInfo.displayName===currUserData.displayName){
+            if(userInfo.friendTag==='' && userInfo.displayName==='' && userInfo.profileImage===null){
                 setUserSettErr({err:true, message:'There is no changes in the current user information.'})
                 setIsLoading(false)
                 return 
@@ -62,11 +65,10 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
         try{
             const res:AxiosResponse<{status:string, token:string}>= await changeUserPassword(token, userPassword)
             if(res.data.status==='success'){
-                localStorage.setItem('token', res.data.token)
-                setToken(res.data.token)
-                setModal({active:false, type:''})
+                setToken('')
+                localStorage.removeItem('token')
+                window.location.href = '/login'
             }
-            setIsLoading(false)
         }catch(err: unknown){
             if(axios.isAxiosError(err)){
                 if(err.response?.status === 401){
@@ -90,6 +92,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
     }
 
     const handleUserInfoChange = (e:React.ChangeEvent<HTMLInputElement>):void=>{
+        e.preventDefault()
         const {name, value}  = e.target
         setUserInfo(prevUserInfo=>{
             return {
@@ -100,6 +103,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
     }
 
     const handleUserPasswordChange = (e:React.ChangeEvent<HTMLInputElement>):void=>{
+        e.preventDefault()
         const {name, value} = e.target
         setUserPassword(prevUserPassword=>{
             return {
@@ -108,6 +112,16 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
             }
         })
     }
+
+    const handleFileChange = (e:React.ChangeEvent<HTMLInputElement>):void=>{
+        e.preventDefault()
+        setUserInfo(prevUserInfo=>{
+            return {
+                ...prevUserInfo,
+                profileImage: e.target.files?e.target.files[0]:null
+            }
+        })
+    } 
 
     const handleUserInfoClick = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
@@ -153,27 +167,29 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                 onSubmit={handleUserInfoSubmit}>
                     <div className="user-photo-input-container">
                         <label htmlFor="user-setting-photo">
-                            <img src={`/img/${currUserData.photo}`} className="user-setting-photo"/>
+                            <img src={`${profileImagePreview?profileImagePreview:`/img/${currUserData.photo}`}`} className="user-setting-photo"/>
                             <div className="photo-input-hover">Change</div>
                         </label>
-                        <input type="file" name="photo" id="user-setting-photo" className="user-setting-photo-input"/>
+                        <input type="file" name="profileImage" id="user-setting-photo" onChange={handleFileChange} className="user-setting-photo-input"/>
                     </div>
                     <div className="user-info-input-containter">
                         <label className="user-setting-input-label" htmlFor="user-setting-email">
                             Email
                         </label>
                         <input className="user-email-input user-info-input" id="user-setting-email" disabled={true} 
-                        value={currUserData.email} name="email"/>
+                        name="email" placeholder={`${currUserData.email}`}/>
                         <label className="user-setting-input-label" htmlFor="user-setting-displayName">
                             Display Name
                         </label>
                         <input className="user-display-name-input user-info-input" id="user-setting-displayName" 
-                        value={userInfo.displayName} name="displayName" onChange={handleUserInfoChange} required={true}/>
+                        value={userInfo.displayName} name="displayName" onChange={handleUserInfoChange}
+                        placeholder={`${currUserData.displayName}`}/>
                         <label className="user-setting-input-label" htmlFor="user-setting-friendTag">
                             Friend Tag
                         </label>
                         <input className="user-friend-tag-input user-info-input" id="user-setting-friendTag" maxLength={6}
-                        value={userInfo.friendTag} name="friendTag" onChange={handleUserInfoChange} required={true}/>
+                        value={userInfo.friendTag} name="friendTag" onChange={handleUserInfoChange}
+                        placeholder={`${currUserData.friendTag}`}/>
                     </div>
                     <div className="user-info-button-container user-settings-button-container">
                         <button className="user-info-submit" type="submit" disabled={isLoading}>
@@ -188,6 +204,9 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                     </div>}
                 </form>
                 <form className={`user-password-form ${currSetting==='userPassword'?'active':''} user-settings-form`} onSubmit={handleUserPasswordSubmit}>
+                    <div className="user-password-sett-notice">
+                        After a successful password change, you will be redirected to the login page.
+                    </div>
                     <div className="user-password-input-container">
                         <label className="user-setting-input-label" htmlFor="user-setting-currentPassword">
                             Current Password

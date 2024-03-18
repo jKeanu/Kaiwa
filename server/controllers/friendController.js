@@ -89,8 +89,9 @@ export const addFriend = catchAsync(async (req, res, next)=>{
         //Sent request details
         const newSentRequestDetails = currUserData.friends.find(friend=>friend.friend.toString()===addUser._id.toString())
         await User.populate(newSentRequestDetails, {path:'friend', select:'displayName FriendTag status photo', options:{session}})
-
         await session.commitTransaction()
+        newPendingRequestDetails.friend.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newPendingRequestDetails.friend.photoUrl}`
+        newSentRequestDetails.friend.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newPendingRequestDetails.friend.photoUrl}`
         res.status(201).json({
             status:'success',
             pendingRequestDetails:newPendingRequestDetails,
@@ -155,6 +156,7 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
                 .select('-__v')
                 .populate({path:'members', select:'photo displayName friendTag status'})
                 .session(session)
+            newChannel.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newChannel.photo}`
             //We just need the general
             await acceptUser.save({session, validateBeforeSave:true})
             await session.commitTransaction()

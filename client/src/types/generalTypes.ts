@@ -18,6 +18,7 @@ export type Channel = {
     lastMessage: number | Date,
     photo:string,
     _id:string,
+    photoUrl: string
 }
 
 export type Friend = {
@@ -36,6 +37,7 @@ export type Friend = {
 export type User = {
     _id:string,
     photo:string,
+    photoUrl:string,
     displayName:string,
     email:string,
     status:string,
@@ -61,6 +63,7 @@ export type UpdateUserStatus={
         displayName:string,
         email:string,
         photo:string,
+        photoUrl:string,
         friendTag: string,
         status:string
     }
@@ -79,6 +82,7 @@ export type FriendDetails={
     _id:string,
     displayName:string,
     photo:string,
+    photoUrl:string,
     friendTag:string,
     status:string
 }
@@ -138,6 +142,7 @@ export type ChannelMember={
     _id:string,
     displayName:string,
     photo:string,
+    photoUrl:string,
     friendTag:string,
     status:string
 }
@@ -147,6 +152,7 @@ export type ChannelMessage={
         _id: string,
         displayName: string,
         photo: string,
+        photoUrl:string
         friendTag:string,
     },
     channel:string,
@@ -168,6 +174,7 @@ export type CurrentChannel={
     channelType: string,
     channelNumber: number,
     photo?: string,
+    photoUrl?:string
     lastMessage:number
 }
 
@@ -201,6 +208,7 @@ export type CreateGroupStatus={
         channelNumber:number,
         lastMessage:Date,
         photo:string,
+        photoUrl:string
         __v:number
     }
 }

@@ -96,6 +96,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
         setModalVisible(true)
     }, [])
 
+
     return(
         <div className={`create-group-modal-container ${modalVisible?'visible':''}`}>
             <div className="modal-x-button-container create-group-top-container">
@@ -151,7 +152,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                         <button type="button" className="group-name-confirm" onClick={handleGroupName}>Confirm</button>
                     </div>
                 </div>
-                <input className="create-group-search" placeholder="Search friends..."
+                <input className="create-group-search-mob" placeholder="Search friends..."
                 value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>
                 <div className={`create-group-modal-invite-container ${field==='memberSelect'?'invite-container-active':''}`}>
                     <div className="modal-text">

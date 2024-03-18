@@ -3,6 +3,8 @@ import AppError from '../utils/appError.js';
 import Channel from '../models/channelModel.js';
 import Chat from '../models/chatModel.js';
 
+const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
+
 export const getUserChannel = catchAsync(async(req, res, next)=>{
     let currentChannel = await Channel.findOne({channelNumber:req.params.channelNumber})
         .populate({path:'members', select:'photo displayName friendTag status'})
@@ -12,6 +14,10 @@ export const getUserChannel = catchAsync(async(req, res, next)=>{
     //Since we populated the members it became an array of objects, so we need some to check each objects
     if (!currentChannel.members.some(member => member._id.toString() === req.user._id.toString())) {
         return next(new AppError("You are are not permitted to commit this action.", 401));
+    }
+    currentChannel.photoUrl = `${cloudfrontDomainName}/${currentChannel.photo}`
+    for (const member of currentChannel.members){
+        member.photoUrl = `${cloudfrontDomainName}/${member.photo}`
     }
     res.status(200).json({
         status:'success',
@@ -28,6 +34,9 @@ export const getChannelMessages = catchAsync(async(req, res, next)=>{
                             .limit(limit)
                             .sort({time:-1})
                             .populate({path:'sender', select:'displayName photo friendTag'})
+    for (const message of channelMessages){
+        message.photoUrl = `${cloudfrontDomainName}/${message.photo}`
+    }
     res.status(200).json({
         status:"success",
         messages:channelMessages

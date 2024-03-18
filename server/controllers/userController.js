@@ -12,6 +12,7 @@ const bucketName = process.env.BUCKET_NAME
 const bucketRegion = process.env.BUCKET_REGION
 const accessKey = process.env.ACCESS_KEY
 const secretAccessKey = process.env.SECRET_ACCESS_KEY
+const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
 
 
 const filterObj = (obj, ...allowedfields)=>{
@@ -52,7 +53,7 @@ export const uploadProfileImage = upload.single('profileImage')
 
 export const resizeUserPhoto = catchAsync(async (req, res, next) => {
     if (!req.file) return next();
-    req.file.filename = `user-${req.user.id}.jpeg`;
+    req.file.filename = `user-profile-${req.user.id}.jpeg`;
     //buffer is the raw binary data of the uploaded image file,
     const buffer = await sharp(req.file.buffer)
         .resize({height:500, width:500, fit:"contain"})
@@ -66,6 +67,7 @@ export const resizeUserPhoto = catchAsync(async (req, res, next) => {
         Body: buffer,
         ContentType: req.file.mimetype,
     }
+
     const command = new PutObjectCommand(params)
     await s3.send(command)
     next();
@@ -83,6 +85,8 @@ export const updateUser = catchAsync(async(req, res, next)=>{
     //We can run validators since the passwordConfirm validator only works on create or save.
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
         .select('-groups -friends -passwordChangedAt -__v')
+
+    updatedUser.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${req.file.filename}`
     res.status(200).json({
         status:'success',
         user: updatedUser
@@ -97,28 +101,15 @@ export const getMe = catchAsync(async(req, res, next)=>{
         .populate({path:'friends.channel', select:'channelNumber lastMessage'})
         .populate({path:'groups', select:'channelNumber lastMessage channelName photo'})
 
-    // //We need to get the signed url of each images of our friend in s3
-    // for (const friend of currentUser.friends){
-    //     const getObjectParams = {
-    //         Bucket: bucketName,
-    //         Key: friend.friend.photo,
-    //     }
-    //     const command = new GetObjectCommand(getObjectParams)
-    //     const url = await getSignedUrl(s3, command, {expiresIn: 3600})
-    //     friend.friend.photoUrl = url
-    // }
+    //We need to get the signed url of each images of our friend in s3
+    for (const friend of currentUser.friends){
+        friend.friend.photoUrl = `${cloudfrontDomainName}/${friend.photo}`
+    }
 
-    // //And also the photo of the group channel
-    // for (const group of currentUser.groups){
-    //     const getObjectParams = {
-    //         Bucket: bucketName,
-    //         Key: group.photo,
-    //     }
-    //     const command = new GetObjectCommand(getObjectParams)
-    //     const url = await getSignedUrl(s3, command, {expiresIn: 3600})
-    //     group.photoUrl = url 
-    // }
-
+    //And also the photo of the group channel
+    for (const group of currentUser.groups){
+        group.photoUrl = `${cloudfrontDomainName}/${group.photo}`
+    }
     res.status(200).json({
         status:"success",
         user:currentUser

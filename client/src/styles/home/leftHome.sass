@@ -116,7 +116,7 @@
         .user-password-form
             display: flex
             flex-direction: column
-            padding-top: 1.5rem
+            padding-top: 0.5rem
             position: absolute
             left: 100%
             top: 0%
@@ -126,6 +126,11 @@
             padding-right: 2rem
             &.active
                 left: 0%
+            .user-password-sett-notice
+                color: #be8334
+                font-family: 'Open Sans', sans-serif
+                font-size: 0.6rem
+                margin-bottom: 0.3rem
             .user-sett-error
                 position: absolute
                 bottom: 0%
@@ -316,6 +321,11 @@
                         flex-direction: column
                         &.active
                             left: 0%
+                        .user-password-sett-notice
+                            color: #be8334
+                            font-family: 'Open Sans', sans-serif
+                            font-size: 0.6rem
+                            margin-bottom: 0.3rem
                         .user-password-button-container
                             margin-top: 4rem
                             display: flex
@@ -437,7 +447,7 @@
                                     font-size: 0.9rem
                         .create-group-button-container
                             display: none
-                    .create-group-search
+                    .create-group-search-mob
                             background-color: #0202025a
                             margin: 1rem 0 0 0
                             font-family: 'Raleway', sans-serif
@@ -728,7 +738,7 @@
                     overflow: hidden
                     .create-group-error
                         display: none
-                    .create-group-search
+                    .create-group-search-mob
                         display: none
                     &.group-name-section
                         height: 11rem
@@ -808,7 +818,7 @@
                         .create-group-form
                             height: fit-content
                             position: relative
-                            margin-top: 2rem
+                            margin-top: 0.3rem
                             .create-group-button-container
                                 display: flex
                                 align-items: center
@@ -1103,7 +1113,7 @@
                     overflow: hidden
                     .create-group-error
                         display: none
-                    .create-group-search
+                    .create-group-search-mob
                         display: none
                     &.group-name-section
                         height: 11rem
@@ -1183,7 +1193,7 @@
                         .create-group-form
                             height: fit-content
                             position: relative
-                            margin-top: 2rem
+                            margin-top: 0.3rem
                             .create-group-button-container
                                 display: flex
                                 align-items: center
