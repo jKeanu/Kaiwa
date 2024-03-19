@@ -11,7 +11,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
     friendReqs, 
     setIsFriendsOpen})=>{
     const [searchQuery, setSearchQuery] = useState('')
-    const {displayName, friendTag, photo, _id} = currentUserData
+    const {displayName, friendTag, _id, photoUrl, photo} = currentUserData
     //Modal
     const [isDisabled, setIsDisabled] = useState(false)
     const [modal, setModal] = useState({active:false, type:''})
@@ -107,7 +107,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
                     <li className='channel-link-container' key={channel.channelNumber}>
                         <NavLink className='channel-link' to={`channels/${channel.channelNumber}`} 
                         onClick={clearSearchQuery}>
-                            <img className='channel-photo'src={`/img/${channel.photo}`} alt=''/>
+                            <img className='channel-photo'src={`${channel.photo==='default.jpeg'?'/img/default.jpeg':channel.photoUrl}`} alt=''/>
                             <span className='channel-name'>{channel.channelName}</span>
                         </NavLink>
                     </li>
@@ -116,7 +116,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
         </div>
         <div className='user-info-container'>
             <button className='user-info-button' onClick={()=>setModal({active:true, type:'userSetting'})}>
-                <img className='user-info-photo' alt='' src={`/img/${photo}`}/>
+                <img className='user-info-photo' alt='' src={`${photo==='default.jpeg'?'/img/default.jpeg':photoUrl}`}/>
                 <div className='user-info-text'>
                     <span className='display-name-info'>{displayName}</span>
                     <span className='friend-tag-info'>#{friendTag}</span>

@@ -32,6 +32,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
             setModal({active:false, type:''});
         }, 210)
     }
+
     const handleCheckBox = (e:React.ChangeEvent<HTMLInputElement>)=>{
         const {checked, value} = e.target
         setMembers(prevMembers=>{
@@ -167,7 +168,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                         {filteredFriends.map((friend, index)=>(
                             <li key={index} className="friend-checkbox-container">
                                 <div className="friend-checkbox-info">
-                                    <img src={`/img/${friend.photo}`}/>
+                                    <img src={`${friend.photo==='default.jpeg'?'/img/default.jpeg':friend.photoUrl}`}/>
                                     <span>{friend.displayName}</span>
                                 </div>
                                 <label htmlFor={`checkbox-${friend._id}`} className="checkbox-container">

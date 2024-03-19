@@ -139,7 +139,7 @@ export const getCurrentUser = async(token:string|null):Promise<AxiosResponse<Use
     return axios.get(`${API_URL}/api/v1/users/me`, config)
 }
 
-export const updateCurrentUser = async (token:string, userInfo:{displayName:string|undefined, friendTag:string|undefined, profileImage:null|File}):Promise<AxiosResponse<UpdateUserStatus>>=>{
+export const updateCurrentUser = async (token:string, userInfo:FormData):Promise<AxiosResponse<UpdateUserStatus>>=>{
     const config ={
         headers: {
             'Authorization': `Bearer ${token}`

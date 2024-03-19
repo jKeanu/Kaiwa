@@ -46,10 +46,14 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                     const updateUserReqs = [...prevUserReqs]
                     return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
                 })
+                setLoading(prevLoading=>{
+                    const updateLoading = [...prevLoading]
+                    return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
+                })
                 if(socket){
                     socket.emit('accepted_pending_friend_request', {
                         newChannelInfo: newChannel.channel,
-                        pendingUserId: pendingUserId,
+                        pendingUserId: sortMembers[0]._id,
                         newFriendId: currUserId
                     })
                 }
@@ -95,7 +99,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                 {pendingRequests.map((request, index)=>(
                     <li className="pending-user-container" key={index}>
                         <div className="pending-user-information" >
-                            <img src={`/img/${request.friend.photo}`}/>
+                            <img src={`${request.friend.photo==='default.jpeg'?'/img/default.jpeg':request.friend.photoUrl}`}/>
                             <span>{request.friend.displayName}</span>
                         </div>
                         <div className="pending-request-button-container">

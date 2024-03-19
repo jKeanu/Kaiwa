@@ -36,7 +36,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         handleNewFriendChannel})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
-    const {photo, displayName, _id, friendTag} = currentUserData
+    const {photo, displayName, _id, friendTag, photoUrl} = currentUserData
     const {channelNumber} = useParams()
     const navigate = useNavigate()
     //Messages
@@ -247,7 +247,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             {
                 //we need to convert it to this format since that is the time format in the DB
                 prevTime:messageReceived[0].time,
-                sender:{photo, displayName, _id:_id, friendTag},
+                sender:{photo, displayName, _id:_id, friendTag, photoUrl},
                 channel:currentChannel._id,
                 content:inputMessage,
                 newTime: timestamp,
@@ -289,7 +289,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 time: timestamp,
                 formattedDate:formatDate(timestamp),
                 sender:{
-                    photo, displayName, _id:_id, friendTag
+                    photo, displayName, _id:_id, friendTag, photoUrl
             }}
             socket.emit("send_message", {
                 ...messageContents,
@@ -527,7 +527,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     }
                 }
             }catch(err){
-    
             }
         }
         }
@@ -736,15 +735,16 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             currentChannel?.channelType==='Friend'?
                             <div className="channel-nav-info-container">
                                 <img className="channel-nav-photo"
-                                src={`/img/${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo:currentChannel.members[1].photo}`}/>
+                                src={`${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[0].photoUrl
+                                :currentChannel.members[1].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[1].photoUrl}`}/>
                                 <h2 className="channel-nav-header">
                                     {currentChannel.members[0]._id!==_id?currentChannel.members[0].displayName:currentChannel.members[1].displayName}
                                 </h2>
                             </div>
                             :
                             <div className="channel-nav-info-container">
-                                <img className="channel-nav-photo" src={`/img/${currentChannel?.photo}`}/>
-                                <h2 className="channel-nav-header">{currentChannel?.channelName}</h2>
+                                <img className="channel-nav-photo" src={`${currentChannel.photo==='default.jpeg'?'/img/default.jpeg':currentChannel.photoUrl}`}/>
+                                <h2 className="channel-nav-header">{currentChannel.channelName}</h2>
                             </div>
                         }
                         <div className={`nav-button-container ${isMemberVisible&&'nav-button-container-0'}`}>
@@ -823,7 +823,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                     className={message.sender._id===_id?"my-message-info-container user-message-info-container"
                                     :"user-message-info-container"} 
                                     key={index}>
-                                    <img className='sender-photo' src={`/img/${message.sender.photo}`}/>
+                                    <img className='sender-photo' 
+                                    src={`${message.sender.photo==='default.jpeg'?'/img/default.jpeg':message.sender.photoUrl}`}/>
                                     <div className="message-info">
                                         <div className="message-date-displayname">
                                             <span className="message-sender">
@@ -871,7 +872,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 <li className='member-container member-popup' key={`member-${i}`}>
                                     <button className="member-popup-button" onClick={(e)=>handlePopUp(e, member._id)}>
                                         <div className="member-profile-status">
-                                            <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                                            <img className='member-profile-photo' 
+                                            src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`}/>
                                             <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
                                         </div>
                                         <span className="member-name">{member.displayName}</span>
@@ -889,7 +891,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                     <div className={`member-popup-container ${activePopup?'member-popup-active':''}`} style={{top:popUpPosition.clickY+15,
                                     left:popUpPosition.clickX}}>
                                         <div className="popup-member-info-container">
-                                            <img src={`/img/${member.photo}`} />
+                                            <img src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`} />
                                             <div className="popup-member-info">
                                                 <span className="popup-member-name">{member.displayName}</span>
                                                 <span className="popup-member-friend-tag">#{member.friendTag}</span>
@@ -933,7 +935,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             {sortedMembers.map((member, i)=>(
                                 <li key={`member-${i}`} className="member-container friend-member-container">
                                     <div className="member-profile-status">
-                                        <img className='member-profile-photo' src={`/img/${member.photo}`}/>
+                                        <img className='member-profile-photo' src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`}/>
                                         <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}>
                                         </div>
                                     </div>

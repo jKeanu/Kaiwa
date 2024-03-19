@@ -6,6 +6,8 @@ import User from './models/userModel.js';
 import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
 
+
+const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
 const redisClient = Redis.createClient();
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
 redisClient.connect();
@@ -121,8 +123,10 @@ export default (httpServer) => {
     socket.on('user_invite_success', async(data)=>{
       //add status on select, if status is already implemented ------------------------------
       const user = await User.findById(data.inviteUser).select('displayName friendTag _id photo status')
+      user.photoUrl = `${cloudfrontDomainName}/${user.photo}`
       const currChannel = await Channel.findById(data.channelId)
         .select('photo channelNumber _id channelName channelType lastMessage id')
+      currChannel.photoUrl = `${cloudfrontDomainName}/${currChannel.photo}`
       io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Joined'})
       socket.to(`user-${user._id}`).emit('invited_to_group', currChannel)
     })
@@ -130,6 +134,7 @@ export default (httpServer) => {
     //When a user left the group channel
     socket.on('leave_group', async(data)=>{
       const user = await User.findById(verifiedCurrentUserId).select('displayName friendTag_id photo status')
+      user.photoUrl = `${cloudfrontDomainName}/${user.photo}`
       io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Left'})
     })
     

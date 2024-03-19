@@ -98,6 +98,7 @@ const HomePage:React.FC = ()=>{
                                 id:friend.channel.id,
                                 channelName: friend.friend.displayName,
                                 photo: friend.friend.photo,
+                                photoUrl: friend.friend.photoUrl,
                                 channelType: friend.channel.channelType
                             }
                         })
@@ -148,7 +149,8 @@ const HomePage:React.FC = ()=>{
                 id: friendInfo.channel.id,
                 _id: friendInfo.channel._id,
                 lastMessage: friendInfo.channel.lastMessage,
-                photo: friendInfo.friend.photo
+                photo: friendInfo.friend.photo,
+                photoUrl: friendInfo.friend.photoUrl
             }
             setChannels(prevChannels =>{
                 const updateChannel = [...prevChannels]
@@ -217,6 +219,7 @@ const HomePage:React.FC = ()=>{
             if(socket){
                 const handleRequestAccepted = (data:FriendRequestAccepted)=>{
                     const newFriendInfo = [...sentReqs].find(sentReq=>sentReq.friend._id===data.newFriendId)
+                    console.log(sentReqs, '----')
                     if(newFriendInfo){
                         const newFriendChannel:Friend = {
                             channel:{...data.newChannelInfo},
@@ -447,6 +450,7 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const handleNewGroupChannel = (data:Channel)=>{
+                    console.log(data, '--------')
                     setChannels(prevChannels=>[data, ...prevChannels])
                 }
                 socket.on('new_group_channel', handleNewGroupChannel)

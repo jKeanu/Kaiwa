@@ -6,7 +6,8 @@ import { changeUserPassword, updateCurrentUser } from "../../services/apiService
 
 
 const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=>{
-    const [userInfo, setUserInfo] = useState<{displayName:string, friendTag:string, profileImage:null|File}>({displayName:'', friendTag:'', profileImage:null})
+    const [userInfo, setUserInfo] = useState<{displayName:string, friendTag:string, profileImage:null|File}>
+    ({displayName:currUserData.displayName, friendTag:currUserData.friendTag, profileImage:null})
     const [userPassword, setUserPassword] = useState({currentPassword:'', password:'', passwordConfirm:''})
     const [currSetting, setCurrSetting] = useState('userInfo')
     const [modalVisible, setModalVisible] = useState(false)
@@ -36,8 +37,15 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                 setIsLoading(false)
                 return 
             }
-            const res:AxiosResponse<UpdateUserStatus> = await updateCurrentUser(token, userInfo)
-            const {displayName, friendTag, photo} = res.data.user
+            const formData = new FormData()
+            formData.append('displayName', userInfo.displayName)
+            formData.append('friendTag', userInfo.friendTag)
+            if(userInfo.profileImage){
+                formData.append('profileImage', userInfo.profileImage)
+                formData.append('currPhoto', currUserData.photo)
+            }
+            const res:AxiosResponse<UpdateUserStatus> = await updateCurrentUser(token, formData)
+            const {displayName, friendTag, photo, photoUrl} = res.data.user
             if(res.data.status==='success'){
                 setUserData(prevUserData=>{
                     if(prevUserData){
@@ -45,16 +53,23 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                             ...prevUserData,
                             displayName,
                             friendTag,
-                            photo
+                            photo,
+                            photoUrl
                         }
                     }
                 })
                 setModal({active:false, type:''})
             }
             setIsLoading(false)
-        }catch(err){
-            setUserSettErr({err:true, message:'There was an error changing the user information.'})
-            setIsLoading(false)
+        }catch(err:unknown){
+            if(axios.isAxiosError(err)){
+                if(err.response?.status===409){
+                    setUserSettErr({err:true, message:err.response.data.message})
+                }
+            }else{
+                setUserSettErr({err:true, message:'There was an error changing the user information.'})
+            }
+        setIsLoading(false)   
         }
     }
 
@@ -167,7 +182,8 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                 onSubmit={handleUserInfoSubmit}>
                     <div className="user-photo-input-container">
                         <label htmlFor="user-setting-photo">
-                            <img src={`${profileImagePreview?profileImagePreview:`/img/${currUserData.photo}`}`} className="user-setting-photo"/>
+                            <img src={`${profileImagePreview?profileImagePreview:currUserData.photo==='default.jpeg'?'/img/default.jpeg':currUserData.photoUrl}`} 
+                            className="user-setting-photo"/>
                             <div className="photo-input-hover">Change</div>
                         </label>
                         <input type="file" name="profileImage" id="user-setting-photo" onChange={handleFileChange} className="user-setting-photo-input"/>

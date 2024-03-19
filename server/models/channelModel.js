@@ -46,7 +46,7 @@ const channelSchema = new mongoose.Schema({
             return this.channelType==='Group'
         },
         default:function(){
-            return this.channelType === 'Group'? 'default.jpg' : undefined
+            return this.channelType === 'Group'? 'default.jpeg' : undefined
         }
     },
     lastMessage: {

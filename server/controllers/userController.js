@@ -4,9 +4,10 @@ import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import multer from 'multer';
 import sharp from 'sharp';
-import { S3Client, PutObjectCommand, GetObjectCommand} from '@aws-sdk/client-s3';
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
-
+import { S3Client, PutObjectCommand, DeleteObjectCommand} from '@aws-sdk/client-s3';
+import dotenv from'dotenv'
+//although we have already configure the dotenv in the app.js we have to configure it here as well
+dotenv.config({ path: './config.env' });
 
 const bucketName = process.env.BUCKET_NAME
 const bucketRegion = process.env.BUCKET_REGION
@@ -53,24 +54,47 @@ export const uploadProfileImage = upload.single('profileImage')
 
 export const resizeUserPhoto = catchAsync(async (req, res, next) => {
     if (!req.file) return next();
-    req.file.filename = `user-profile-${req.user.id}.jpeg`;
-    //buffer is the raw binary data of the uploaded image file,
-    const buffer = await sharp(req.file.buffer)
-        .resize({height:500, width:500, fit:"contain"})
-        .toFormat('jpeg')
-        .jpeg({ quality: 90 })
-        .toBuffer()
-
-    const params = {
-        Bucket: process.env.BUCKET_NAME,
-        Key: req.file.filename,
-        Body: buffer,
-        ContentType: req.file.mimetype,
-    }
-
-    const command = new PutObjectCommand(params)
-    await s3.send(command)
-    next();
+    if(req.body.currPhoto==='default.jpeg'){
+        req.file.filename = `user-profile-${req.user.id}-v1.jpeg`
+        const buffer = await sharp(req.file.buffer)
+            .resize({height:250, width:250, fit:"cover"})
+            .toFormat('jpeg')
+            .jpeg({ quality: 90 })
+            .toBuffer()
+        const params = {
+            Bucket: bucketName,
+            Key: req.file.filename,
+            Body: buffer,
+            ContentType: req.file.mimetype,
+        }
+        const command = new PutObjectCommand(params)
+        await s3.send(command)
+        await User.findByIdAndUpdate(req.user.id, {photo:req.file.filename}, {new:true, runValidators:true})
+        next()
+    }else{
+        const versionRegex = /-v(\d+)\.jpeg$/
+        // Extract the current version number, increment it, and generate the new filename
+        const newVersionNumber = parseInt(req.body.currPhoto.match(versionRegex)[1], 10) + 1;
+        req.file.filename = req.body.currPhoto.replace(versionRegex, `-v${newVersionNumber}.jpeg`);
+        //buffer is the raw binary data of the uploaded image file,
+        const buffer = await sharp(req.file.buffer)
+            .resize({height:250, width:250, fit:"cover"})
+            .toFormat('jpeg')
+            .jpeg({ quality: 90 })
+            .toBuffer()
+        const params = {
+            Bucket: bucketName,
+            Key: req.file.filename,
+            Body: buffer,
+            ContentType: req.file.mimetype,
+        }
+        const command = new PutObjectCommand(params)
+        await s3.send(command)
+        const deleteCommand = new DeleteObjectCommand({Key:req.body.currPhoto, Bucket:bucketName})
+        await s3.send(deleteCommand)
+        await User.findByIdAndUpdate(req.user.id, {photo:req.file.filename}, {new:true, runValidators:true})
+        next()
+    };
 });
 
 export const updateUser = catchAsync(async(req, res, next)=>{
@@ -78,18 +102,14 @@ export const updateUser = catchAsync(async(req, res, next)=>{
         return next(new AppError('This route is not for password updates.', 400))
     }
     const filteredBody = filterObj(req.body, 'displayName', 'friendTag')
-    //information about the image will go to the req.file
-    if(req.file){
-        filteredBody.photo = req.file.filename
-    }
     //We can run validators since the passwordConfirm validator only works on create or save.
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
         .select('-groups -friends -passwordChangedAt -__v')
-
-    updatedUser.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${req.file.filename}`
+    const updatedUserObject = updatedUser.toObject()
+    updatedUserObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${req.file.filename}`
     res.status(200).json({
         status:'success',
-        user: updatedUser
+        user: updatedUserObject
     })
 })
 
@@ -101,18 +121,20 @@ export const getMe = catchAsync(async(req, res, next)=>{
         .populate({path:'friends.channel', select:'channelNumber lastMessage'})
         .populate({path:'groups', select:'channelNumber lastMessage channelName photo'})
 
-    //We need to get the signed url of each images of our friend in s3
-    for (const friend of currentUser.friends){
-        friend.friend.photoUrl = `${cloudfrontDomainName}/${friend.photo}`
-    }
+    const currentUserObject = currentUser.toObject()
+    currentUserObject.photoUrl = `${cloudfrontDomainName}/${currentUserObject.photo}`
 
+    //We need to get the signed url of each images of our friend in s3
+    for (const friend of currentUserObject.friends){
+        friend.friend.photoUrl = `${cloudfrontDomainName}/${friend.friend.photo}`
+    }
     //And also the photo of the group channel
-    for (const group of currentUser.groups){
+    for (const group of currentUserObject.groups){
         group.photoUrl = `${cloudfrontDomainName}/${group.photo}`
     }
     res.status(200).json({
         status:"success",
-        user:currentUser
+        user:currentUserObject
     })
 })
 

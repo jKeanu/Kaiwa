@@ -90,12 +90,14 @@ export const addFriend = catchAsync(async (req, res, next)=>{
         const newSentRequestDetails = currUserData.friends.find(friend=>friend.friend.toString()===addUser._id.toString())
         await User.populate(newSentRequestDetails, {path:'friend', select:'displayName FriendTag status photo', options:{session}})
         await session.commitTransaction()
-        newPendingRequestDetails.friend.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newPendingRequestDetails.friend.photoUrl}`
-        newSentRequestDetails.friend.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newPendingRequestDetails.friend.photoUrl}`
+        const newPendingObject = newPendingRequestDetails.toObject()
+        newPendingObject.friend.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newPendingRequestDetails.friend.photo}`
+        const newSentObject = newSentRequestDetails.toObject()
+        newSentObject.friend.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newSentRequestDetails.friend.photo}`
         res.status(201).json({
             status:'success',
-            pendingRequestDetails:newPendingRequestDetails,
-            sentRequestDetails:newSentRequestDetails
+            pendingRequestDetails:newPendingObject,
+            sentRequestDetails:newSentObject
     })}catch(err){
         console.log('ERROR!!!!', err)
         await session.abortTransaction();
@@ -156,13 +158,17 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
                 .select('-__v')
                 .populate({path:'members', select:'photo displayName friendTag status'})
                 .session(session)
-            newChannel.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newChannel.photo}`
+            const newChannelObject = newChannel.toObject()
+            newChannelObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newChannel.photo}`
+            for(const member of newChannelObject.members){
+                member.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${member.photo}`
+            }
             //We just need the general
             await acceptUser.save({session, validateBeforeSave:true})
             await session.commitTransaction()
             res.status(200).json({
                 status:"success",
-                newChannel: newChannel})
+                newChannel: newChannelObject})
             }catch(err){
                 if(err instanceof MongoServerError && err.code === 112 && retries > 0){
                     retries--;
