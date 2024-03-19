@@ -52,6 +52,23 @@ const channelSchema = new mongoose.Schema({
     lastMessage: {
         type:Date,
         default: Date.now
+    },
+    formattedLastMessage: {
+        type: String,
+        default: function(){
+            const date = new Date(this.lastMessage)
+            // Extracting parts of the date
+            const day = date.getDate().toString().padStart(2, '0')
+            const month = (date.getMonth() + 1).toString().padStart(2, '0') // getMonth() returns 0-11
+            const year = date.getFullYear(); // Full year
+            // Formatting the time
+            let hours = date.getHours()
+            const minutes = date.getMinutes().toString().padStart(2, '0')
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12
+            hours = hours ? hours.toString().padStart(2, '0') : '12'; // the hour '0' should be '12'
+            return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`
+        }
     }
 },{
     //each time data is outputed as json we want virtuals to be part of the output

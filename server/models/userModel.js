@@ -69,7 +69,7 @@ const userSchema = new mongoose.Schema({
                     return this.status === 'Friend';
                 }, 'A friend channel is required.']
             },
-            status: {
+            status:{
                 type: String,
                 enum: ['Pending', 'Friend', 'Sent']
             }
