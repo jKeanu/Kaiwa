@@ -118,8 +118,8 @@ export const getMe = catchAsync(async(req, res, next)=>{
     //the current logged information, we can just populate all of them here.
     const currentUser = await User.findById(req.user._id).select('-__v')
         .populate({path:'friends.friend', select:'displayName friendTag photo status'})
-        .populate({path:'friends.channel', select:'channelNumber lastMessage'})
-        .populate({path:'groups', select:'channelNumber lastMessage channelName photo'})
+        .populate({path:'friends.channel', select:'channelNumber lastMessage formattedLastMessage channelType'})
+        .populate({path:'groups', select:'channelNumber lastMessage channelName photo formattedLastMessage channelType'})
 
     const currentUserObject = currentUser.toObject()
     currentUserObject.photoUrl = `${cloudfrontDomainName}/${currentUserObject.photo}`
@@ -132,6 +132,7 @@ export const getMe = catchAsync(async(req, res, next)=>{
     for (const group of currentUserObject.groups){
         group.photoUrl = `${cloudfrontDomainName}/${group.photo}`
     }
+    console.log(currentUser.friends, '===')
     res.status(200).json({
         status:"success",
         user:currentUserObject

@@ -99,7 +99,8 @@ const HomePage:React.FC = ()=>{
                                 channelName: friend.friend.displayName,
                                 photo: friend.friend.photo,
                                 photoUrl: friend.friend.photoUrl,
-                                channelType: friend.channel.channelType
+                                channelType: friend.channel.channelType,
+                                formattedLastMessage: friend.channel.formattedLastMessage
                             }
                         })
                         //In this case, we only need the friend information, not including the channel.
@@ -150,7 +151,8 @@ const HomePage:React.FC = ()=>{
                 _id: friendInfo.channel._id,
                 lastMessage: friendInfo.channel.lastMessage,
                 photo: friendInfo.friend.photo,
-                photoUrl: friendInfo.friend.photoUrl
+                photoUrl: friendInfo.friend.photoUrl,
+                formattedLastMessage: friendInfo.channel.formattedLastMessage
             }
             setChannels(prevChannels =>{
                 const updateChannel = [...prevChannels]
@@ -219,7 +221,6 @@ const HomePage:React.FC = ()=>{
             if(socket){
                 const handleRequestAccepted = (data:FriendRequestAccepted)=>{
                     const newFriendInfo = [...sentReqs].find(sentReq=>sentReq.friend._id===data.newFriendId)
-                    console.log(sentReqs, '----')
                     if(newFriendInfo){
                         const newFriendChannel:Friend = {
                             channel:{...data.newChannelInfo},
@@ -266,6 +267,10 @@ const HomePage:React.FC = ()=>{
                         const channelToUpdate = currChannels.find(channel=>channel._id===data.channelId)
                         if(channelToUpdate){
                             channelToUpdate.lastMessage = data.newTime
+                            //if its a new message and not a continue message, we update the formatted time of the channel
+                            if(!data.message.updated && data.newFormattedTime){
+                                channelToUpdate.formattedLastMessage = data.newFormattedTime
+                            }
                         }
                         const sortedChannels:Channel[] = currChannels.sort((a, b) => {
                             const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
@@ -533,6 +538,21 @@ const HomePage:React.FC = ()=>{
             }
         }, [socket])
 
+        
+        const formatToTodayIfCurrentDate = useCallback((dateStr: string): string => {
+            const currentDate = new Date();
+            const messageDate = new Date(dateStr);
+            const currentDateStr = currentDate.toLocaleDateString();
+            const messageDateStr = messageDate.toLocaleDateString();
+            if (currentDateStr === messageDateStr) {
+                // Format the time part
+                const timeStr = dateStr.split(' ')[1] + ' ' + dateStr.split(' ')[2];
+                return `Today at ${timeStr}`;
+            } else {
+                return dateStr;
+            }
+        }, []);
+
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault()
             setToken('')
@@ -549,6 +569,7 @@ const HomePage:React.FC = ()=>{
                     </dialog>}
                     <LeftSectionContext.Provider value={{setChannels, friendsInfo:myFriends, token, socket, setToken, setUserData}}>
                         <LeftSection 
+                            formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}
                             channels={channels} 
                             handleLogout={handleLogout} 
                             currentUserData={userData}

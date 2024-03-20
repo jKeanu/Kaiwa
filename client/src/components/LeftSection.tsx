@@ -9,7 +9,8 @@ const LeftSection:React.FC<LeftSectionProps>=({
     handleLogout, 
     currentUserData, 
     friendReqs, 
-    setIsFriendsOpen})=>{
+    setIsFriendsOpen,
+    formatToTodayIfCurrentDate})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const {displayName, friendTag, _id, photoUrl, photo} = currentUserData
     //Modal
@@ -42,7 +43,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
     const clearSearchQuery = ():void => {
         setSearchQuery('');
     }
-
+    console.log(channels, '--')
     return(
     <section className='left-home-section'>
         {modal.active&&
@@ -95,10 +96,10 @@ const LeftSection:React.FC<LeftSectionProps>=({
             <div className='search-conversation-container'>
                 <img className='search-conversation-image'src='/img/search.svg' />
                 <input 
-                value={searchQuery}
-                onChange={(e)=>setSearchQuery(e.target.value)}
-                className='search-conversation-input'
-                placeholder='Search conversation...'/>
+                    value={searchQuery}
+                    onChange={(e)=>setSearchQuery(e.target.value)}
+                    className='search-conversation-input'
+                    placeholder='Search conversation...'/>
             </div>
         </div>
         <div className='channel-list-container'>
@@ -108,7 +109,12 @@ const LeftSection:React.FC<LeftSectionProps>=({
                         <NavLink className='channel-link' to={`channels/${channel.channelNumber}`} 
                         onClick={clearSearchQuery}>
                             <img className='channel-photo'src={`${channel.photo==='default.jpeg'?'/img/default.jpeg':channel.photoUrl}`} alt=''/>
-                            <span className='channel-name'>{channel.channelName}</span>
+                            <div className='channel-link-text-container'>
+                                <span className='channel-name'>{channel.channelName}</span>
+                                <span className='channel-link-last-message-text'>
+                                    {formatToTodayIfCurrentDate(channel.formattedLastMessage)}
+                                </span>
+                            </div>
                         </NavLink>
                     </li>
                 ))}

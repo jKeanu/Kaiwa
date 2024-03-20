@@ -252,6 +252,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 content:inputMessage,
                 newTime: timestamp,
                 channelNumber,
+                
                 channelType: currentChannel.channelType
             })
             setMessageReceived((prevMessages)=>{
@@ -505,7 +506,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             channelNumber:fetchedNewChannelData.channelNumber,
                             lastMessage:fetchedNewChannelData.lastMessage,
                             _id:fetchedNewChannelData._id,
-                            id: fetchedNewChannelData.id
+                            id: fetchedNewChannelData.id,
+                            formattedLastMessage: fetchedNewChannelData.formattedLastMessage
                         },
                         friend:{
                             ...sortMembers[0]

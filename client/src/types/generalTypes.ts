@@ -18,7 +18,8 @@ export type Channel = {
     lastMessage: number | Date,
     photo:string,
     _id:string,
-    photoUrl: string
+    photoUrl: string,
+    formattedLastMessage: string
 }
 
 export type Friend = {
@@ -27,7 +28,8 @@ export type Friend = {
         id:string,
         lastMessage: number|Date,
         _id:string,
-        channelType:string
+        channelType:string,
+        formattedLastMessage: string
     },
     friend:FriendDetails,
     status:string,
@@ -117,7 +119,8 @@ export type LeftSectionProps ={
     handleLogout: (e:React.MouseEvent<HTMLButtonElement>) => void,
     currentUserData: User,
     friendReqs:FriendReq[], 
-    setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>
+    setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>,
+    formatToTodayIfCurrentDate: (dateStr:string) => string
 }
 
 export type ChannelSectionProps={
@@ -175,7 +178,8 @@ export type CurrentChannel={
     channelNumber: number,
     photo?: string,
     photoUrl?:string
-    lastMessage:number
+    lastMessage:number,
+    formattedLastMessage: string
 }
 
 export type ChannelDataStatus={
@@ -206,6 +210,7 @@ export type CreateGroupStatus={
         _id:string,
         id:string,
         channelNumber:number,
+        formattedLastMessage: string,
         lastMessage:Date,
         photo:string,
         photoUrl:string
@@ -343,7 +348,8 @@ export type LastMessageUpdate = {
     channelNumber: number,
     newTime:Date|number,
     message:ChannelMessage,
-    channelType:string
+    channelType:string,
+    newFormattedTime: string | undefined
 }
 
 export type UserStatusUpdate= {
@@ -358,6 +364,7 @@ export type NewChannel={
     channelType:string,
     channelNumber:number,
     lastMessage:number|Date,
+    formattedLastMessage: string,
     id:string,
     members:ChannelMember[]
 }
@@ -390,7 +397,8 @@ export type FriendRequestAccepted={
         channelType:string,
         lastMessage: number | Date,
         _id: string,
-        id: string
+        id: string,
+        formattedLastMessage: string
     },
     newFriendId:string
 }

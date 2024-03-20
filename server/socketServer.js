@@ -101,7 +101,7 @@ export default (httpServer) => {
       // Update the last message of the channel
       await Channel.findByIdAndUpdate(
         { _id: data.channel },
-        { lastMessage: data.time }
+        { lastMessage: data.time, formattedLastMessage: data.formattedDate }
       );
       // Although the newMessage document consists of sender as a mongoose object id,
       // we can use spread operator and add a similar key to overwrite it.
@@ -115,7 +115,7 @@ export default (httpServer) => {
 
       io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
       {channelId:data.channel, channelNumber:data.channelNumber,
-      newTime:data.time, message:messageInfo, channelType:data.channelType})
+      newTime:data.time, newFormattedTime:data.formattedDate, message:messageInfo, channelType:data.channelType})
       socket.to(data.channelNumber).emit('receive_message', messageInfo);
     });
 
@@ -144,7 +144,9 @@ export default (httpServer) => {
       const updatedMessage = await Chat.findOneAndUpdate(
         {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
         {time:data.newTime, $push:{content:data.content}},
-           {new:true})  
+           {new:true})
+      //we don't need to update the formattedLastMessage too, since this is a continue_message
+      await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime})
       //Since we need the sender details, we cannot just pass the updatedMessage
       //directly to the receive_message, the only sender info we have on chat model is the id      
       const messageInfo = {
