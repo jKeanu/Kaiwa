@@ -267,7 +267,7 @@ const HomePage:React.FC = ()=>{
                         if(channelToUpdate){
                             channelToUpdate.lastMessage = data.newTime
                             //if its a new message and not a continue message, we update the formatted time of the channel
-                            if(!data.message.updated && data.newFormattedTime){
+                            if(data.newFormattedTime){
                                 channelToUpdate.formattedLastMessage = data.newFormattedTime
                             }
                         }
@@ -281,8 +281,9 @@ const HomePage:React.FC = ()=>{
                     if(location.pathname !== `/@me/channels/${data.channelNumber}`){
                         mutate(`api/v1/channels/${data.channelNumber}/messages`, (prevMessagesDataCache:ChannelMessagesStatus|undefined)=>{
                             if(!prevMessagesDataCache){
-                                return undefined
+                                return 
                             }
+                            console.log('sheeee')
                             const updateMessages = [...prevMessagesDataCache.messages]
                             if(data.message.updated){
                                 updateMessages[0] = data.message

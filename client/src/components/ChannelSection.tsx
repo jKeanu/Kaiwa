@@ -105,6 +105,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }, [channelData, channelError, channelIsLoading])
 
+    useEffect(()=>{
+        console.log(cache.get(messageCacheKey), '----')
+    }, [])
+
     const { data: messagesData, error: messagesError} = useSWR<ChannelMessagesStatus>(
         //if there's already a data in the cache, we no longer need to fetch 
         messageCacheKey, (endpoint:string) =>
@@ -113,7 +117,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
             revalidateIfStale: false,
-            revalidateOnMount: !cache.get(messageCacheKey)
+            revalidateOnMount: !cache.get(messageCacheKey)?.data
         }
     )
     useEffect(()=>{
