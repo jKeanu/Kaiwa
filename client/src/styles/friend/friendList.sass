@@ -147,6 +147,11 @@
                                 border: solid 2px $secondary-bg
                         .user-displayName-status-container
                             .friend-displayName
+                                @media (max-width: calc($breakpoint-laptop*0.85))
+                                    width: 4rem
+                                    white-space: nowrap
+                                    overflow: hidden
+                                    text-overflow: ellipsis
                                 font-family: 'Raleway', sans-serif
                                 font-size: 1rem
                             .friend-status-text

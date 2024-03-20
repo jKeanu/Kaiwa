@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     displayName:{
         type:String,
         required:[true, 'Must have a display name'],
-        maxlength:[12, 'Display Name must contain no more than 10 characters'],
+        maxlength:[10, 'Display Name must contain no more than 10 characters'],
         minlength:[1, 'Please provide a display name']
     },
     friendTag:{
@@ -20,13 +20,22 @@ const userSchema = new mongoose.Schema({
             }
             return friendID;
         },
-        validate:{
-            //This only works on create and save
-            validator: function (value){
-                return value.length === 6;
+        validate:[
+            {
+                validator: function(value) {
+                    return /^[A-Z0-9]+$/.test(value); // Removed the 'i' flag
+                },
+                message: props => `${props.value} is not a valid friend tag.`
             },
-            message: 'Friend Tag must be exactly 6 characters'
-        }
+            {
+                // Ensure the length is exactly 6 characters
+                validator: function(value) {
+                    return value.length === 6;
+                },
+                message: 'Friend Tag must be exactly 6 characters.'
+            }
+
+        ]
     },
     email:{
         type:String,

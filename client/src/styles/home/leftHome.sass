@@ -655,26 +655,33 @@
                             object-fit: cover
                             border-radius: 1.25rem
                             flex-shrink: 0
-                        .channel-name
-                            font-family: 'Raleway', sans-serif
-                            color: white
-                            font-size: 1.1rem
-                            white-space: nowrap
-                            width: 100%
+                        .channel-link-text-container
+                            display: flex
+                            flex-direction: column
+                            align-items: center
+                            justify-content: center
+                            .channel-link-last-message-text
+                                font-family: 'Open Sans', sans-serif
+                                font-size: 0.65rem
+                                color: #76818b
+                                width: 100%
+                            .channel-name
+                                font-family: 'Raleway', sans-serif
+                                color: white
+                                font-size: 1.1rem
+                                white-space: nowrap
+                                width: 100%
         .user-info-container
             border-top: 1px solid $white-line
             display: flex
             justify-content: space-between
             align-items: center
-            padding: 1rem 0.5rem
+            padding: 0.25rem 0.5rem
             height: 4rem
             flex-shrink: 0
             flex-grow: 0
             .user-info-button
                 display: flex
-                flex-direction: row
-                justify-content: flex-start
-                align-items: center             
                 .user-info-photo
                     width: 2.5rem
                     height: 2.5rem
@@ -682,31 +689,57 @@
                     border-radius: 1.25rem
                     margin-right: 0.5rem
                 .user-info-text
+                    @media (min-width: $breakpoint-mobile + 1) and (max-width: $breakpoint-tablet)  
+                        width: 15rem
+                        display: flex
+                        justify-content: center
+                        align-items: flex-start
+                        flex-direction: column
+                        .display-name-info
+                            text-align: start
+                            font-weight: bold
+                            color: white
+                            white-space: nowrap
+                            width: 100%
+                            overflow: hidden
+                            text-overflow: ellipsis
+                        .friend-tag-info
+                            color: rgb(191, 191, 191)
+                            font-size: 0.7rem     
+                            text-align: start     
+                    @media (max-width: $breakpoint-mobile)
+                        width: 10rem
+                        display: flex
+                        justify-content: center
+                        align-items: flex-start
+                        flex-direction: column
+                        @media (max-width: calc($breakpoint-mobile/1.5))
+                            width: 7rem
+                        .display-name-info
+                            text-align: start
+                            font-weight: bold
+                            color: white
+                            white-space: nowrap
+                            width: 100%
+                            overflow: hidden
+                            text-overflow: ellipsis
+                        .friend-tag-info
+                            color: rgb(191, 191, 191)
+                            font-size: 0.7rem   
+                            text-align: start
+            .logout-container
+                width: fit-content
+                height: 2.5rem
+                .logout-button-laptop
+                    padding: 0
+                    height: 100%
+                    width: 3rem
                     display: flex
                     justify-content: center
-                    align-items: flex-start
-                    flex-direction: column
-                    .display-name-info
-                        font-weight: bold
-                        color: white
-                    .friend-tag-info
-                        color: rgb(191, 191, 191)
-                        font-size: 0.7rem
-            .logout-container
-                .logout-button
-                    background-color: transparent
-                    color: white
-                    padding: 0.6rem
-                    border-radius: 2px
-                    background-color: $secondary-bg
-                    border: 1px solid transparent
-                    cursor: pointer
-                    transition: background-color 0.1s ease-in
-                    font-family: 'Bebas Neue', sans-serif
-                    &:hover
-                        background-color: $primary-bg
-                .logout-button-laptop
-                    display: none
+                    align-items: center
+                    svg
+                        height: 1.8rem
+                        width: 1.8rem
 
 
 =left-home-laptop
@@ -1043,7 +1076,7 @@
                             object-fit: cover
                             border-radius: 1.25rem
                             flex-shrink: 0
-                        .channel-name
+                        .channel-link-text-container
                             display: none
 
         .user-info-container
@@ -1399,6 +1432,7 @@
                 .channel-link-container
                     overflow-x: hidden
                     .channel-link
+                        width: 100%
                         text-decoration: none
                         display: flex
                         align-items: center
@@ -1421,24 +1455,29 @@
                             flex-direction: column
                             align-items: center
                             justify-content: center
+                            width: 10rem
                             .channel-link-last-message-text
                                 font-family: 'Open Sans', sans-serif
                                 font-size: 0.65rem
                                 color: #76818b
+                                width: 100%
                             .channel-name
                                 font-family: 'Raleway', sans-serif
                                 color: white
                                 font-size: 1.1rem
                                 white-space: nowrap
                                 width: 100%
+                                overflow: hidden
+                                text-overflow: ellipsis
 
         .user-info-container
             border-top: 1px solid $white-line
             display: flex
             justify-content: space-between
             align-items: center
-            padding: 1rem 0.5rem
+            padding: 0.5rem 0.25rem
             height: 5rem
+            width: 100%
             flex-shrink: 0
             flex-grow: 0
             .user-info-button
@@ -1448,7 +1487,15 @@
                 display: flex
                 flex-direction: row
                 justify-content: flex-start
-                align-items: center             
+                align-items: center
+                padding: 0
+                width: fit-content
+                height: 100%
+                border-radius: 0.3rem
+                padding-left: 0.5rem
+                transition: background-color 0.15s ease-in-out
+                &:hover
+                    background-color: #2f3b4a       
                 .user-info-photo
                     width: 2.5rem
                     height: 2.5rem
@@ -1460,27 +1507,34 @@
                     justify-content: center
                     align-items: flex-start
                     flex-direction: column
+                    width: 7.5rem
                     .display-name-info
                         font-weight: bold
                         color: white
+                        width: 100%
+                        text-align: start
+                        white-space: nowrap
+                        overflow: hidden
+                        text-overflow: ellipsis
                     .friend-tag-info
                         color: rgb(191, 191, 191)
                         font-size: 0.7rem
+                        width: 100%
+                        text-align: start
             .logout-container
-                .logout-button
-                    background-color: transparent
-                    color: white
-                    padding: 0.6rem
-                    border-radius: 2px
-                    background-color: $secondary-bg
-                    border: 1px solid transparent
-                    cursor: pointer
-                    transition: background-color 0.1s ease-in
-                    font-family: 'Bebas Neue', sans-serif
-                    &:hover
-                        background-color: $primary-bg
+                width: 2rem
                 .logout-button-laptop
-                    display: none
+                    cursor: pointer
+                    height: 100%
+                    width: 100%
+                    padding: 0
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    svg
+                        height: 100%
+                        width: 1.7rem
+
 
                 
     

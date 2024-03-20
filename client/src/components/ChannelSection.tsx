@@ -681,8 +681,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     }
                     {(modalWindow.window==='inviteUser'&&currentChannel)
                     &&
-                    <InviteUserModal 
-                        handleCloseButton={handleCloseButton} 
+                    <InviteUserModal
+                        handleCloseButton={handleCloseButton}
                         channelId={currentChannel._id}
                         token={token} 
                         currChannelMembersId={membersId} 

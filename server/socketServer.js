@@ -123,12 +123,14 @@ export default (httpServer) => {
     socket.on('user_invite_success', async(data)=>{
       //add status on select, if status is already implemented ------------------------------
       const user = await User.findById(data.inviteUser).select('displayName friendTag _id photo status')
-      user.photoUrl = `${cloudfrontDomainName}/${user.photo}`
+      const userObject = user.toObject()
+      userObject.photoUrl = `${cloudfrontDomainName}/${userObject.photo}`
       const currChannel = await Channel.findById(data.channelId)
-        .select('photo channelNumber _id channelName channelType lastMessage id')
-      currChannel.photoUrl = `${cloudfrontDomainName}/${currChannel.photo}`
-      io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Joined'})
-      socket.to(`user-${user._id}`).emit('invited_to_group', currChannel)
+        .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage')
+      const currChannelObject = currChannel.toObject()
+      currChannelObject.photoUrl = `${cloudfrontDomainName}/${currChannelObject.photo}`
+      io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user:userObject, channelNumber:data.channelNumber, type:'Joined'})
+      socket.to(`user-${userObject._id}`).emit('invited_to_group', currChannelObject)
     })
 
     //When a user left the group channel

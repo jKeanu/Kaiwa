@@ -32,7 +32,8 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
         setIsLoading(true)
         setUserSettErr({err:false, message:''})
         try{
-            if(userInfo.friendTag==='' && userInfo.displayName==='' && userInfo.profileImage===null){
+            if(userInfo.friendTag===currUserData.friendTag && userInfo.displayName===currUserData.displayName 
+                && userInfo.profileImage===null){
                 setUserSettErr({err:true, message:'There is no changes in the current user information.'})
                 setIsLoading(false)
                 return 
@@ -47,17 +48,29 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
             const res:AxiosResponse<UpdateUserStatus> = await updateCurrentUser(token, formData)
             const {displayName, friendTag, photo, photoUrl} = res.data.user
             if(res.data.status==='success'){
-                setUserData(prevUserData=>{
-                    if(prevUserData){
-                        return {
-                            ...prevUserData,
-                            displayName,
-                            friendTag,
-                            photo,
-                            photoUrl
+                if(photoUrl){
+                    setUserData(prevUserData=>{
+                        if(prevUserData){
+                            return {
+                                ...prevUserData,
+                                displayName,
+                                friendTag,
+                                photo,
+                                photoUrl
+                            }
                         }
-                    }
-                })
+                    })
+                }else{
+                    setUserData(prevUserData=>{
+                        if(prevUserData){
+                            return {
+                                ...prevUserData,
+                                displayName,
+                                friendTag,
+                            }
+                        }
+                    })
+                }
                 setModal({active:false, type:''})
             }
             setIsLoading(false)
@@ -65,6 +78,14 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
             if(axios.isAxiosError(err)){
                 if(err.response?.status===409){
                     setUserSettErr({err:true, message:err.response.data.message})
+                }else if(err.response?.status===400){
+                    let errMessages = err.response.data.message
+                    if(errMessages.split('. ').length>1){
+                        errMessages = errMessages.split('. ')[1]
+                        setUserSettErr({err:true, message: errMessages})
+                    }else{
+                        setUserSettErr({err:true, message: 'There was an error changing the user password.'})
+                    }
                 }
             }else{
                 setUserSettErr({err:true, message:'There was an error changing the user information.'})
@@ -112,7 +133,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
         setUserInfo(prevUserInfo=>{
             return {
                 ...prevUserInfo,
-                [name]: value
+                [name]: name==='friendTag'?value.toUpperCase():value
             }
         })
     }

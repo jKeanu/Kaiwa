@@ -247,7 +247,6 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const handleRequestDeclined = (data:{userId:string}):void=>{
-                    console.log(data.userId, '123123123123')
                     setSentReqs(prevSentReqs=>[...prevSentReqs].filter(sentReq=>sentReq.friend._id!==data.userId))
                 }
                 socket.on("friend_request_declined", handleRequestDeclined)
@@ -316,6 +315,7 @@ const HomePage:React.FC = ()=>{
                         if(data.type==='Joined'){
                             //Update the channels when someone joined the channel
                             const updateChannelDataCache = {...channelDataCache.channel}
+                            console.log(data.user, '----')
                             updateChannelDataCache.members = [...updateChannelDataCache.members, data.user]
                             return {status:channelDataCache.status, channel:updateChannelDataCache}
                         }else if(data.type==='Left'){
@@ -455,7 +455,6 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const handleNewGroupChannel = (data:Channel)=>{
-                    console.log(data, '--------')
                     setChannels(prevChannels=>[data, ...prevChannels])
                 }
                 socket.on('new_group_channel', handleNewGroupChannel)

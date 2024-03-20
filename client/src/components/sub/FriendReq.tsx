@@ -33,7 +33,8 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                         channelNumber:fetchedNewChannelData.channelNumber,
                         lastMessage:fetchedNewChannelData.lastMessage,
                         _id:fetchedNewChannelData._id,
-                        id: fetchedNewChannelData.id
+                        id: fetchedNewChannelData.id,
+                        formattedLastMessage: fetchedNewChannelData.formattedLastMessage
                     },
                     friend:{
                         ...sortMembers[0]

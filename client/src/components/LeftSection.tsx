@@ -43,7 +43,6 @@ const LeftSection:React.FC<LeftSectionProps>=({
     const clearSearchQuery = ():void => {
         setSearchQuery('');
     }
-    console.log(channels, '--')
     return(
     <section className='left-home-section'>
         {modal.active&&
@@ -129,7 +128,6 @@ const LeftSection:React.FC<LeftSectionProps>=({
                 </div>
             </button>
             <div className='logout-container'>
-                <button className='logout-button' onClick={handleLogout}>Log Out</button>
                 <button className='logout-button-laptop' onClick={handleLogout}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c93a3a" strokeWidth="1"
                     strokeLinecap="round" strokeLinejoin="round" className="logout-img">

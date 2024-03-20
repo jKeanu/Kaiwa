@@ -6,16 +6,16 @@ import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss-clean';
 import compression from 'compression';
 import cors from 'cors';
-import dotenv from'dotenv'
-dotenv.config({ path: './config.env' });
 import globalHandleError from './controllers/errorController.js';
 import userRouter from './routes/userRoutes.js';
 import groupRouter from './routes/groupRoutes.js';
 import userFriendRouter from './routes/userFriendRoutes.js';
 import userGroupRouter from './routes/userGroupRoutes.js';
 import userChannelRouter from './routes/userChannelRoutes.js';
-
+import dotenv from'dotenv'
+dotenv.config({ path: './config.env' });
 const app = express();
+
 
 app.use(cors());
 app.options('*', cors());

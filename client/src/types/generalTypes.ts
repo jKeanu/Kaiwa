@@ -268,7 +268,7 @@ export type InviteFriend={
     handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void
     channelNumber:string|undefined,
     setModalDisabled:React.Dispatch<SetStateAction<boolean>>,
-    modalDisabled: boolean
+    modalDisabled: boolean,
 }
 
 

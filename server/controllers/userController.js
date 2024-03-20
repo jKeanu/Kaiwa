@@ -101,12 +101,15 @@ export const updateUser = catchAsync(async(req, res, next)=>{
     if (req.body.password || req.body.passwordConfirm){
         return next(new AppError('This route is not for password updates.', 400))
     }
+    
     const filteredBody = filterObj(req.body, 'displayName', 'friendTag')
     //We can run validators since the passwordConfirm validator only works on create or save.
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
         .select('-groups -friends -passwordChangedAt -__v')
     const updatedUserObject = updatedUser.toObject()
-    updatedUserObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${req.file.filename}`
+    if(req.file){
+        updatedUserObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${req.file.filename}`
+    }
     res.status(200).json({
         status:'success',
         user: updatedUserObject
@@ -132,7 +135,6 @@ export const getMe = catchAsync(async(req, res, next)=>{
     for (const group of currentUserObject.groups){
         group.photoUrl = `${cloudfrontDomainName}/${group.photo}`
     }
-    console.log(currentUser.friends, '===')
     res.status(200).json({
         status:"success",
         user:currentUserObject
