@@ -607,6 +607,7 @@ const HomePage:React.FC = ()=>{
                                 fIdAndChannelInfos={fIdAndChannelInfos}
                                 socket={socket}
                                 currentUserData={userData}
+                                formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}
                                 token={token}/>
                             </ChannelSectionContext.Provider>
                             }/>

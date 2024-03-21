@@ -13,8 +13,10 @@ router.route('/:groupId')
     .get(groupController.getGroupChannel)
     .delete(groupController.deleteGroup);
 
-router.route('/:groupId/update')
-    .patch(groupController.updateGroupDetails);
+router.patch('/:groupId/update', 
+    groupController.uploadGroupPhoto, 
+    groupController.resizeGroupPhoto, 
+    groupController.updateGroupDetails);
 
 router.route('/:groupId/members')
     .get(groupController.getGroupMembers);

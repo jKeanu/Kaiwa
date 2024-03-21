@@ -74,7 +74,7 @@ export const changeGroupSettings = async(token:string, groupId:string,groupInfo:
             'Authorization': `Bearer ${token}`
         }
     }
-    return axios.patch(`/api/v1/groups/${groupId}/update`, groupInfo, config)
+    return axios.patch(`${API_URL}/api/v1/groups/${groupId}/update`, groupInfo, config)
 }
 
 export const addFriend = async(token:string, displayName:string, friendTag:string):Promise<AxiosResponse<AddFriendStatus>>=>{

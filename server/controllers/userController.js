@@ -105,11 +105,10 @@ export const updateUser = catchAsync(async(req, res, next)=>{
     const filteredBody = filterObj(req.body, 'displayName', 'friendTag')
     //We can run validators since the passwordConfirm validator only works on create or save.
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
-        .select('-groups -friends -passwordChangedAt -__v')
+        .select('photo friendTag displayName')
     const updatedUserObject = updatedUser.toObject()
-    if(req.file){
-        updatedUserObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${req.file.filename}`
-    }
+    updatedUserObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${updatedUser.photo}`
+    console.log(updatedUserObject, '======')
     res.status(200).json({
         status:'success',
         user: updatedUserObject

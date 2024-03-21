@@ -23,6 +23,7 @@ import { AxiosResponse } from "axios"
 import UnfriendMemberModal from "./modals/UnfriendMember"
 import ChangeLeaderModal from "./modals/ChangeLeader"
 import throttle from 'lodash.throttle'
+import GroupSettingsModal from "./modals/GroupSettings"
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
@@ -33,7 +34,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         fIdAndChannelInfos, 
         setSentReqs,
         setFriendReqs,
-        handleNewFriendChannel})=>{
+        handleNewFriendChannel,
+        formatToTodayIfCurrentDate})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag, photoUrl} = currentUserData
@@ -61,11 +63,14 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [isMemberVisible, setIsMemberVisible] = useState(false)
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
-    
+
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
     const channelCacheKey = `api/v1/channels/${channelNumber}`
     const messagesLimit = 12
+
+
+    
     const membersId:string[] = useMemo(()=>{
         return [...currentChannelMembers].map(member=>member._id)
     }, [currentChannelMembers])
@@ -104,10 +109,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             navigate('/@me')
         }
     }, [channelData, channelError, channelIsLoading])
-
-    useEffect(()=>{
-        console.log(cache.get(messageCacheKey), '----')
-    }, [])
 
     const { data: messagesData, error: messagesError} = useSWR<ChannelMessagesStatus>(
         //if there's already a data in the cache, we no longer need to fetch 
@@ -350,19 +351,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }, 150)
     }
 
-    function formatToTodayIfCurrentDate(dateStr:string):string {
-        const currentDate = new Date();
-        const messageDate = new Date(dateStr);
-        const currentDateStr = currentDate.toLocaleDateString();
-        const messageDateStr = messageDate.toLocaleDateString();
-        if (currentDateStr === messageDateStr) {
-            // Format the time part
-            const timeStr = dateStr.split(' ')[1] + ' ' + dateStr.split(' ')[2];
-            return `Today at ${timeStr}`;
-        } else {
-            return dateStr;
-        }
-    }
 
     function handleKeyDown(event:React.KeyboardEvent<HTMLTextAreaElement>):void{
     // Check if the Enter key was pressed (key code 13)
@@ -671,8 +659,20 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         {(currentChannel&&messagesData)?
         <section className={`channel-section ${isVisible?'channel-section-mob':''}`}>
         {(modalWindow.isOpen||memberModal.isOpen)&&
-            <dialog className='modal-window-container' onClick={handleModalWindowClick}>
-                    {(modalWindow.window==='leaveGroup'&&currentChannel)
+            <dialog className='modal-window-container' onMouseDown={handleModalWindowClick}>
+                    {(modalWindow.window==='groupSettings')
+                    &&currentChannel.photo&&currentChannel.photoUrl&&currentChannel.channelName&&
+                    <GroupSettingsModal 
+                        token={token}
+                        socket={socket}
+                        channelId={currentChannel._id}
+                        channelName={currentChannel.channelName}
+                        setCurrentChannel={setCurrentChannel}
+                        groupPhoto={currentChannel.photo}
+                        groupPhotoUrl={currentChannel.photoUrl}
+                    />
+                    }
+                    {(modalWindow.window==='leaveGroup')
                     &&
                     <LeaveGroupModal 
                         token={token} 
@@ -683,7 +683,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         handleCloseButton={handleCloseButton} 
                         setModalDisabled={setModalDisabled}/>
                     }
-                    {(modalWindow.window==='inviteUser'&&currentChannel)
+                    {(modalWindow.window==='inviteUser')
                     &&
                     <InviteUserModal
                         handleCloseButton={handleCloseButton}
@@ -694,7 +694,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         channelNumber={channelNumber}
                         modalDisabled={modalDisabled}
                         setModalDisabled={setModalDisabled}/>}
-                    {(modalWindow.window==='deleteGroup'&&currentChannel)
+                    {(modalWindow.window==='deleteGroup')
                     &&
                     <DeleteGroupModal 
                         token={token} 
@@ -770,7 +770,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 </svg>
                         </button>}
                         {currentChannel.groupLeader===_id&&
-                        <button className="nav-button">
+                        <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'groupSettings')}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
                             strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="group-settings-image">
                                 <circle cx="12" cy="12" r="3" fill="">

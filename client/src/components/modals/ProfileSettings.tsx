@@ -38,45 +38,25 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                 return 
             }
             const formData = new FormData()
-            if(userInfo.displayName!==userInfo.displayName){
-                formData.append('displayName', userInfo.displayName)
-            }
-            if(userInfo.friendTag!==userInfo.friendTag){
-                formData.append('friendTag', userInfo.friendTag)
-            }
+            if(userInfo.displayName!==currUserData.displayName) formData.append('displayName', userInfo.displayName)
+            if(userInfo.friendTag!==currUserData.friendTag) formData.append('friendTag', userInfo.friendTag)
             if(userInfo.profileImage){
                 formData.append('profileImage', userInfo.profileImage)
                 formData.append('currPhoto', currUserData.photo)
             }
             const res:AxiosResponse<UpdateUserStatus> = await updateCurrentUser(token, formData)
-            const {displayName, friendTag, photo, photoUrl} = res.data.user
             if(res.data.status==='success'){
-                if(photoUrl){
-                    setUserData(prevUserData=>{
-                        if(prevUserData){
-                            return {
-                                ...prevUserData,
-                                displayName,
-                                friendTag,
-                                photo,
-                                photoUrl
-                            }
+                setUserData(prevUserData=>{
+                    if(prevUserData){
+                        return {
+                            ...prevUserData,
+                            ...res.data.user
                         }
-                    })
-                }else{
-                    setUserData(prevUserData=>{
-                        if(prevUserData){
-                            return {
-                                ...prevUserData,
-                                displayName,
-                                friendTag,
-                            }
-                        }
-                    })
+                    }
+                })
                 }
-                setModal({active:false, type:''})
-            }
             setIsLoading(false)
+            setModal({active:false, type:''})
         }catch(err:unknown){
             if(axios.isAxiosError(err)){
                 if(err.response?.status===409){

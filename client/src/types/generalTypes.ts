@@ -63,11 +63,10 @@ export type UpdateUserStatus={
     user:{
         _id:string,
         displayName:string,
-        email:string,
         photo:string,
         photoUrl:string,
         friendTag: string,
-        status:string
+        id:string
     }
 }
 
@@ -312,7 +311,17 @@ export type UnfriendProps={
     channelNumber:number|undefined
 }
 
-export type MemberUnfriend ={
+export type GroupSettingsProps = {
+    channelName: string,
+    token: string,
+    socket: Socket | undefined,
+    groupPhotoUrl: string,
+    groupPhoto: string,
+    channelId: string,
+    setCurrentChannel: React.Dispatch<SetStateAction<CurrentChannel|undefined>>
+}
+
+export type MemberUnfriend = {
     token:string,
     channelId:string,
     memberId:string,
@@ -344,7 +353,7 @@ export type UpdateGroupStatus = {
         channelName:string,
         photo:string,
         id:string,
-        photoUrl: string|undefined
+        photoUrl: string
     }
 }
 

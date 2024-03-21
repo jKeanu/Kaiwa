@@ -7,6 +7,8 @@ import Chat from '../models/chatModel.js';
 import { MongoServerError } from 'mongodb'
 import multer from 'multer';
 import { S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import sharp from 'sharp';
 
 
 const bucketName = process.env.BUCKET_NAME
@@ -165,15 +167,12 @@ export const updateGroupDetails = catchAsync( async(req, res, next)=>{
         const filteredBody = filterObj(req.body, 'channelName')
         const updateGroup = await Channel.findByIdAndUpdate(req.params.groupId, filteredBody, {new:true, session:session})
             .select('photo channelName groupLeader')
-        console.log(updateGroup, '----')
         if(!updateGroup.groupLeader.equals(req.user._id)){
             await session.abortTransaction()
             return next(new AppError("You are not permitted to perform this action.", 401))   
         }
         const updateGroupObject = updateGroup.toObject()
-        if(req.file){
-            updateGroupObject.photoUrl = `${cloudfrontDomainName}/${req.file.filename}`
-        }
+        updateGroupObject.photoUrl = `${cloudfrontDomainName}/${updateGroup.photo}`
         updateGroupObject.groupLeader = undefined
         await session.commitTransaction()
         res.status(200).json({

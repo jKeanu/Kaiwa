@@ -6,7 +6,7 @@ const channelSchema = new mongoose.Schema({
         required:[function(){
             return this.channelType === 'Group'
         }, 'Group must have a name.'],
-        maxlength:[20, 'A channel must contain no more than 20 characters'],
+        maxlength:[12, 'A channel must contain no more than 10 characters'],
         minlength:[1, 'Please provide a name for your channel']
     },
     groupLeader:{
