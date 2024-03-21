@@ -18,12 +18,11 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
         return userInfo.profileImage? URL.createObjectURL(userInfo.profileImage):null
     }, [userInfo.profileImage])
 
-
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
         setModalVisible(false)
         setTimeout(() => {
-            setModal({active:false, type:''});
+            setModal({active:false, type:''})
         }, 210)
     }
 
@@ -39,8 +38,12 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                 return 
             }
             const formData = new FormData()
-            formData.append('displayName', userInfo.displayName)
-            formData.append('friendTag', userInfo.friendTag)
+            if(userInfo.displayName!==userInfo.displayName){
+                formData.append('displayName', userInfo.displayName)
+            }
+            if(userInfo.friendTag!==userInfo.friendTag){
+                formData.append('friendTag', userInfo.friendTag)
+            }
             if(userInfo.profileImage){
                 formData.append('profileImage', userInfo.profileImage)
                 formData.append('currPhoto', currUserData.photo)

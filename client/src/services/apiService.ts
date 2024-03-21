@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
-import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus, ChannelMessagesStatus, UpdateUserStatus } from '../types/generalTypes';
+import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus, ChannelMessagesStatus, UpdateUserStatus, UpdateGroupStatus } from '../types/generalTypes';
 import { ChannelMessage } from '../types/generalTypes';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -68,6 +68,14 @@ export const changeGroupLeader = async(token:string, channelId:string, userId:st
     return axios.patch(`${API_URL}/api/v1/groups/${channelId}/changeleader`, {userId}, config)
 }
 
+export const changeGroupSettings = async(token:string, groupId:string,groupInfo:FormData):Promise<AxiosResponse<UpdateGroupStatus>>=>{
+    const config={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    }
+    return axios.patch(`/api/v1/groups/${groupId}/update`, groupInfo, config)
+}
 
 export const addFriend = async(token:string, displayName:string, friendTag:string):Promise<AxiosResponse<AddFriendStatus>>=>{
     const config={
@@ -124,10 +132,6 @@ export const messageFetcher = async (endpoint: string, limit: number, skip: numb
             });
 }
 
-
-export const currUserDataFetcher = (endpoint:string, token:string|null)=>
-    axios.get<{status:string, user:User}>(`${API_URL}/${endpoint}`, {headers:{'Authorization': `Bearer ${token}`}})
-            .then(response=>response.data)
 
 
 export const getCurrentUser = async(token:string|null):Promise<AxiosResponse<UserDataStatus>> => {

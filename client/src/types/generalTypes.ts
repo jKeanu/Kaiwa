@@ -336,6 +336,18 @@ export type ChangeLeader={
     setModalDisabled:React.Dispatch<SetStateAction<boolean>>
 }
 
+
+export type UpdateGroupStatus = {
+    status: string,
+    group:{
+        _id:string,
+        channelName:string,
+        photo:string,
+        id:string,
+        photoUrl: string|undefined
+    }
+}
+
 //Current User 
 export type ProfileSettings={
     currUserData: User,

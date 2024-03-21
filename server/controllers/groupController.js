@@ -5,9 +5,16 @@ import AppError from '../utils/appError.js';
 import Channel from '../models/channelModel.js';
 import Chat from '../models/chatModel.js';
 import { MongoServerError } from 'mongodb'
+import multer from 'multer';
+import { S3Client } from '@aws-sdk/client-s3';
 
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+const bucketName = process.env.BUCKET_NAME
+const bucketRegion = process.env.BUCKET_REGION
+const accessKey = process.env.ACCESS_KEY
+const secretAccessKey = process.env.SECRET_ACCESS_KEY
+const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
+
 
 const filterObj = (obj, ...allowedfields)=>{
     const newObj = {}
@@ -18,6 +25,7 @@ const filterObj = (obj, ...allowedfields)=>{
     return newObj
 }
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 export const getGroupChannel = catchAsync(async(req, res, next)=>{
     const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:'Group'}).populate('messages')
     if(!groupChannel){
@@ -76,24 +84,101 @@ export const createGroupChannel = catchAsync(async(req, res, next)=>{
     }}
 )
 
+
+
+const s3 = new S3Client({
+    credentials:{
+        accessKeyId: accessKey,
+        secretAccessKey: secretAccessKey
+    },
+    region: bucketRegion
+})
+
+
+const multerStorage = multer.memoryStorage()
+
+const multerFilter = (req, file, cb) => {
+    if(file.mimetype.startsWith('image')){
+        cb(null, true)
+    }else{
+        cb(new AppError('Please upload an image only file.', 400), false)
+    }
+}
+
+const upload = multer({
+    fileFilter: multerFilter,
+    storage: multerStorage
+})
+
+
+export const uploadGroupPhoto = upload.single('groupProfileImage')
+
+export const resizeGroupPhoto = catchAsync(async(req, res, next)=>{
+    if (!req.file) return next()
+    if(req.body.currPhoto==='default.jpeg'){
+        req.file.filename = `group-profile-${req.params.groupId}-v1.jpeg`
+        const buffer = await sharp(req.file.buffer)
+            .resize({height:250, width:250, fit:"cover"})
+            .toFormat('jpeg')
+            .jpeg({ quality: 90 })
+            .toBuffer()
+        const params = {
+            Bucket: bucketName,
+            Key: req.file.filename,
+            Body: buffer,
+            ContentType: req.file.mimetype,
+        }
+        const command = new PutObjectCommand(params)
+        await s3.send(command)
+        await Channel.findByIdAndUpdate(req.params.groupId, {photo:req.file.filename}, {new:true, runValidators:true})
+        next()
+    }else{
+        const versionRegex = /-v(\d+)\.jpeg$/
+        // Extract the current version number, increment it, and generate the new filename
+        const newVersionNumber = parseInt(req.body.currPhoto.match(versionRegex)[1], 10) + 1;
+        req.file.filename = req.body.currPhoto.replace(versionRegex, `-v${newVersionNumber}.jpeg`);
+        //buffer is the raw binary data of the uploaded image file,
+        const buffer = await sharp(req.file.buffer)
+            .resize({height:250, width:250, fit:"cover"})
+            .toFormat('jpeg')
+            .jpeg({ quality: 90 })
+            .toBuffer()
+        const params = {
+            Bucket: bucketName,
+            Key: req.file.filename,
+            Body: buffer,
+            ContentType: req.file.mimetype,
+        }
+        const command = new PutObjectCommand(params)
+        await s3.send(command)
+        const deleteCommand = new DeleteObjectCommand({Key:req.body.currPhoto, Bucket:bucketName})
+        await s3.send(deleteCommand)
+        await Channel.findByIdAndUpdate(req.params.groupId, {photo:req.file.filename}, {new:true, runValidators:true})
+        next()
+    }
+})
+
 export const updateGroupDetails = catchAsync( async(req, res, next)=>{
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
-        const filteredBBody = filterObj(req.body, 'channelName')
-        const updatedGroup = await Channel.findByIdAndUpdate(req.params.groupId,
-             filteredBBody, 
-             {new:true, runValidators:true, session})
-        if(!updatedGroup.members.includes(req.user._id)){
+        const filteredBody = filterObj(req.body, 'channelName')
+        const updateGroup = await Channel.findByIdAndUpdate(req.params.groupId, filteredBody, {new:true, session:session})
+            .select('photo channelName groupLeader')
+        console.log(updateGroup, '----')
+        if(!updateGroup.groupLeader.equals(req.user._id)){
             await session.abortTransaction()
-            return next(new AppError("You are not a member of this group.", 401))   
+            return next(new AppError("You are not permitted to perform this action.", 401))   
         }
+        const updateGroupObject = updateGroup.toObject()
+        if(req.file){
+            updateGroupObject.photoUrl = `${cloudfrontDomainName}/${req.file.filename}`
+        }
+        updateGroupObject.groupLeader = undefined
         await session.commitTransaction()
         res.status(200).json({
             status:'success',
-            data:{
-                group:updatedGroup
-            }
+            group:updateGroupObject
         })
     }catch(err){
         await session.abortTransaction()
