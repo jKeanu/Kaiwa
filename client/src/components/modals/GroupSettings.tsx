@@ -10,7 +10,8 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
         channelName, 
         groupPhoto, 
         groupPhotoUrl,
-        setCurrentChannel})=>{
+        setCurrentChannel,
+        handleCloseButton})=>{
     const [modalVisible, setModalVisible] = useState(false)
     const [groupFormData, setGroupFormData] = useState<{channelName:string, groupProfileImage:File|null}>
     ({channelName:channelName, groupProfileImage:null})
@@ -19,6 +20,8 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
     const profileImagePreview = useMemo(()=>{
         return groupFormData.groupProfileImage? URL.createObjectURL(groupFormData.groupProfileImage):null
     }, [groupFormData.groupProfileImage])
+
+
 
     useEffect(()=>{
         setModalVisible(true)
@@ -81,8 +84,25 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
             }
         })
     }
+
+    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        handleCloseButton(setModalVisible)
+    }
+    
     return(
         <div className={`${modalVisible?'visible':''} group-settings-modal-container`}>
+            <div className="group-setting-x-button-container">
+                <button className="group-setting-x-button" disabled={isLoading} onClick={handleClose}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
+                        strokeLinecap="round" strokeLinejoin="round" className="x-img">
+                        <line x1="18" y1="6" x2="6" y2="18">
+                        </line>
+                        <line x1="6" y1="6" x2="18" y2="18">
+                        </line>
+                    </svg>
+                </button>
+            </div>
             <form className="group-settings-form" onSubmit={handleSubmit}>
                 <div className="group-photo-input-containter">
                     <label className="group-photo-input-label" htmlFor="group-setting-photo">
@@ -101,7 +121,7 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                      onChange={handleChange} name="channelName"/>
                 </div>
                 <div className="group-setting-button-container">
-                    <button className="group-setting-button" type="submit">
+                    <button className="group-setting-button" type="submit" disabled={isLoading}>
                             {isLoading?
                     
                     <div className="group-setting-loading"></div>

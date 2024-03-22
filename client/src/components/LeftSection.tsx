@@ -18,7 +18,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
     const [modal, setModal] = useState({active:false, type:''})
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
-        if (e.button===0 && e.target === e.currentTarget) {
+        if (e.button===0 && e.target === e.currentTarget){
             e.preventDefault()
             if(!isDisabled){
                 setModal({active: false, type:''})

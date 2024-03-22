@@ -69,7 +69,6 @@ const InviteUserModal:React.FC<InviteFriend>=({
     useEffect(()=>{
         if(loadings.length===0){
             setModalDisabled(false)
-            console.log('WHAT IN THE WORLD')
         }
     }, [loadings])
 

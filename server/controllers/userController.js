@@ -57,7 +57,7 @@ export const resizeUserPhoto = catchAsync(async (req, res, next) => {
     if(req.body.currPhoto==='default.jpeg'){
         req.file.filename = `user-profile-${req.user.id}-v1.jpeg`
         const buffer = await sharp(req.file.buffer)
-            .resize({height:250, width:250, fit:"cover"})
+            .resize({height:200, width:200, fit:"cover"})
             .toFormat('jpeg')
             .jpeg({ quality: 90 })
             .toBuffer()

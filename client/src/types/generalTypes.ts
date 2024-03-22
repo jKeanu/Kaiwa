@@ -132,6 +132,7 @@ export type ChannelSectionProps={
     setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
     friendReqs:FriendReq[],
     sentReqs: SentReq[],
+    formatToTodayIfCurrentDate: (dateStr:string) => string
 }
 
 export type HomeSectionProps={
@@ -318,7 +319,8 @@ export type GroupSettingsProps = {
     groupPhotoUrl: string,
     groupPhoto: string,
     channelId: string,
-    setCurrentChannel: React.Dispatch<SetStateAction<CurrentChannel|undefined>>
+    setCurrentChannel: React.Dispatch<SetStateAction<CurrentChannel|undefined>>,
+    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void
 }
 
 export type MemberUnfriend = {

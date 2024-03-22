@@ -69,6 +69,12 @@ const channelSchema = new mongoose.Schema({
             hours = hours ? hours.toString().padStart(2, '0') : '12'; // the hour '0' should be '12'
             return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`
         }
+    },
+    seen: {
+        type: [{
+            type: mongoose.Schema.ObjectId,
+            ref:'User'
+        }]
     }
 },{
     //each time data is outputed as json we want virtuals to be part of the output
