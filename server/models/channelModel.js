@@ -38,7 +38,7 @@ const channelSchema = new mongoose.Schema({
         type:Number,
         required:[true, "A channel must have a channel number"],
         unique:true,
-        default:() => Math.floor(Math.random() * 10) + 1
+        default:() => Math.floor(Math.random() * 99999999999999) + 1
     },
     photo:{
         type:String,
@@ -70,12 +70,7 @@ const channelSchema = new mongoose.Schema({
             return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`
         }
     },
-    seen: {
-        type: [{
-            type: mongoose.Schema.ObjectId,
-            ref:'User'
-        }]
-    }
+    notSeen: [String]
 },{
     //each time data is outputed as json we want virtuals to be part of the output
     toJSON: { virtuals: true},
@@ -93,13 +88,7 @@ channelSchema.virtual('messages',{
 
 channelSchema.pre('save', async function(next) {
     if (this.isNew) {
-        const highestChannel = await this.constructor.findOne().sort('-channelNumber').exec();
-        //Since few channels there is a possibility that the channelNumber could collide during validation,
-        //i.e if the channel number of the first channel was 9 and when creating the
-        //second channel during the Math.floor(Math.random() * 10) + 1 you could still get 9, 
-        //which will cause collision (unique). That's why we implemented the first value to 11
-        //Since the expression above produces random integer between 1 and 10.
-        this.channelNumber = highestChannel ? highestChannel.channelNumber + this.channelNumber : 11;
+        this.seen = [...this.members]
     }
     next();
 });
