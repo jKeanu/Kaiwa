@@ -19,7 +19,8 @@ export type Channel = {
     photo:string,
     _id:string,
     photoUrl: string,
-    formattedLastMessage: string
+    formattedLastMessage: string,
+    notSeen: string[]
 }
 
 export type Friend = {
@@ -29,7 +30,8 @@ export type Friend = {
         lastMessage: number|Date,
         _id:string,
         channelType:string,
-        formattedLastMessage: string
+        formattedLastMessage: string,
+        notSeen: string[]
     },
     friend:FriendDetails,
     status:string,
@@ -179,7 +181,8 @@ export type CurrentChannel={
     photo?: string,
     photoUrl?:string
     lastMessage:number,
-    formattedLastMessage: string
+    formattedLastMessage: string,
+    notSeen: string[]
 }
 
 export type ChannelDataStatus={
@@ -214,7 +217,8 @@ export type CreateGroupStatus={
         lastMessage:Date,
         photo:string,
         photoUrl:string
-        __v:number
+        notSeen: string[],
+        __v: number
     }
 }
 
@@ -372,7 +376,8 @@ export type LastMessageUpdate = {
     newTime:Date|number,
     message:ChannelMessage,
     channelType:string,
-    newFormattedTime: string | undefined
+    newFormattedTime: string | undefined,
+    notSeen: string[]
 }
 
 export type UserStatusUpdate= {
@@ -389,7 +394,8 @@ export type NewChannel={
     lastMessage:number|Date,
     formattedLastMessage: string,
     id:string,
-    members:ChannelMember[]
+    members:ChannelMember[],
+    notSeen: string[]
 }
 
 export type AcceptFriendStatus={
@@ -421,7 +427,8 @@ export type FriendRequestAccepted={
         lastMessage: number | Date,
         _id: string,
         id: string,
-        formattedLastMessage: string
+        formattedLastMessage: string,
+        notSeen: string[]
     },
     newFriendId:string
 }

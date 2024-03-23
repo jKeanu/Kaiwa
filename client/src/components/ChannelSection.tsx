@@ -24,6 +24,7 @@ import UnfriendMemberModal from "./modals/UnfriendMember"
 import ChangeLeaderModal from "./modals/ChangeLeader"
 import throttle from 'lodash.throttle'
 import GroupSettingsModal from "./modals/GroupSettings"
+import { useChannelCustomContext } from "../context"
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
@@ -62,6 +63,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [isMemberVisible, setIsMemberVisible] = useState(false)
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
+
+    const {setChannels} = useChannelCustomContext()
 
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
@@ -144,8 +147,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     }, [socket, channelNumber]);
 
     useEffect(() => {
-        if (socket && channelNumber) {
-            const handleReceiveMessage= (newMessage: ChannelMessage)  => {
+        if (socket && channelNumber && currentChannel) {
+            const handleReceiveMessage= (newMessage: ChannelMessage) => {
                 if(newMessage.updated){
                     setMessageReceived(prevMessages=>{
                         const updatedMessages = [...prevMessages]
@@ -159,6 +162,16 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         return [newMessage, ...prevMessages];
                     });
                 }
+                socket.emit('new_message_seen', {user:_id, channelId:currentChannel._id})
+                mutate(channelCacheKey, (currChannelCachedData: ChannelDataStatus | undefined)=>{
+                    if(!currChannelCachedData){
+                        return undefined
+                    }
+                    const updateChannelData = {...currChannelCachedData.channel}
+                    updateChannelData.notSeen = [...membersId].filter(member=>member!==_id)
+                    return {status: currChannelCachedData.status, channel: updateChannelData}
+                }, false)
+                //Notify the server that you have seen the latest message
                 mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) => {
                     if (!currMsgCachedData){
                       return undefined
@@ -191,7 +204,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
             return cleanup
         }
-    }, [socket, channelNumber]);
+    }, [socket, channelNumber, currentChannel]);
 
 
     useEffect(()=>{
@@ -495,7 +508,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             lastMessage:fetchedNewChannelData.lastMessage,
                             _id:fetchedNewChannelData._id,
                             id: fetchedNewChannelData.id,
-                            formattedLastMessage: fetchedNewChannelData.formattedLastMessage
+                            formattedLastMessage: fetchedNewChannelData.formattedLastMessage,
+                            notSeen: fetchedNewChannelData.notSeen
                         },
                         friend:{
                             ...sortMembers[0]
@@ -640,7 +654,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         
                     }
                 }, false)
-
             }
         }
         if(!msgFetchLoading){
@@ -648,6 +661,30 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
 
     }, [messagesSkip])
+
+
+    useEffect(()=>{
+        if(socket && currentChannel){
+            if(currentChannel.notSeen.includes(_id)){
+                socket.emit('new_message_seen', {user:_id, channelId:currentChannel._id})
+                setChannels(prevChannels=>{
+                    const channels = [...prevChannels]
+                    const currChannel = channels.find(channel => channel.id === currentChannel._id)
+                    if(currChannel){
+                        currChannel.notSeen = currChannel.notSeen.filter(member=> member !== _id)
+                    }
+                    return channels
+                })
+                setCurrentChannel(channel=>{
+                    if(channel){
+                        const updateChannel = {...channel}
+                        updateChannel.notSeen = updateChannel.notSeen.filter(member=>member!==_id)
+                        return updateChannel
+                    }
+                })
+            }
+        }
+    }, [socket, currentChannel])
 
 
     return (

@@ -1,4 +1,4 @@
-import {useState, useEffect, useMemo, useCallback} from 'react'
+import React, {useState, useEffect, useMemo, useCallback, useReducer} from 'react'
 import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import {jwtDecode} from 'jwt-decode'
@@ -10,14 +10,36 @@ import {User, Channel,
         FriendDetails, ChannelDataStatus, 
         ChannelMemberUpdate, LastMessageUpdate,
         ChannelMessagesStatus, UserStatusUpdate, FriendReq, SentReq, FriendRequestAccepted, NoticeModalSettings,
-        FIdChannelInfo} 
+        FIdChannelInfo,
+        ChannelAction,
+        ActionType} 
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
 import { getCurrentUser } from '../services/apiService'
-import axios, {AxiosResponse} from 'axios'
+import {AxiosResponse} from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
 
+
+function channelReducer(state:Channel[] | [], action:ChannelAction){
+    switch (action.type){
+        case ActionType.InitialFetch:
+            return action.payload
+        case ActionType.Seen:
+            const channels = [...state]
+            const currChannel = channels.find(channel => channel.id === action.payload.channelId)
+            if(currChannel){
+                currChannel.notSeen = currChannel.notSeen.filter(member=> member !== action.payload.currUserId)
+            }
+            return channels
+        case ActionType.DeleteChannel:
+            const updateChannels = [...state]
+            return updateChannels.filter(channel=>channel._id!==action.payload.channelId)
+        case ActionType.NewMessage:
+        default:
+            return state
+    }   
+}
 
 const HomePage:React.FC = ()=>{
         //Get token from local storage
@@ -37,6 +59,9 @@ const HomePage:React.FC = ()=>{
         const [isFriendsOpen, setIsFriendsOpen] = useState<boolean>(false)
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
+
+        const [channelState, dispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(channelReducer, [])
+
         const location = useLocation()
 
         const friendChannelIds = useMemo(()=>{
@@ -100,7 +125,8 @@ const HomePage:React.FC = ()=>{
                                 photo: friend.friend.photo,
                                 photoUrl: friend.friend.photoUrl,
                                 channelType: friend.channel.channelType,
-                                formattedLastMessage: friend.channel.formattedLastMessage
+                                formattedLastMessage: friend.channel.formattedLastMessage,
+                                notSeen: friend.channel.notSeen
                             }
                         })
                         //In this case, we only need the friend information, not including the channel.
@@ -152,7 +178,8 @@ const HomePage:React.FC = ()=>{
                 lastMessage: friendInfo.channel.lastMessage,
                 photo: friendInfo.friend.photo,
                 photoUrl: friendInfo.friend.photoUrl,
-                formattedLastMessage: friendInfo.channel.formattedLastMessage
+                formattedLastMessage: friendInfo.channel.formattedLastMessage,
+                notSeen: friendInfo.channel.notSeen
             }
             setChannels(prevChannels =>{
                 const updateChannel = [...prevChannels]
@@ -265,6 +292,13 @@ const HomePage:React.FC = ()=>{
                         const currChannels = [...prevChannels]
                         const channelToUpdate = currChannels.find(channel=>channel._id===data.channelId)
                         if(channelToUpdate){
+                            //if we're in the channel already, we dont need to update the notSeen since, we can
+                            //see the latest message right away
+                            if(location.pathname === `/@me/channels/${data.channelNumber}`){
+                                channelToUpdate.notSeen = data.notSeen.filter(member=>member!==userData?._id)
+                            }else{
+                                channelToUpdate.notSeen = data.notSeen
+                            }
                             channelToUpdate.lastMessage = data.newTime
                             //if its a new message and not a continue message, we update the formatted time of the channel
                             if(data.newFormattedTime){
@@ -279,11 +313,18 @@ const HomePage:React.FC = ()=>{
                         return sortedChannels
                     })
                     if(location.pathname !== `/@me/channels/${data.channelNumber}`){
+                        mutate(`api/v1/channels/${data.channelNumber}`, (currChannelCachedData: ChannelDataStatus | undefined)=>{
+                            if(!currChannelCachedData){
+                                return 
+                            }
+                            const updateChannel = {...currChannelCachedData.channel}
+                            updateChannel.notSeen = data.notSeen
+                            return {status:currChannelCachedData.status, channel:updateChannel}
+                        }, false)
                         mutate(`api/v1/channels/${data.channelNumber}/messages`, (prevMessagesDataCache:ChannelMessagesStatus|undefined)=>{
                             if(!prevMessagesDataCache){
                                 return 
                             }
-                            console.log('sheeee')
                             const updateMessages = [...prevMessagesDataCache.messages]
                             if(data.message.updated){
                                 updateMessages[0] = data.message

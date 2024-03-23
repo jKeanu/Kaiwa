@@ -100,10 +100,12 @@ export default (httpServer) => {
         formattedDate: data.formattedDate
       });
       // Update the last message of the channel
-      await Channel.findByIdAndUpdate(
+      const updateChannel = await Channel.findByIdAndUpdate(
         { _id: data.channel },
         { lastMessage: data.time, formattedLastMessage: data.formattedDate }
-      );
+      )
+      updateChannel.notSeen = updateChannel.members
+      updateChannel.save()
       // Although the newMessage document consists of sender as a mongoose object id,
       // we can use spread operator and add a similar key to overwrite it.
       const messageInfo = {
@@ -115,7 +117,7 @@ export default (httpServer) => {
       };
 
       io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
-      {channelId:data.channel, channelNumber:data.channelNumber,
+      {channelId:data.channel, channelNumber:data.channelNumber,  notSeen: updateChannel.notSeen,
       newTime:data.time, newFormattedTime:data.formattedDate, message:messageInfo, channelType:data.channelType})
       socket.to(data.channelNumber).emit('receive_message', messageInfo);
     });
@@ -149,7 +151,9 @@ export default (httpServer) => {
         {time:data.newTime, $push:{content:data.content}},
            {new:true})
       //we don't need to update the formattedLastMessage too, since this is a continue_message
-      await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime})
+      const updateChannel = await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime})
+      updateChannel.notSeen = updateChannel.members
+      updateChannel.save()
       //Since we need the sender details, we cannot just pass the updatedMessage
       //directly to the receive_message, the only sender info we have on chat model is the id      
       const messageInfo = {
@@ -163,8 +167,18 @@ export default (httpServer) => {
 
       socket.to(data.channelNumber).emit('receive_message', messageInfo)
       io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
-      {channelId:updatedMessage.channel, channelNumber:data.channelNumber, channelType:data.channelType,
-        newTime:updatedMessage.time, message:messageInfo})
+      {channelId:updatedMessage.channel, channelNumber:data.channelNumber, 
+        notSeen: updateChannel.notSeen,
+        channelType:data.channelType,
+        newTime:updatedMessage.time, message:messageInfo, })
+    })
+
+    //When a user havent seen the latest message and opened the channel
+    socket.on('new_message_seen', async (data)=>{
+      const updateChannel= await Channel.findByIdAndUpdate({_id:data.channelId}, {
+        $pull: {
+            notSeen: data.user
+        }}, {new:true})
     })
 
     //When a user sends a friend-request live update

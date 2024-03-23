@@ -77,6 +77,7 @@ const channelSchema = new mongoose.Schema({
     toObject: {virtuals: true}
 })
 
+
 channelSchema.index({lastMessage:1})
 
 channelSchema.virtual('messages',{
@@ -88,7 +89,8 @@ channelSchema.virtual('messages',{
 
 channelSchema.pre('save', async function(next) {
     if (this.isNew) {
-        this.seen = [...this.members]
+        console.log('NEW CHANNEL CREATED')
+        this.notSeen = [...this.members]
     }
     next();
 });
