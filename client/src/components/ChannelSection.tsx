@@ -25,6 +25,7 @@ import ChangeLeaderModal from "./modals/ChangeLeader"
 import throttle from 'lodash.throttle'
 import GroupSettingsModal from "./modals/GroupSettings"
 import { useChannelCustomContext } from "../context"
+import { ActionType } from "../types/generalTypes"
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
@@ -64,7 +65,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
 
-    const {setChannels} = useChannelCustomContext()
+    const {channelsDispatch} = useChannelCustomContext()
 
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
@@ -138,7 +139,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     useEffect(() => {
         if (socket && channelNumber) {
             // Join the room
-            socket.emit('join_channel_room', channelNumber);
+            socket.emit('join_channel_room', {channelNumber, displayName});
             // Handle socket disconnection or leaving the room when the component unmounts or changes
             return () => {
                 socket.emit('leave_channel_room', channelNumber);
@@ -148,7 +149,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
-            const handleReceiveMessage= (newMessage: ChannelMessage) => {
+            const handleReceiveMessage = (newMessage: ChannelMessage) => {
                 if(newMessage.updated){
                     setMessageReceived(prevMessages=>{
                         const updatedMessages = [...prevMessages]
@@ -162,16 +163,15 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         return [newMessage, ...prevMessages];
                     });
                 }
-                socket.emit('new_message_seen', {user:_id, channelId:currentChannel._id})
+                //Notify the server that you have seen the latest message
                 mutate(channelCacheKey, (currChannelCachedData: ChannelDataStatus | undefined)=>{
                     if(!currChannelCachedData){
                         return undefined
                     }
                     const updateChannelData = {...currChannelCachedData.channel}
-                    updateChannelData.notSeen = [...membersId].filter(member=>member!==_id)
+                    updateChannelData.seen.push(_id)
                     return {status: currChannelCachedData.status, channel: updateChannelData}
                 }, false)
-                //Notify the server that you have seen the latest message
                 mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) => {
                     if (!currMsgCachedData){
                       return undefined
@@ -190,6 +190,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     }
                     // Update the messages array in the channel data
                   }, false); // false tells the SWR to not re-fetch the data from the server after updating the cache
+                socket.emit('new_message_seen', {user:_id, channelId:currentChannel._id})
                 if(messageBoxRef.current){
                     if(messageBoxRef.current.scrollTop*-1<=800) messageBoxRef.current.scrollTop=0
                 }
@@ -269,7 +270,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 content:inputMessage,
                 newTime: timestamp,
                 channelNumber,
-                
                 channelType: currentChannel.channelType
             })
             setMessageReceived((prevMessages)=>{
@@ -509,7 +509,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             _id:fetchedNewChannelData._id,
                             id: fetchedNewChannelData.id,
                             formattedLastMessage: fetchedNewChannelData.formattedLastMessage,
-                            notSeen: fetchedNewChannelData.notSeen
+                            seen: fetchedNewChannelData.seen
                         },
                         friend:{
                             ...sortMembers[0]
@@ -665,23 +665,17 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     useEffect(()=>{
         if(socket && currentChannel){
-            if(currentChannel.notSeen.includes(_id)){
+            if(!currentChannel.seen.includes(_id.toString())){
                 socket.emit('new_message_seen', {user:_id, channelId:currentChannel._id})
-                setChannels(prevChannels=>{
-                    const channels = [...prevChannels]
-                    const currChannel = channels.find(channel => channel.id === currentChannel._id)
-                    if(currChannel){
-                        currChannel.notSeen = currChannel.notSeen.filter(member=> member !== _id)
+                channelsDispatch({type:ActionType.Seen, payload:{channelId:currentChannel._id, currUserId:_id}})
+                mutate(channelCacheKey, (currChannelCachedData: ChannelDataStatus | undefined)=>{
+                    if(!currChannelCachedData){
+                        return undefined
                     }
-                    return channels
-                })
-                setCurrentChannel(channel=>{
-                    if(channel){
-                        const updateChannel = {...channel}
-                        updateChannel.notSeen = updateChannel.notSeen.filter(member=>member!==_id)
-                        return updateChannel
-                    }
-                })
+                    const updateChannelData = {...currChannelCachedData.channel}
+                    updateChannelData.seen.push(_id)
+                    return {status: currChannelCachedData.status, channel: updateChannelData}
+                }, false)
             }
         }
     }, [socket, currentChannel])

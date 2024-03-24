@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { CreateGroup, CreateGroupStatus } from "../../types/generalTypes"
+import { ActionType, CreateGroup, CreateGroupStatus } from "../../types/generalTypes"
 import { useMemo } from "react"
 import { AxiosResponse } from "axios"
 import axios from 'axios'
@@ -17,7 +17,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
-    const {friendsInfo, setChannels, socket, token} = useLeftCustomContext()
+    const {friendsInfo, channelsDispatch, socket, token} = useLeftCustomContext()
 
     const filteredFriends = useMemo(()=>{
         return [...friendsInfo].filter(friends=>friends.displayName.toLowerCase().includes(searchQuery.toLocaleLowerCase()))
@@ -63,9 +63,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
             const res:AxiosResponse<CreateGroupStatus> = await createGroup(token, members, groupName)
             const {members:newMembers, __v, ...newChannel} = {...res.data.newChannel}
             if(res.status===201&&res.data.status==="success"){
-                setChannels(prevChannels=>{
-                    return [newChannel, ...prevChannels]
-                })
+                channelsDispatch({type:ActionType.NewChannel, payload:{data:newChannel}})
                 if(socket){
                     socket.emit('new_group_channel_created', {newMembers, newChannel})
                 }

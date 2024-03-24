@@ -1,4 +1,4 @@
-import React, { SetStateAction } from 'react'
+import React, { SetStateAction, Dispatch } from 'react'
 import {Socket} from 'socket.io-client'
 
 // export interface LocalStorage {
@@ -20,7 +20,7 @@ export type Channel = {
     _id:string,
     photoUrl: string,
     formattedLastMessage: string,
-    notSeen: string[]
+    seen: string[]
 }
 
 export type Friend = {
@@ -31,7 +31,7 @@ export type Friend = {
         _id:string,
         channelType:string,
         formattedLastMessage: string,
-        notSeen: string[]
+        seen: string[]
     },
     friend:FriendDetails,
     status:string,
@@ -182,7 +182,7 @@ export type CurrentChannel={
     photoUrl?:string
     lastMessage:number,
     formattedLastMessage: string,
-    notSeen: string[]
+    seen: string[]
 }
 
 export type ChannelDataStatus={
@@ -200,7 +200,8 @@ export type ChannelMessagesStatus={
 export type ChannelMemberUpdate={
     user:ChannelMember,
     channelNumber:number,
-    type:string
+    type:string,
+    newTime: number
 }
 
 export type CreateGroupStatus={
@@ -217,7 +218,7 @@ export type CreateGroupStatus={
         lastMessage:Date,
         photo:string,
         photoUrl:string
-        notSeen: string[],
+        seen: string[],
         __v: number
     }
 }
@@ -375,9 +376,8 @@ export type LastMessageUpdate = {
     channelNumber: number,
     newTime:Date|number,
     message:ChannelMessage,
-    channelType:string,
     newFormattedTime: string | undefined,
-    notSeen: string[]
+    seen: string[]
 }
 
 export type UserStatusUpdate= {
@@ -395,7 +395,7 @@ export type NewChannel={
     formattedLastMessage: string,
     id:string,
     members:ChannelMember[],
-    notSeen: string[]
+    seen: string[]
 }
 
 export type AcceptFriendStatus={
@@ -428,7 +428,7 @@ export type FriendRequestAccepted={
         _id: string,
         id: string,
         formattedLastMessage: string,
-        notSeen: string[]
+        seen: string[]
     },
     newFriendId:string
 }
@@ -447,15 +447,73 @@ export type HomeContext={
 
 export type ChannelContext={
     friends: FriendDetails[],
-    setChannels:React.Dispatch<SetStateAction<Channel[]>>,
+    channelsDispatch: React.Dispatch<ChannelAction>,
     handleFriendChannelDelete:(channelId:string)=>void
 }
 
 export type LeftContext={
-    setChannels:React.Dispatch<SetStateAction<Channel[]>>,
+    channelsDispatch: React.Dispatch<ChannelAction>,
     friendsInfo:FriendDetails[],
     token: string,
     socket: Socket|undefined,
     setUserData: React.Dispatch<SetStateAction<User|undefined>>,
     setToken: React.Dispatch<SetStateAction<string|null>>
 }
+
+//useReducer type
+export enum ActionType {
+    InitialFetch = 'INITIALFETCH',
+    NewMessage =  'NEWMESSAGE',
+    Seen = 'SEEN',
+    NewChannel = 'NEWCHANNEL',
+    DeleteChannel =  'DELETECHANNEL',
+    Unfriend = 'Unfriend',
+    NewMember = 'NEWMEMBER'
+}
+
+type InitialFetch={
+    type: ActionType.InitialFetch,
+    payload : Channel[]
+}
+
+type NewChannelMessage={
+    type: ActionType.NewMessage,
+    payload:{
+        location: string,
+        newMessageInfo: LastMessageUpdate
+        currUserId: string
+    }
+}
+
+type DeleteChannel = {
+    type: ActionType.DeleteChannel,
+    payload:{
+        channelId:string
+    }
+}
+
+type ChannelSeen = {
+    type: ActionType.Seen,
+    payload:{
+        channelId: string,
+        currUserId: string
+    }
+}
+
+type NewMember = {
+    type: ActionType.NewMember,
+    payload: {
+        channelNumber: number,
+        newTime: number
+    }
+}
+
+type AddNewChannel = {
+    type: ActionType.NewChannel,
+    payload: {
+        data: Channel
+    }
+}
+
+
+export type ChannelAction = DeleteChannel | InitialFetch | ChannelSeen | NewChannelMessage |  NewMember | AddNewChannel

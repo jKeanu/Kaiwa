@@ -70,7 +70,7 @@ const channelSchema = new mongoose.Schema({
             return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`
         }
     },
-    notSeen: [String]
+    seen: [String]
 },{
     //each time data is outputed as json we want virtuals to be part of the output
     toJSON: { virtuals: true},
@@ -87,13 +87,6 @@ channelSchema.virtual('messages',{
 })
 
 
-channelSchema.pre('save', async function(next) {
-    if (this.isNew) {
-        console.log('NEW CHANNEL CREATED')
-        this.notSeen = [...this.members]
-    }
-    next();
-});
 
 
 const Channel = mongoose.model('Channel', channelSchema)

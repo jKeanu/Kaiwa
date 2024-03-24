@@ -81,7 +81,6 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                 //contains: Starts with the current element and checks downward among 
                 //its descendants to see if it contains a specific element.
                 if (popupElement && !popupElement.contains(event.target as Node) && !buttonClicked && !containerButtonClicked) {
-                    console.log(popupElement, '---', !popupElement.contains(event.target as Node), '---', !buttonClicked)
                     setPopUp('');
                 }
             };

@@ -20,22 +20,67 @@ import {AxiosResponse} from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
 
+function sortChannels(channels:Channel[]):Channel[]{
+    return channels.sort((a, b) => {
+        const dateA = new Date(a.lastMessage).getTime() 
+        const dateB = new Date(b.lastMessage).getTime() 
+        return dateB - dateA; 
+    })
+}
 
 function channelReducer(state:Channel[] | [], action:ChannelAction){
     switch (action.type){
         case ActionType.InitialFetch:
             return action.payload
-        case ActionType.Seen:
-            const channels = [...state]
-            const currChannel = channels.find(channel => channel.id === action.payload.channelId)
-            if(currChannel){
-                currChannel.notSeen = currChannel.notSeen.filter(member=> member !== action.payload.currUserId)
-            }
-            return channels
-        case ActionType.DeleteChannel:
+        case ActionType.Seen: {
+            const channels = [...state].map(channel => {
+                if (channel._id === action.payload.channelId) {
+                    // Create a new object for the changed channel
+                    const currChannel = {...channel}
+                    currChannel.seen.push(`${action.payload.currUserId}`)
+                    return currChannel
+                }
+                return channel; // Return the original channel object if no change is needed
+            });
+            return channels;
+        }
+        case ActionType.NewChannel:{
+            const updateChannels = [...state]
+            updateChannels.unshift(action.payload.data)
+            return updateChannels
+        }
+        case ActionType.DeleteChannel:{
             const updateChannels = [...state]
             return updateChannels.filter(channel=>channel._id!==action.payload.channelId)
-        case ActionType.NewMessage:
+        }
+        case ActionType.NewMessage:{
+            const {channelNumber, channelId, seen, newTime, newFormattedTime} = action.payload.newMessageInfo
+            const currChannels = [...state].map(channel=>{
+                if(channel._id ===channelId){
+                    const currChannel = {...channel}
+                    if(action.payload.location === `/@me/channels/${channelNumber}`){
+                        currChannel.seen.push(action.payload.currUserId.toString())
+                    }else{
+                        currChannel.seen = [...seen]
+                    }
+                    currChannel.lastMessage = newTime
+                    if(newFormattedTime){
+                        currChannel.formattedLastMessage = newFormattedTime
+                    }
+                    return {...currChannel}
+                }
+                return channel
+            })
+            return sortChannels(currChannels)
+        }
+        case ActionType.NewMember:{
+            const updateChannels = [...state]
+            const currChannel = updateChannels.find(channel=>channel.channelNumber===action.payload.channelNumber)
+            if(currChannel){
+                currChannel.lastMessage = action.payload.newTime
+            }
+            return sortChannels(updateChannels)
+        }
         default:
             return state
     }   
@@ -51,7 +96,6 @@ const HomePage:React.FC = ()=>{
         //The logged in users channels
         //if we left the initial value of the state to be blank ()
         //the type would be Channel[] | undefined
-        const [channels, setChannels] = useState<Channel[]>([])
         const [socket, setSocket] = useState<Socket>()
         const [friendChannels, setFriendChannels] = useState<Friend[]>([])
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
@@ -60,7 +104,7 @@ const HomePage:React.FC = ()=>{
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
 
-        const [channelState, dispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(channelReducer, [])
+        const [channels, channelsDispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(channelReducer, [])
 
         const location = useLocation()
 
@@ -126,7 +170,7 @@ const HomePage:React.FC = ()=>{
                                 photoUrl: friend.friend.photoUrl,
                                 channelType: friend.channel.channelType,
                                 formattedLastMessage: friend.channel.formattedLastMessage,
-                                notSeen: friend.channel.notSeen
+                                seen: friend.channel.seen
                             }
                         })
                         //In this case, we only need the friend information, not including the channel.
@@ -147,7 +191,7 @@ const HomePage:React.FC = ()=>{
                         //and every change, the methods above gets executed each time, which is redundant.
                         //In other words, its like redefining channels state variable again and again.
                         //When we can just save the channels right away and apply the changes on the setter.
-                        setChannels(sortedChannels)
+                        channelsDispatch({type:ActionType.InitialFetch, payload: sortedChannels})
                     }
                 }catch(error: unknown){
                     // localStorage.removeItem('token')
@@ -179,13 +223,9 @@ const HomePage:React.FC = ()=>{
                 photo: friendInfo.friend.photo,
                 photoUrl: friendInfo.friend.photoUrl,
                 formattedLastMessage: friendInfo.channel.formattedLastMessage,
-                notSeen: friendInfo.channel.notSeen
+                seen: friendInfo.channel.seen
             }
-            setChannels(prevChannels =>{
-                const updateChannel = [...prevChannels]
-                updateChannel.unshift(convertChannel)
-                return updateChannel
-            })
+            channelsDispatch({type:ActionType.NewChannel, payload:{data:convertChannel}})
             setFriendChannels(prevFriendChannels=>{
                 return [...prevFriendChannels, friendInfo]
             })
@@ -197,9 +237,8 @@ const HomePage:React.FC = ()=>{
             setFriendChannels(prevFriendChannels=>{
                 return [...prevFriendChannels].filter(friendChannels => friendChannels.channel._id!==channelId)
             })
-            setChannels(prevChannels=>{
-                return [...prevChannels].filter(channels=>channels._id !==channelId)
-            })
+            channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:channelId}})
+
         }, [])
 
         useEffect(() => {
@@ -286,39 +325,17 @@ const HomePage:React.FC = ()=>{
 
         //If someone sends a message on a channel, this updates the order of the channel list
         useEffect(()=>{
-            if(socket){
+            if(socket && userData){
                 const handleLastMsgUpdate = (data:LastMessageUpdate):void=>{
-                    setChannels(prevChannels => {
-                        const currChannels = [...prevChannels]
-                        const channelToUpdate = currChannels.find(channel=>channel._id===data.channelId)
-                        if(channelToUpdate){
-                            //if we're in the channel already, we dont need to update the notSeen since, we can
-                            //see the latest message right away
-                            if(location.pathname === `/@me/channels/${data.channelNumber}`){
-                                channelToUpdate.notSeen = data.notSeen.filter(member=>member!==userData?._id)
-                            }else{
-                                channelToUpdate.notSeen = data.notSeen
-                            }
-                            channelToUpdate.lastMessage = data.newTime
-                            //if its a new message and not a continue message, we update the formatted time of the channel
-                            if(data.newFormattedTime){
-                                channelToUpdate.formattedLastMessage = data.newFormattedTime
-                            }
-                        }
-                        const sortedChannels:Channel[] = currChannels.sort((a, b) => {
-                            const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
-                            const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
-                            return dateB - dateA; // Compare the millisecond values
-                        })
-                        return sortedChannels
-                    })
+                    channelsDispatch({type:ActionType.NewMessage, payload:{location:location.pathname,
+                    newMessageInfo:data, currUserId:userData._id}})
                     if(location.pathname !== `/@me/channels/${data.channelNumber}`){
                         mutate(`api/v1/channels/${data.channelNumber}`, (currChannelCachedData: ChannelDataStatus | undefined)=>{
                             if(!currChannelCachedData){
                                 return 
                             }
                             const updateChannel = {...currChannelCachedData.channel}
-                            updateChannel.notSeen = data.notSeen
+                            updateChannel.seen = data.seen
                             return {status:currChannelCachedData.status, channel:updateChannel}
                         }, false)
                         mutate(`api/v1/channels/${data.channelNumber}/messages`, (prevMessagesDataCache:ChannelMessagesStatus|undefined)=>{
@@ -344,7 +361,7 @@ const HomePage:React.FC = ()=>{
             //current URL, this ensures that the effect will re-execute whenever the url changes, providing
             //the most up to date object inside the effect. Without so, the value would remain the same
             //even though the url changes (the location would be similar to its initial value always)
-        }, [socket, location])
+        }, [socket, location, userData])
 
         //This updates when a member left or joined the channel that you are part of
         useEffect(()=>{
@@ -357,7 +374,6 @@ const HomePage:React.FC = ()=>{
                         if(data.type==='Joined'){
                             //Update the channels when someone joined the channel
                             const updateChannelDataCache = {...channelDataCache.channel}
-                            console.log(data.user, '----')
                             updateChannelDataCache.members = [...updateChannelDataCache.members, data.user]
                             return {status:channelDataCache.status, channel:updateChannelDataCache}
                         }else if(data.type==='Left'){
@@ -368,19 +384,7 @@ const HomePage:React.FC = ()=>{
                     }, false)
                     if(data.type==='Joined'){
                         //update the channels when someone joined the channel
-                        setChannels(prevChannels=>{
-                            const updateChannels = [...prevChannels]
-                            const currChannel = updateChannels.find(channel=>channel.channelNumber===data.channelNumber)
-                            if(currChannel){
-                                currChannel.lastMessage = Date.now()
-                            }
-                            const sortedChannels = updateChannels.sort((a, b) => {
-                                const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
-                                const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
-                                return dateB - dateA; // Compare the millisecond values
-                            })
-                            return sortedChannels
-                        })
+                        channelsDispatch({type:ActionType.NewMember, payload:{channelNumber:data.channelNumber, newTime:data.newTime}})
                     }
                 }
                 socket.on(`channel_member_update`, handleChannelMemberUpdate)
@@ -395,7 +399,7 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const groupChannelInvite = (newGroupChannel:Channel)=>{
-                    setChannels(prevChannels => [newGroupChannel, ...prevChannels])
+                    channelsDispatch({type:ActionType.NewChannel, payload:{data:newGroupChannel}})
                 }
                 socket.on('invited_to_group', groupChannelInvite)
                 const cleanup = ():void=>{
@@ -497,7 +501,7 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const handleNewGroupChannel = (data:Channel)=>{
-                    setChannels(prevChannels=>[data, ...prevChannels])
+                    channelsDispatch({type:ActionType.NewChannel, payload:{data:data}})
                 }
                 socket.on('new_group_channel', handleNewGroupChannel)
                 const cleanup=():void=>{
@@ -510,11 +514,10 @@ const HomePage:React.FC = ()=>{
         const handleModalConfirm = (e:React.MouseEvent<HTMLButtonElement>)=>{
             e.preventDefault()
             if(noticeModal.type==='Group'){
-                setChannels(prevChannels=> [...prevChannels].filter(channel=>channel._id!==noticeModal.channelId))
+                channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:noticeModal.channelId}})
                 setNoticeModal({isOpen:false, channelId:'', type:''})
             }else if(noticeModal.type==='Friend'){
-                setChannels(prevChannels=> [...prevChannels]
-                    .filter(channel=>channel._id!==noticeModal.channelId))
+                channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:noticeModal.channelId}})
                 setFriendChannels(prevFriendChannels=> [...prevFriendChannels]
                     .filter(channel=>channel.channel._id!==noticeModal.channelId))
                 setNoticeModal({isOpen:false, channelId:'', type:''})
@@ -525,12 +528,11 @@ const HomePage:React.FC = ()=>{
         useEffect(()=>{
             if(socket){
                 const handleGroupDeletion = (data:{channelNumber:number, channelId:string}):void=>{
-                    // setChannels(prevChannels=> [...prevChannels].filter(channels=>channels._id!==channelId))
                     if(location.pathname === `/@me/channels/${data.channelNumber}`){
                         navigate('/@me')
                         setNoticeModal({isOpen:true, channelId:data.channelId, type:'Group'})
                     }else{
-                        setChannels(prevChannels=> [...prevChannels].filter(channels=>channels._id!==data.channelId))
+                        channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:data.channelId}})
                     }
                 }
                 socket.on("delete_group_channel", handleGroupDeletion)
@@ -549,8 +551,7 @@ const HomePage:React.FC = ()=>{
                         navigate('/@me')
                         setNoticeModal({isOpen:true, channelId:data.channelId, type:'Friend'})
                     }else{
-                        setChannels(prevChannels=> [...prevChannels]
-                            .filter(channel=>channel._id!==data.channelId))
+                        channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:data.channelId}})
                         setFriendChannels(prevFriendChannels=> [...prevFriendChannels]
                             .filter(channel=>channel.channel._id!==data.channelId))
                     }
@@ -608,7 +609,7 @@ const HomePage:React.FC = ()=>{
                     <dialog className='modal-window-container'>
                         <NoticeModal handleModalConfirm={handleModalConfirm}/>
                     </dialog>}
-                    <LeftSectionContext.Provider value={{setChannels, friendsInfo:myFriends, token, socket, setToken, setUserData}}>
+                    <LeftSectionContext.Provider value={{channelsDispatch, friendsInfo:myFriends, token, socket, setToken, setUserData}}>
                         <LeftSection 
                             formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}
                             channels={channels} 
@@ -638,7 +639,7 @@ const HomePage:React.FC = ()=>{
                             />
                             <Route path="channels/:channelNumber"
                             element={
-                            <ChannelSectionContext.Provider value={{friends:myFriends, setChannels, handleFriendChannelDelete}}>
+                            <ChannelSectionContext.Provider value={{friends:myFriends, channelsDispatch, handleFriendChannelDelete}}>
                                 <ChannelSection
                                 friendReqs={friendReqs}
                                 sentReqs={sentReqs}

@@ -66,8 +66,9 @@ export default (httpServer) => {
       socket.join(`user-${verifiedCurrentUserId}`)
     })
 
-    socket.on('join_channel_room', (channelNumber) => {
-      socket.join(channelNumber);
+    socket.on('join_channel_room', (data) => {
+      console.log(`${data.displayName} JOINED ${data.channelNumber}`)
+      socket.join(data.channelNumber);
     });
 
     socket.on('channel_live_updates', (channelIds)=>{
@@ -104,7 +105,7 @@ export default (httpServer) => {
         { _id: data.channel },
         { lastMessage: data.time, formattedLastMessage: data.formattedDate }
       )
-      updateChannel.notSeen = updateChannel.members
+      updateChannel.seen = [`${verifiedCurrentUserId}`]
       updateChannel.save()
       // Although the newMessage document consists of sender as a mongoose object id,
       // we can use spread operator and add a similar key to overwrite it.
@@ -117,9 +118,9 @@ export default (httpServer) => {
       };
 
       io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
-      {channelId:data.channel, channelNumber:data.channelNumber,  notSeen: updateChannel.notSeen,
+      {channelId:data.channel, channelNumber:data.channelNumber,  seen: updateChannel.seen,
       newTime:data.time, newFormattedTime:data.formattedDate, message:messageInfo, channelType:data.channelType})
-      socket.to(data.channelNumber).emit('receive_message', messageInfo);
+      socket.to(`${data.channelNumber}`).emit('receive_message', messageInfo);
     });
 
     //Invite a user to the group channel
@@ -132,7 +133,8 @@ export default (httpServer) => {
         .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage')
       const currChannelObject = currChannel.toObject()
       currChannelObject.photoUrl = `${cloudfrontDomainName}/${currChannelObject.photo}`
-      io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user:userObject, channelNumber:data.channelNumber, type:'Joined'})
+      io.to(`channel-${data.channelId}`).emit(`channel_member_update`, 
+      {user:userObject, channelNumber:currChannel.channelNumber, newTime:data.newTime, type:'Joined'})
       socket.to(`user-${userObject._id}`).emit('invited_to_group', currChannelObject)
     })
 
@@ -143,8 +145,6 @@ export default (httpServer) => {
       io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Left'})
     })
     
-
-    
     socket.on("continue_message", async(data)=>{
       const updatedMessage = await Chat.findOneAndUpdate(
         {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
@@ -152,7 +152,7 @@ export default (httpServer) => {
            {new:true})
       //we don't need to update the formattedLastMessage too, since this is a continue_message
       const updateChannel = await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime})
-      updateChannel.notSeen = updateChannel.members
+      updateChannel.seen = [`${verifiedCurrentUserId}`]
       updateChannel.save()
       //Since we need the sender details, we cannot just pass the updatedMessage
       //directly to the receive_message, the only sender info we have on chat model is the id      
@@ -168,16 +168,16 @@ export default (httpServer) => {
       socket.to(data.channelNumber).emit('receive_message', messageInfo)
       io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
       {channelId:updatedMessage.channel, channelNumber:data.channelNumber, 
-        notSeen: updateChannel.notSeen,
+        seen: updateChannel.seen,
         channelType:data.channelType,
         newTime:updatedMessage.time, message:messageInfo, })
     })
 
     //When a user havent seen the latest message and opened the channel
     socket.on('new_message_seen', async (data)=>{
-      const updateChannel= await Channel.findByIdAndUpdate({_id:data.channelId}, {
-        $pull: {
-            notSeen: data.user
+      const u = await Channel.findByIdAndUpdate({_id:data.channelId}, {
+        $push: {
+            seen: data.user
         }}, {new:true})
     })
 

@@ -1,4 +1,4 @@
-import { FriendDetails, InviteFriend } from "../../types/generalTypes"
+import { ActionType, FriendDetails, InviteFriend } from "../../types/generalTypes"
 import { inviteFriendtoGroup } from "../../services/apiService"
 import { AxiosResponse } from "axios"
 import React, { useEffect } from "react"
@@ -16,7 +16,7 @@ const InviteUserModal:React.FC<InviteFriend>=({
     const [modalVisible, setModalVisible] = useState(false)
     const [loadings, setLoadings] = useState<string[]>([])
     const [error, setError] = useState<{isError:boolean, users:string[]}>({isError:false, users:[]})
-    const {friends, setChannels} = useChannelCustomContext()
+    const {friends, channelsDispatch} = useChannelCustomContext()
 
 
     useEffect(()=>{
@@ -35,21 +35,11 @@ const InviteUserModal:React.FC<InviteFriend>=({
             const newTime = Date.now()
             const res:AxiosResponse<{status:string}> = await inviteFriendtoGroup(token, newTime, channelId, friend._id)
             if(res.data.status === 'success'){
-                setChannels(prevChannels=>{
-                    const updateChannels = [...prevChannels]
-                    const currChannel = updateChannels.find(channel=>channel._id===channelId)
-                    if(currChannel){
-                        currChannel.lastMessage = newTime
-                    }
-                    const sortedChannels = updateChannels.sort((a, b) => {
-                        const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
-                        const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
-                        return dateB - dateA; // Compare the millisecond values
-                    })
-                    return sortedChannels
-                })
+                if(channelNumber){
+                    channelsDispatch({type: ActionType.NewMember, payload:{channelNumber:Number(channelNumber), newTime}})
+                }
                 if(socket && channelId && channelNumber){
-                    socket.emit('user_invite_success', {inviteUser:friend._id, channelId, channelNumber:Number(channelNumber)})
+                    socket.emit('user_invite_success', {inviteUser:friend._id, channelId, newTime,channelNumber:Number(channelNumber)})
                 }
                 setLoadings(prevLoadings=>{
                     return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)

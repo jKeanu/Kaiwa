@@ -43,7 +43,6 @@ const LeftSection:React.FC<LeftSectionProps>=({
     const clearSearchQuery = ():void => {
         setSearchQuery('');
     }
-    console.log(filteredChannels,' ---------')
 
     return(
     <section className='left-home-section'>
@@ -108,7 +107,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
                 {filteredChannels.map(channel=>(
                     <li className='channel-link-container' key={channel.channelNumber}>
                         <NavLink className='channel-link' to={`channels/${channel.channelNumber}`} 
-                        onClick={clearSearchQuery} style={{'backgroundColor':`${channel.notSeen.includes(_id)?'pink':'red'}`}}>
+                        onClick={clearSearchQuery} style={{'backgroundColor':`${!channel.seen.includes(_id)?'pink':''}`}}>
                             <img className='channel-photo'src={`${channel.photo==='default.jpeg'?'/img/default.jpeg':channel.photoUrl}`} alt=''/>
                             <div className='channel-link-text-container'>
                                 <span className='channel-name'>{channel.channelName}</span>
