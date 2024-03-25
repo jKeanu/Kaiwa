@@ -37,12 +37,12 @@ function channelReducer(state:Channel[] | [], action:ChannelAction){
                 if (channel._id === action.payload.channelId) {
                     // Create a new object for the changed channel
                     const currChannel = {...channel}
-                    currChannel.seen.push(`${action.payload.currUserId}`)
+                    currChannel.seen.push(action.payload.currUserId)
                     return currChannel
                 }
                 return channel; // Return the original channel object if no change is needed
             });
-            return channels;
+            return [...channels];
         }
         case ActionType.NewChannel:{
             const updateChannels = [...state]
@@ -101,8 +101,10 @@ const HomePage:React.FC = ()=>{
         const [friendReqs, setFriendReqs] = useState<FriendReq[]>([])
         const [sentReqs, setSentReqs] = useState<SentReq[]>([])
         const [isFriendsOpen, setIsFriendsOpen] = useState<boolean>(false)
+        //Modal
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
+        const [modalVisible, setModalVisible] = useState(false)
 
         const [channels, channelsDispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(channelReducer, [])
 
@@ -609,7 +611,15 @@ const HomePage:React.FC = ()=>{
                     <dialog className='modal-window-container'>
                         <NoticeModal handleModalConfirm={handleModalConfirm}/>
                     </dialog>}
-                    <LeftSectionContext.Provider value={{channelsDispatch, friendsInfo:myFriends, token, socket, setToken, setUserData}}>
+                    <LeftSectionContext.Provider value={{
+                        modalVisible,
+                        setModalVisible,
+                        channelsDispatch, 
+                        friendsInfo:myFriends, 
+                        token, 
+                        socket, 
+                        setToken, 
+                        setUserData}}>
                         <LeftSection 
                             formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}
                             channels={channels} 
@@ -622,6 +632,8 @@ const HomePage:React.FC = ()=>{
                     <Routes>
                         <Route index element={
                             <HomeSectionContext.Provider value={{
+                                modalVisible,
+                                setModalVisible,
                                 token,
                                 currUserId:userData._id,
                                 socket,
@@ -639,7 +651,13 @@ const HomePage:React.FC = ()=>{
                             />
                             <Route path="channels/:channelNumber"
                             element={
-                            <ChannelSectionContext.Provider value={{friends:myFriends, channelsDispatch, handleFriendChannelDelete}}>
+                            <ChannelSectionContext.Provider 
+                            value={{
+                            modalVisible,
+                            setModalVisible,
+                            friends:myFriends, 
+                            channelsDispatch, 
+                            handleFriendChannelDelete}}>
                                 <ChannelSection
                                 friendReqs={friendReqs}
                                 sentReqs={sentReqs}

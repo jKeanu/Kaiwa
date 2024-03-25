@@ -7,31 +7,22 @@ import { createGroup } from "../../services/apiService"
 import { useNavigate } from "react-router-dom"
 import { useLeftCustomContext } from "../../context"
 
-const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setModal})=>{
+const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setModal, handleCloseButton})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const [members, setMembers] = useState([currUserId])
     const [groupName, setGroupName] = useState('')
     const [field, setField] = useState('groupName')
     const [createGroupErr, setCreateGroupErr] = useState({err:false, type:'', message:''})
-    const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
-    const {friendsInfo, channelsDispatch, socket, token} = useLeftCustomContext()
+    const {friendsInfo, channelsDispatch, socket, token, setModalVisible, modalVisible} = useLeftCustomContext()
 
     const filteredFriends = useMemo(()=>{
         return [...friendsInfo].filter(friends=>friends.displayName.toLowerCase().includes(searchQuery.toLocaleLowerCase()))
             .sort((a, b)=> a.displayName.localeCompare(b.displayName))
     }, [searchQuery, friendsInfo])
 
-    
-    const handleCloseButton= (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        setModalVisible(false)
-        setTimeout(() => {
-            setModal({active:false, type:''});
-        }, 210)
-    }
 
     const handleCheckBox = (e:React.ChangeEvent<HTMLInputElement>)=>{
         const {checked, value} = e.target
@@ -93,7 +84,8 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
 
     useEffect(()=>{
         setModalVisible(true)
-    }, [])
+        return ()=> setModalVisible(false)
+    },[])
 
 
     return(

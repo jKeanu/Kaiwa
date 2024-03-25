@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo} from "react"
 import { GroupSettingsProps, UpdateGroupStatus } from "../../types/generalTypes"
 import axios, { AxiosResponse } from "axios"
 import { changeGroupSettings } from "../../services/apiService"
+import { useChannelCustomContext } from "../../context"
 
 const GroupSettingsModal:React.FC<GroupSettingsProps>=
     ({  socket, 
@@ -11,8 +12,8 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
         groupPhoto, 
         groupPhotoUrl,
         setCurrentChannel,
-        handleCloseButton})=>{
-    const [modalVisible, setModalVisible] = useState(false)
+        handleCloseButton,
+        setModalDisabled})=>{
     const [groupFormData, setGroupFormData] = useState<{channelName:string, groupProfileImage:File|null}>
     ({channelName:channelName, groupProfileImage:null})
     const [isLoading, setIsLoading] = useState(false)
@@ -21,20 +22,23 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
         return groupFormData.groupProfileImage? URL.createObjectURL(groupFormData.groupProfileImage):null
     }, [groupFormData.groupProfileImage])
 
-
+    const {setModalVisible, modalVisible} = useChannelCustomContext()
 
     useEffect(()=>{
         setModalVisible(true)
-    }, [])
+        return ()=> setModalVisible(false)
+    },[])
 
     const handleSubmit = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()
         setIsLoading(true)
         setGroupSettErr({err:false, message:''})
+        setModalDisabled(true)
         try{
             if(groupFormData.channelName===channelName&&!groupFormData.groupProfileImage){
                 setGroupSettErr({err:true, message:'There is no changes in the current group information.'})
                 setIsLoading(false)
+                setModalDisabled(false)
                 return 
             }
             const formData = new FormData()
@@ -54,12 +58,16 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                     }
                 })
                 setIsLoading(false)
+                setModalDisabled(false)
             }
         }catch(err:unknown){
             if(axios.isAxiosError(err)){
                 setGroupSettErr({err:false, message:err.response?.data.message})
+            }else{
+                setGroupSettErr({err:false, message:'There was a problem changing the group channel information.'})
             }
             setIsLoading(false)
+            setModalDisabled(false)
         }
     }
 
@@ -85,15 +93,11 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
         })
     }
 
-    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        handleCloseButton(setModalVisible)
-    }
     
     return(
         <div className={`${modalVisible?'visible':''} group-settings-modal-container`}>
             <div className="group-setting-x-button-container">
-                <button className="group-setting-x-button" disabled={isLoading} onClick={handleClose}>
+                <button className="group-setting-x-button" disabled={isLoading} onClick={handleCloseButton}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
                         strokeLinecap="round" strokeLinejoin="round" className="x-img">
                         <line x1="18" y1="6" x2="6" y2="18">
@@ -122,10 +126,9 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                 </div>
                 <div className="group-setting-button-container">
                     <button className="group-setting-button" type="submit" disabled={isLoading}>
-                            {isLoading?
-                    
+                        {isLoading?
                     <div className="group-setting-loading"></div>
-                            :'Change'}
+                        :'Change'}
                     </button>
                 </div>
                 {groupSettErr.err&&

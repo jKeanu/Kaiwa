@@ -177,7 +177,7 @@ export default (httpServer) => {
     socket.on('new_message_seen', async (data)=>{
       const u = await Channel.findByIdAndUpdate({_id:data.channelId}, {
         $push: {
-            seen: data.user
+            seen: verifiedCurrentUserId
         }}, {new:true})
     })
 

@@ -270,7 +270,7 @@ export type InviteFriend={
     token:string,
     channelId: string,
     currChannelMembersId:string[]
-    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
     channelNumber:string|undefined,
     setModalDisabled:React.Dispatch<SetStateAction<boolean>>,
     modalDisabled: boolean,
@@ -281,7 +281,7 @@ export type InviteFriend={
 export type DeleteGroup={
     token:string,
     channelId:string
-    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
     socket: Socket|undefined,
     membersId:string[],
     channelNumber: string|undefined
@@ -292,7 +292,7 @@ export type DeleteGroup={
 export type LeaveGroup={
     token:string,
     channelId:string
-    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
     socket: Socket|undefined,
     currUserId: string,
     channelNumber: string | undefined
@@ -303,6 +303,7 @@ export type CreateGroup={
     currUserId:string,
     setIsDisabled: React.Dispatch<SetStateAction<boolean>>,
     setModal: React.Dispatch<SetStateAction<{active:boolean, type:string}>>,
+    handleCloseButton: (e:React.MouseEvent<HTMLButtonElement>)=>void
 }
 
 export type UnfriendProps={
@@ -314,7 +315,8 @@ export type UnfriendProps={
     handleFriendChannelDelete:(channelId:string)=>void,
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
     setModalSettings: React.Dispatch<SetStateAction<UnfriendModalSettings>>,
-    channelNumber:number|undefined
+    channelNumber:number|undefined,
+    setIsModalDisabled: React.Dispatch<SetStateAction<boolean>>
 }
 
 export type GroupSettingsProps = {
@@ -325,7 +327,8 @@ export type GroupSettingsProps = {
     groupPhoto: string,
     channelId: string,
     setCurrentChannel: React.Dispatch<SetStateAction<CurrentChannel|undefined>>,
-    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
+    setModalDisabled:React.Dispatch<SetStateAction<boolean>>
 }
 
 export type MemberUnfriend = {
@@ -334,7 +337,7 @@ export type MemberUnfriend = {
     memberId:string,
     socket:Socket|undefined,
     displayName:string
-    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
     setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
     channelNumber:number|undefined 
     setModalDisabled:React.Dispatch<SetStateAction<boolean>>
@@ -343,7 +346,7 @@ export type MemberUnfriend = {
 export type ChangeLeader={
     token: string,
     channelId: string,
-    handleCloseButton:(setVisible:React.Dispatch<SetStateAction<boolean>>)=>void,
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
     channelNumber: number|undefined,
     socket: Socket | undefined,
     setModalSettings: React.Dispatch<SetStateAction<MemberModalSettings>>,
@@ -367,7 +370,9 @@ export type UpdateGroupStatus = {
 //Current User 
 export type ProfileSettings={
     currUserData: User,
-    setModal: React.Dispatch<SetStateAction<{active:boolean, type:string}>>
+    setModal: React.Dispatch<SetStateAction<{active:boolean, type:string}>>,
+    handleCloseButton: (e:React.MouseEvent<HTMLButtonElement>)=>void,
+    setIsDisabled: React.Dispatch<SetStateAction<boolean>>
 }
 
 //Live Updates----
@@ -442,13 +447,17 @@ export type HomeContext={
     setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
     setSentReqs: React.Dispatch<React.SetStateAction<SentReq[]>>,
     handleFriendChannelDelete:(channelId:string)=>void,
-    setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>
+    setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>,
+    setModalVisible: React.Dispatch<SetStateAction<boolean>>,
+    modalVisible: boolean
 }
 
 export type ChannelContext={
     friends: FriendDetails[],
     channelsDispatch: React.Dispatch<ChannelAction>,
-    handleFriendChannelDelete:(channelId:string)=>void
+    handleFriendChannelDelete:(channelId:string)=>void,
+    setModalVisible: React.Dispatch<SetStateAction<boolean>>,
+    modalVisible: boolean
 }
 
 export type LeftContext={
@@ -457,7 +466,9 @@ export type LeftContext={
     token: string,
     socket: Socket|undefined,
     setUserData: React.Dispatch<SetStateAction<User|undefined>>,
-    setToken: React.Dispatch<SetStateAction<string|null>>
+    setToken: React.Dispatch<SetStateAction<string|null>>,
+    setModalVisible: React.Dispatch<SetStateAction<boolean>>,
+    modalVisible: boolean
 }
 
 //useReducer type

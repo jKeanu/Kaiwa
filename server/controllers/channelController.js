@@ -31,11 +31,11 @@ export const getChannelMessages = catchAsync(async(req, res, next)=>{
     const skip = parseInt(req.query.skip) || 0
     const currentChannel = await Channel.findOne({channelNumber:req.params.channelNumber})
     const channelMessages = await Chat.find({channel:currentChannel._id})
-                            .skip(skip)
-                            .limit(limit)
-                            .sort({time:-1})
-                            .populate({path:'sender', select:'displayName photo friendTag'})
-                            .lean()
+                .skip(skip)
+                .limit(limit)
+                .sort({time:-1})
+                .populate({path:'sender', select:'displayName photo friendTag'})
+                .lean()
 
     for (const message of channelMessages){
         message.sender.photoUrl = `${cloudfrontDomainName}/${message.sender.photo}`

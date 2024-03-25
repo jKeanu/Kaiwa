@@ -4,14 +4,13 @@ import { mutate } from "swr"
 import { useState } from "react"
 import { useEffect } from "react"
 import { changeGroupLeader } from "../../services/apiService"
-
+import { useChannelCustomContext } from "../../context"
 
 const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseButton, socket,
     memberId, channelNumber, setModalSettings, displayName, setModalDisabled})=>{
-
-    const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
+    const {setModalVisible, modalVisible} = useChannelCustomContext()
 
     const handleLeaderChange = async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
@@ -44,12 +43,9 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
     
     useEffect(()=>{
         setModalVisible(true)
+        return ()=> setModalVisible(false)
     },[])
 
-    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        handleCloseButton(setModalVisible)
-    }
 
     return(
         <div className={`delete-group-modal-container s-modal channel-modal ${modalVisible?"visible":""}`}>
@@ -64,7 +60,7 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
                     </div>:
                     'Confirm'}
                 </button>
-                <button className="cancel-button" onClick={handleClose} disabled={loading}>
+                <button className="cancel-button" onClick={handleCloseButton} disabled={loading}>
                     Cancel
                 </button>
                 {errorMsg.isError&&

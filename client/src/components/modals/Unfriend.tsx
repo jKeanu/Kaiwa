@@ -2,16 +2,18 @@ import { UnfriendProps } from "../../types/generalTypes"
 import { AxiosResponse } from "axios"
 import { removeFriend } from "../../services/apiService"
 import { useEffect, useState } from "react"
+import { useHomeCustomContext } from "../../context"
 
 const Unfriend:React.FC<UnfriendProps>=({channelId, friendId, token, socket, handleFriendChannelDelete,
-    handleCloseButton, displayName, setModalSettings, channelNumber})=>{
+    handleCloseButton, displayName, setModalSettings, channelNumber, setIsModalDisabled})=>{    
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
-    const [modalVisible, setModalVisible] = useState(false)
+    const {modalVisible, setModalVisible} = useHomeCustomContext()
 
     const handleUnfriend = async (e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
         setIsLoading(true)
+        setIsModalDisabled(true)
         try{
             const res:AxiosResponse<void> = await removeFriend(token, friendId)
             if(res.status===204){
@@ -21,15 +23,18 @@ const Unfriend:React.FC<UnfriendProps>=({channelId, friendId, token, socket, han
                 }
                 setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
                 setIsLoading(false)
+                setIsModalDisabled(false)
             }
         }catch(err){
             setIsLoading(false)
             setErrorMsg({isError:true, message:'An unknown error occurred. Please try again later.'})
+            setIsModalDisabled(false)
         }
     }
 
     useEffect(()=>{
         setModalVisible(true)
+        return ()=> setModalVisible(false)
     },[])
     return(
         <div className={`unfriend-modal-container s-modal ${modalVisible?"visible":""}`}>

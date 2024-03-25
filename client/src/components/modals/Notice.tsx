@@ -6,6 +6,7 @@ const NoticeModal:React.FC<Notice>=({handleModalConfirm})=>{
 
     useEffect(()=>{
         setModalVisible(true)
+        return ()=> setModalVisible(false)
     },[])
 
     return (

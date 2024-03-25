@@ -3,6 +3,7 @@ import {LeftSectionProps} from '../types/generalTypes';
 import React, { useMemo, useState } from 'react';
 import CreateGroupModal from './modals/CreateGroup';
 import ProfileSettingsModal from './modals/ProfileSettings';
+import { useLeftCustomContext } from '../context';
 
 const LeftSection:React.FC<LeftSectionProps>=({
     channels, 
@@ -16,6 +17,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
     //Modal
     const [isDisabled, setIsDisabled] = useState(false)
     const [modal, setModal] = useState({active:false, type:''})
+    const {setModalVisible} = useLeftCustomContext()
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.button===0 && e.target === e.currentTarget){
@@ -44,15 +46,23 @@ const LeftSection:React.FC<LeftSectionProps>=({
         setSearchQuery('');
     }
 
+    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setModalVisible(false)
+        setTimeout(() => {
+            setModal({active:false, type:''})
+        }, 210)
+    }
+
     return(
     <section className='left-home-section'>
         {modal.active&&
         <dialog className='modal-window-container' onMouseDown={handleModalWindowClick} >
             {
             modal.type==='createGroup'&&
-            <CreateGroupModal currUserId={_id}  setIsDisabled={setIsDisabled} setModal={setModal}/>}
+            <CreateGroupModal currUserId={_id}  setIsDisabled={setIsDisabled} setModal={setModal} handleCloseButton={handleCloseButton}/>}
             {modal.type==='userSetting'&&
-            <ProfileSettingsModal currUserData={currentUserData} setModal={setModal}/>}
+            <ProfileSettingsModal setIsDisabled={setIsDisabled} currUserData={currentUserData} setModal={setModal} handleCloseButton={handleCloseButton}/>}
         </dialog>
         }
         <div className='upper-left-section-container'>

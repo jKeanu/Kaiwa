@@ -9,13 +9,11 @@ import { useChannelCustomContext } from "../../context"
 
 const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton,
     socket, membersId, channelNumber, setModalDisabled})=>{
-
-    const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     const navigate = useNavigate()
 
-    const {channelsDispatch} = useChannelCustomContext()
+    const {channelsDispatch, setModalVisible, modalVisible} = useChannelCustomContext()
 
     const handleGroupDelete = async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
@@ -38,15 +36,12 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
             setModalDisabled(false)
         }
     }
+    
     useEffect(()=>{
         setModalVisible(true)
+        return ()=> setModalVisible(false)
     },[])
 
-
-    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        handleCloseButton(setModalVisible)
-    }
 
     return(
         <div className={`delete-group-modal-container channel-modal s-modal ${modalVisible?"visible":""}`}>
@@ -61,7 +56,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
                     </div>:
                     'Delete Group'}
                 </button>
-                <button className="cancel-button" onClick={handleClose} disabled={loading}>
+                <button className="cancel-button" onClick={handleCloseButton} disabled={loading}>
                     Cancel
                 </button>
                 {errorMsg.isError&&<span className="s-modal-err">{errorMsg.message}</span>}

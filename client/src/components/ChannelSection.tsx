@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo, SetStateAction} from 'react'
+import React, { useState, useEffect, useRef, useMemo} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -24,8 +24,6 @@ import UnfriendMemberModal from "./modals/UnfriendMember"
 import ChangeLeaderModal from "./modals/ChangeLeader"
 import throttle from 'lodash.throttle'
 import GroupSettingsModal from "./modals/GroupSettings"
-import { useChannelCustomContext } from "../context"
-import { ActionType } from "../types/generalTypes"
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
@@ -65,15 +63,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
 
-    const {channelsDispatch} = useChannelCustomContext()
+    // const {channelsDispatch, setModalVisible, modalVisible} = useChannelCustomContext()
 
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
     const channelCacheKey = `api/v1/channels/${channelNumber}`
     const messagesLimit = 12
 
-
-    
     const membersId:string[] = useMemo(()=>{
         return [...currentChannelMembers].map(member=>member._id)
     }, [currentChannelMembers])
@@ -96,6 +92,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     useEffect(()=>{
         setIsVisible(true)
     }, [])
+    
     useEffect(()=>{
         setMessagesSkip(0)
         setMessageReceived([])
@@ -103,11 +100,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setAllMessagesFetched(false)
     }, [channelNumber])
 
-
     useEffect(() => {
         if (channelData) {
-            setCurrentChannel(channelData.channel);
-            setCurrentChannelMembers(channelData.channel.members);
+            setCurrentChannel(channelData.channel)
+            setCurrentChannelMembers(channelData.channel.members)
         }else if (channelError){
             navigate('/@me')
         }
@@ -124,6 +120,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             revalidateOnMount: !cache.get(messageCacheKey)?.data
         }
     )
+
     useEffect(()=>{
         if(messagesData){
             if(messageReceived.length===0&&messagesData.messages.length>0){
@@ -149,6 +146,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
+            socket.emit('new_message_seen', {channelId:currentChannel._id})
             const handleReceiveMessage = (newMessage: ChannelMessage) => {
                 if(newMessage.updated){
                     setMessageReceived(prevMessages=>{
@@ -190,7 +188,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     }
                     // Update the messages array in the channel data
                   }, false); // false tells the SWR to not re-fetch the data from the server after updating the cache
-                socket.emit('new_message_seen', {user:_id, channelId:currentChannel._id})
                 if(messageBoxRef.current){
                     if(messageBoxRef.current.scrollTop*-1<=800) messageBoxRef.current.scrollTop=0
                 }
@@ -352,8 +349,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }
     
-    const handleCloseButton = (setVisible:React.Dispatch<SetStateAction<boolean>>):void=>{
-        setVisible(false)
+    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
         setTimeout(() => {
             if(modalWindow.isOpen){
                 setModalWindow({isOpen: false, window: ''})
@@ -659,15 +656,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(!msgFetchLoading){
             fetchMoreMessages()
         }
-
     }, [messagesSkip])
 
 
     useEffect(()=>{
-        if(socket && currentChannel){
-            if(!currentChannel.seen.includes(_id.toString())){
-                socket.emit('new_message_seen', {user:_id, channelId:currentChannel._id})
-                channelsDispatch({type:ActionType.Seen, payload:{channelId:currentChannel._id, currUserId:_id}})
+        if(socket && currentChannel && _id){
+            if(!currentChannel.seen.includes(_id)){
+                socket.emit('new_message_seen', {channelId:currentChannel._id})
                 mutate(channelCacheKey, (currChannelCachedData: ChannelDataStatus | undefined)=>{
                     if(!currChannelCachedData){
                         return undefined
@@ -678,7 +673,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 }, false)
             }
         }
-    }, [socket, currentChannel])
+    }, [socket, currentChannel, _id])
 
 
     return (
@@ -690,6 +685,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     {(modalWindow.window==='groupSettings')
                     &&currentChannel.photo&&currentChannel.photoUrl&&currentChannel.channelName&&
                     <GroupSettingsModal 
+                        setModalDisabled={setModalDisabled}
                         handleCloseButton={handleCloseButton}
                         token={token}
                         socket={socket}

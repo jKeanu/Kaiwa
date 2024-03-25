@@ -5,38 +5,25 @@ import React, { useEffect, useMemo, useState } from "react"
 import { changeUserPassword, updateCurrentUser } from "../../services/apiService"
 
 
-const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=>{
+const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, handleCloseButton, setIsDisabled})=>{
     const [userInfo, setUserInfo] = useState<{displayName:string, friendTag:string, profileImage:null|File}>
     ({displayName:currUserData.displayName, friendTag:currUserData.friendTag, profileImage:null})
     const [userPassword, setUserPassword] = useState({currentPassword:'', password:'', passwordConfirm:''})
     const [currSetting, setCurrSetting] = useState('userInfo')
-    const [modalVisible, setModalVisible] = useState(false)
     const [userSettErr, setUserSettErr] = useState({err:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
-    const {socket, token, setUserData, setToken} = useLeftCustomContext()
+    const {socket, token, setUserData, setToken, setModalVisible, modalVisible} = useLeftCustomContext()
     const profileImagePreview = useMemo(()=>{
         return userInfo.profileImage? URL.createObjectURL(userInfo.profileImage):null
     }, [userInfo.profileImage])
 
-    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        setModalVisible(false)
-        setTimeout(() => {
-            setModal({active:false, type:''})
-        }, 210)
-    }
 
     const handleUserInfoSubmit = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()
         setIsLoading(true)
+        setIsDisabled(true)
         setUserSettErr({err:false, message:''})
         try{
-            if(userInfo.friendTag===currUserData.friendTag && userInfo.displayName===currUserData.displayName 
-                && userInfo.profileImage===null){
-                setUserSettErr({err:true, message:'There is no changes in the current user information.'})
-                setIsLoading(false)
-                return 
-            }
             const formData = new FormData()
             if(userInfo.displayName!==currUserData.displayName) formData.append('displayName', userInfo.displayName)
             if(userInfo.friendTag!==currUserData.friendTag) formData.append('friendTag', userInfo.friendTag)
@@ -57,6 +44,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                 }
             setIsLoading(false)
             setModal({active:false, type:''})
+            setIsDisabled(false)
         }catch(err:unknown){
             if(axios.isAxiosError(err)){
                 if(err.response?.status===409){
@@ -69,22 +57,27 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
                     }else{
                         setUserSettErr({err:true, message: 'There was an error changing the user password.'})
                     }
+                }else{
+                    setUserSettErr({err:true, message:'There was an error changing the user information.'})
                 }
             }else{
                 setUserSettErr({err:true, message:'There was an error changing the user information.'})
-            }
-        setIsLoading(false)   
+            }  
         }
+        setIsLoading(false)
+        setIsDisabled(false) 
     }
 
     const handleUserPasswordSubmit = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()
         setIsLoading(true)
+        setIsDisabled(true)
         setUserSettErr({err:false, message:''})
         try{
             const res:AxiosResponse<{status:string, token:string}>= await changeUserPassword(token, userPassword)
             if(res.data.status==='success'){
                 setToken('')
+                setIsDisabled(false)
                 localStorage.removeItem('token')
                 window.location.href = '/login'
             }
@@ -106,6 +99,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
             }else{
                 setUserSettErr({err:true, message: 'There was an error changing the user password.'})
             }
+            setIsDisabled(false)
             setIsLoading(false)
         }
     }
@@ -153,10 +147,11 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal})=
         setCurrSetting('userPassword')
         setUserSettErr({err:false, message:''})
     }
-
+    
     useEffect(()=>{
         setModalVisible(true)
-    }, [])
+        return ()=> setModalVisible(false)
+    },[])
 
     return(
         <div className={`profile-settings-modal-container ${modalVisible?'visible':''}`}>

@@ -10,6 +10,7 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
     const [popUp, setPopUp] = useState<string>('')
     const [popUpActive, setPopUpActive] = useState(false)
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 , clickX:0, clickY:0})
+    const [isModalDisabled, setIsModalDisabled] = useState(false)
     const [modalSettings, setModalSettings] = useState<UnfriendModalSettings>({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
     const {setIsFriendsOpen, socket, token, handleFriendChannelDelete} = useHomeCustomContext()
 
@@ -57,8 +58,10 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
     })
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.target === e.currentTarget) {
-            e.preventDefault();
-            setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
+            if(!isModalDisabled){
+                e.preventDefault();
+                setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
+            }
         }
     }
 
@@ -105,6 +108,7 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                 socket={socket} handleFriendChannelDelete={handleFriendChannelDelete} 
                 token={token}
                 setModalSettings={setModalSettings}
+                setIsModalDisabled={setIsModalDisabled}
                 />
             </dialog>}
             <div className="friend-list-top-section">

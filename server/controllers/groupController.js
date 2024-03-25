@@ -120,7 +120,7 @@ export const resizeGroupPhoto = catchAsync(async(req, res, next)=>{
     if(req.body.currPhoto==='default.jpeg'){
         req.file.filename = `group-profile-${req.params.groupId}-v1.jpeg`
         const buffer = await sharp(req.file.buffer)
-            .resize({height:200, width:200, fit:"cover"})
+            .resize({height:150, width:150, fit:"cover"})
             .toFormat('jpeg')
             .jpeg({ quality: 90 })
             .toBuffer()

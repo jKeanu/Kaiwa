@@ -3,14 +3,16 @@ import { LeaveGroup } from "../../types/generalTypes";
 import { leaveGroup } from "../../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useChannelCustomContext } from "../../context";
 
 const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton, 
     socket, channelNumber, setModalDisabled})=>{
-    const [modalVisible, setModalVisible] = useState(false)
     const navigate = useNavigate()
     const [isLoading, setIsLoading]  = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     
+    const {setModalVisible, modalVisible} = useChannelCustomContext()
+
     const handleLeaveGroup=async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
         setIsLoading(true)
@@ -31,15 +33,13 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
             setModalDisabled(false)
         }
     }
+    
     useEffect(()=>{
         setModalVisible(true)
+        return ()=> setModalVisible(false)
     },[])
 
 
-    const handleClose = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        handleCloseButton(setModalVisible)
-    }
     return(
         <div className={`leave-group-modal-container s-modal channel-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Leave Group</h2>
@@ -53,7 +53,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
                     </div>:
                     'Leave Group'}
                 </button>
-                <button className="cancel-button" onClick={handleClose} disabled={isLoading}>
+                <button className="cancel-button" onClick={handleCloseButton} disabled={isLoading}>
                     Cancel
                 </button>
                 {errorMsg.isError&&<span className="s-modal-err">{errorMsg.message}</span>}
