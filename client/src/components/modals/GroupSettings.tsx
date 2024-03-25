@@ -13,11 +13,13 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
         groupPhotoUrl,
         setCurrentChannel,
         handleCloseButton,
+        setModalWindow,
         setModalDisabled})=>{
     const [groupFormData, setGroupFormData] = useState<{channelName:string, groupProfileImage:File|null}>
     ({channelName:channelName, groupProfileImage:null})
     const [isLoading, setIsLoading] = useState(false)
     const [groupSettErr, setGroupSettErr] = useState({err:false, message:''})
+    
     const profileImagePreview = useMemo(()=>{
         return groupFormData.groupProfileImage? URL.createObjectURL(groupFormData.groupProfileImage):null
     }, [groupFormData.groupProfileImage])
@@ -58,6 +60,8 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                     }
                 })
                 setIsLoading(false)
+                setModalDisabled(false)
+                setModalWindow({isOpen:false, window:''})
                 setModalDisabled(false)
             }
         }catch(err:unknown){

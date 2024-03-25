@@ -1,6 +1,6 @@
 import { FriendListProps, UnfriendModalSettings } from "../../types/generalTypes";
 import { Link } from "react-router-dom";
-import React, { useState, useMemo} from "react";
+import React, { useState, useMemo, useRef} from "react";
 import Unfriend from "../modals/Unfriend";
 import { useEffect } from "react";
 import { useHomeCustomContext } from "../../context";
@@ -28,20 +28,25 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
         return [...friends].filter(friend=>friend.friend.displayName.toLowerCase().includes(searchQuery.toLowerCase()))
     }, [searchQuery, friends])
 
+    const friendListRef = useRef<HTMLUListElement>(null)
+
     const handlePopUpClick = (e:React.MouseEvent<HTMLButtonElement>, friendId:string)=>{
         e.preventDefault()
         setPopUpActive(false)
-        if(`user-${friendId}-popup`===popUp){
-            setPopUp('')
-        }else{
-            const clickX = e.nativeEvent.offsetX
-            const clickY = e.nativeEvent.offsetY
-            setPopUp(`user-${friendId}-popup`)
-            setTimeout(() => {
-                // This delay allows the popup to render before the animation class is added
-                setPopUpActive(true);
-              }, 10)
-            setPopupPosition({x:e.clientX, y:e.clientY, clickX, clickY})
+        const container = friendListRef.current
+        if(container){
+            if(`user-${friendId}-popup`===popUp){
+                setPopUp('')
+            }else{
+                const clickX = e.nativeEvent.offsetX
+                const clickY = e.pageY>container.clientHeight?e.nativeEvent.offsetY - 50:e.nativeEvent.offsetY + 15
+                setPopUp(`user-${friendId}-popup`)
+                setTimeout(() => {
+                    // This delay allows the popup to render before the animation class is added
+                    setPopUpActive(true);
+                  }, 10)
+                setPopupPosition({x:e.clientX, y:e.clientY, clickX, clickY})
+            }
         }
     }
 
@@ -134,7 +139,7 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                 <input className="friend-list-search-input" placeholder="Search friends..."
                 onChange={(e)=>setSearchQuery(e.target.value)} value={searchQuery}/>
             </div>
-            <ul className="friend-list">
+            <ul className="friend-list" ref={friendListRef}>
                 {filteredFriends.map(friend=>(
                     <li key={friend.channel.channelNumber} className="friend-link-container friend-container">
                         <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`}>
@@ -184,8 +189,8 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                         {popUp===`user-${friend.friend._id}-popup`
                         &&
                         <div className={`friend-more-pop-up-container ${popUpActive?"pop-up-active":""}`}
-                        style={{left:`${popupPosition.x/1.70}px`, top:`${popupPosition.y+popupPosition.clickY+5}px`, 
-                            transform: `translateY(${-popupPosition.y}px)`}}>
+                        style={{right:`${-popupPosition.clickX+40}px`, top:`${popupPosition.y+popupPosition.clickY+5}px`,
+                        transform: `translateY(${-popupPosition.y}px)`}}>
                             <Link to={`channels/${friend.channel.channelNumber}`} className="friend-pop-up-link">
                                 Send Message
                             </Link>

@@ -130,7 +130,7 @@ export default (httpServer) => {
       const userObject = user.toObject()
       userObject.photoUrl = `${cloudfrontDomainName}/${userObject.photo}`
       const currChannel = await Channel.findById(data.channelId)
-        .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage')
+        .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage seen')
       const currChannelObject = currChannel.toObject()
       currChannelObject.photoUrl = `${cloudfrontDomainName}/${currChannelObject.photo}`
       io.to(`channel-${data.channelId}`).emit(`channel_member_update`, 

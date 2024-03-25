@@ -24,6 +24,7 @@ const InviteUserModal:React.FC<InviteFriend>=({
     },[])
 
     const isFriendInGroup:FriendDetails[] = friends.filter(friend => !currChannelMembersId.includes(friend._id))
+
     const handleInvite = async (e:React.MouseEvent<HTMLButtonElement>, friend:FriendDetails):Promise<void> => {
         e.preventDefault()
         setModalDisabled(true)
@@ -41,9 +42,11 @@ const InviteUserModal:React.FC<InviteFriend>=({
                 if(socket && channelId && channelNumber){
                     socket.emit('user_invite_success', {inviteUser:friend._id, channelId, newTime,channelNumber:Number(channelNumber)})
                 }
-                setLoadings(prevLoadings=>{
-                    return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)
-                })
+                setTimeout(()=>{
+                    setLoadings(prevLoadings=>{
+                        return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)
+                    })
+                }, 150)
             }
         }
         catch(err){

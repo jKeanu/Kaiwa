@@ -57,6 +57,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
     //PopUp
     const [memberPopUp, setMemberPopUp] = useState('')
+    const [isPopUpBelow, setIsPopUpBelow] = useState(false)
     //mobile animation
     const [isVisible, setIsVisible] = useState(false)
     const [isMemberVisible, setIsMemberVisible] = useState(false)
@@ -377,9 +378,14 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             if(memberId===memberPopUp){
                 setActivePopup(false)
                 setMemberPopUp('')
+                if(isPopUpBelow){
+                    setIsPopUpBelow(false)
+                }
             }else{
                 setActivePopup(false)
                 setMemberPopUp(memberId)
+                if(e.clientY > memberListRef.current.clientHeight - 150 ) setIsPopUpBelow(true)
+                else if (isPopUpBelow) setIsPopUpBelow(false)
                 setTimeout(() => {
                     // This delay allows the popup to render before the animation class is added
                     setActivePopup(true);
@@ -685,6 +691,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     {(modalWindow.window==='groupSettings')
                     &&currentChannel.photo&&currentChannel.photoUrl&&currentChannel.channelName&&
                     <GroupSettingsModal 
+                        setModalWindow={setModalWindow}
                         setModalDisabled={setModalDisabled}
                         handleCloseButton={handleCloseButton}
                         token={token}
@@ -949,7 +956,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                         </svg>
                                     </button>
                                     {memberPopUp===member._id&&member._id!==_id&&
-                                    <div className={`member-popup-container ${activePopup?'member-popup-active':''}`}>
+                                    <div style={{'bottom':`${isPopUpBelow?'100%':'none'}`, 'top':`${isPopUpBelow?'none':'100%'}`}}
+                                    className={`member-popup-container ${activePopup?'member-popup-active':''}`}>
                                         <div className="popup-member-info-container">
                                             <img src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`} />
                                             <div className="popup-member-info">

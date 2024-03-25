@@ -328,7 +328,8 @@ export type GroupSettingsProps = {
     channelId: string,
     setCurrentChannel: React.Dispatch<SetStateAction<CurrentChannel|undefined>>,
     handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void,
-    setModalDisabled:React.Dispatch<SetStateAction<boolean>>
+    setModalDisabled:React.Dispatch<SetStateAction<boolean>>,
+    setModalWindow: React.Dispatch<SetStateAction<{window:string, isOpen:boolean}>>
 }
 
 export type MemberUnfriend = {
