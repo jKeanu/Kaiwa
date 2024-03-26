@@ -20,7 +20,6 @@ const InviteUserModal:React.FC<InviteFriend>=({
 
     useEffect(()=>{
         setModalVisible(true)
-        return ()=> setModalVisible(false)
     },[])
 
     const isFriendInGroup:FriendDetails[] = friends.filter(friend => !currChannelMembersId.includes(friend._id))

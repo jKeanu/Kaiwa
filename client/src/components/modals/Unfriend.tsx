@@ -34,7 +34,6 @@ const Unfriend:React.FC<UnfriendProps>=({channelId, friendId, token, socket, han
 
     useEffect(()=>{
         setModalVisible(true)
-        return ()=> setModalVisible(false)
     },[])
     return(
         <div className={`unfriend-modal-container s-modal ${modalVisible?"visible":""}`}>

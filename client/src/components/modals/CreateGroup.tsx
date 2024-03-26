@@ -84,7 +84,6 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
 
     useEffect(()=>{
         setModalVisible(true)
-        return ()=> setModalVisible(false)
     },[])
 
 

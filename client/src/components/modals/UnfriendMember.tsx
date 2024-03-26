@@ -34,7 +34,6 @@ const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token,
 
     useEffect(()=>{
         setModalVisible(true)
-        return ()=> setModalVisible(false)
     },[])
 
 

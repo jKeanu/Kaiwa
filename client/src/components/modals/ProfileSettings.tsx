@@ -150,7 +150,6 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
     
     useEffect(()=>{
         setModalVisible(true)
-        return ()=> setModalVisible(false)
     },[])
 
     return(

@@ -24,6 +24,7 @@ import UnfriendMemberModal from "./modals/UnfriendMember"
 import ChangeLeaderModal from "./modals/ChangeLeader"
 import throttle from 'lodash.throttle'
 import GroupSettingsModal from "./modals/GroupSettings"
+import { useChannelCustomContext } from "../context"
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
@@ -83,6 +84,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const memberListRef =useRef<HTMLUListElement>(null)
+
+    const {setModalVisible} = useChannelCustomContext()
 
     //fetching channel data 
     const {data:channelData, error: channelError, isLoading:channelIsLoading} = useSWR<ChannelDataStatus>(
@@ -332,6 +335,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             messageBoxRef.current.scrollTop=0
         }
     }
+    
     const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
         e.preventDefault()
         setModalWindow({isOpen:true, window:action})
@@ -341,6 +345,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if (e.target === e.currentTarget) {
             e.preventDefault();
             if(!modalDisabled){
+                setModalVisible(false)
                 if(modalWindow.isOpen){
                     setModalWindow({isOpen: false, window: ''});
                 }else if(memberModal.isOpen){
@@ -352,6 +357,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
+        setModalVisible(false)
         setTimeout(() => {
             if(modalWindow.isOpen){
                 setModalWindow({isOpen: false, window: ''})

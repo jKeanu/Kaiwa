@@ -640,6 +640,7 @@
                 .channel-link-container
                     overflow-x: hidden
                     .channel-link
+                        position: relative
                         text-decoration: none
                         display: flex
                         align-items: center
@@ -649,6 +650,15 @@
                         transition: background-color 0.25s ease-in-out
                         &:hover
                             background-color: rgb(52, 76, 100)
+                        .not-seen-indicator
+                            width: 0.45rem
+                            height: 0.45rem
+                            border-radius: 0.26rem
+                            background-color: #207ad5
+                            position: absolute
+                            right: 0.45rem
+                            top: 50%
+                            transform: translateY(-50%)
                         .channel-photo
                             width: 2.5rem
                             height: 2.5rem
@@ -1059,6 +1069,7 @@
                 .channel-link-container
                     overflow-x: hidden
                     .channel-link
+                        position: relative
                         text-decoration: none
                         display: flex
                         align-items: center
@@ -1066,18 +1077,30 @@
                         column-gap: 0.5rem
                         padding: 0.35rem
                         transition: background-color 0.25s ease-in-out
-                        &:hover
-                            background-color: rgb(52, 76, 100)
+                        &:hover > .channel-photo
+                            border-radius: 0.5rem
                         &.active
                             background-color: rgb(52, 76, 100)
+                        
                         .channel-photo
                             width: 2.5rem
                             height: 2.5rem
                             object-fit: cover
                             border-radius: 1.25rem
                             flex-shrink: 0
+                            transition: all 0.15s ease-in-out
                         .channel-link-text-container
                             display: none
+                        .not-seen-indicator
+                            width: 0.6rem
+                            height: 0.6rem
+                            left: 0%
+                            border-radius: 0.3rem
+                            background-color: #207ad5
+                            position: absolute
+                            right: 0.45rem
+                            top: 50%
+                            transform: translate(-50%, -50%)
 
         .user-info-container
             border-top: 1px solid $white-line
@@ -1433,6 +1456,7 @@
                 .channel-link-container
                     overflow-x: hidden
                     .channel-link
+                        position: relative
                         width: 100%
                         text-decoration: none
                         display: flex
@@ -1445,6 +1469,15 @@
                             background-color: rgb(52, 76, 100)
                         &.active
                             background-color: rgb(52, 76, 100)
+                        .not-seen-indicator
+                            width: 0.45rem
+                            height: 0.45rem
+                            border-radius: 0.26rem
+                            background-color: #207ad5
+                            position: absolute
+                            right: 0.45rem
+                            top: 50%
+                            transform: translateY(-50%)
                         .channel-photo
                             width: 2.5rem
                             height: 2.5rem
@@ -1459,13 +1492,13 @@
                             width: 10rem
                             .channel-link-last-message-text
                                 font-family: 'Open Sans', sans-serif
-                                font-size: 0.65rem
+                                font-size: 0.55rem
                                 color: #76818b
                                 width: 100%
                             .channel-name
                                 font-family: 'Raleway', sans-serif
                                 color: white
-                                font-size: 1.1rem
+                                font-size: 0.9rem
                                 white-space: nowrap
                                 width: 100%
                                 overflow: hidden
@@ -1510,13 +1543,14 @@
                     flex-direction: column
                     width: 7.5rem
                     .display-name-info
-                        font-weight: bold
                         color: white
                         width: 100%
                         text-align: start
                         white-space: nowrap
                         overflow: hidden
                         text-overflow: ellipsis
+                        font-size: 1rem
+                        font-family: 'Raleway', sans-serif
                     .friend-tag-info
                         color: rgb(191, 191, 191)
                         font-size: 0.7rem

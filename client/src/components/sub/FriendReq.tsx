@@ -9,7 +9,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
     const [loading, setLoading] = useState([''])
     const [error, setError] = useState([''])
     const {socket, token, handleNewFriendChannel, setFriendReqs, currUserId} = useHomeCustomContext()
-
+    
     //friendId is the object that contains the user info and your status with that user
     const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string, friendId:string):Promise<void>=>{
         e.preventDefault()
@@ -86,7 +86,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                 if(socket){
                     socket.emit("declined_pending_friend_request", {declinedUser: pendingUserId, userId:currUserId})
                 }
-            }
+        }
         }catch(err){
             setLoading(prevLoading=>{
                 const updateLoading = [...prevLoading]

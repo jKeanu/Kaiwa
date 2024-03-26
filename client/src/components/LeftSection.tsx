@@ -20,9 +20,10 @@ const LeftSection:React.FC<LeftSectionProps>=({
     const {setModalVisible} = useLeftCustomContext()
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
+        e.preventDefault()
         if (e.button===0 && e.target === e.currentTarget){
-            e.preventDefault()
             if(!isDisabled){
+                setModalVisible(false)
                 setModal({active: false, type:''})
             }
         }
@@ -117,7 +118,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
                 {filteredChannels.map(channel=>(
                     <li className='channel-link-container' key={channel.channelNumber}>
                         <NavLink className='channel-link' to={`channels/${channel.channelNumber}`} 
-                        onClick={clearSearchQuery} style={{'backgroundColor':`${!channel.seen.includes(_id)?'pink':''}`}}>
+                        onClick={clearSearchQuery}>
                             <img className='channel-photo'src={`${channel.photo==='default.jpeg'?'/img/default.jpeg':channel.photoUrl}`} alt=''/>
                             <div className='channel-link-text-container'>
                                 <span className='channel-name'>{channel.channelName}</span>
@@ -125,6 +126,11 @@ const LeftSection:React.FC<LeftSectionProps>=({
                                     {formatToTodayIfCurrentDate(channel.formattedLastMessage)}
                                 </span>
                             </div>
+                            {
+                            channel.seen.includes(_id)&&
+                            <div className='not-seen-indicator'>
+
+                            </div>}
                         </NavLink>
                     </li>
                 ))}

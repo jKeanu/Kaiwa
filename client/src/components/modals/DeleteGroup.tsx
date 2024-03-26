@@ -39,7 +39,6 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
     
     useEffect(()=>{
         setModalVisible(true)
-        return ()=> setModalVisible(false)
     },[])
 
 
