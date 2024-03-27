@@ -11,7 +11,8 @@ import {
         AddFriendStatus,
         MemberModalSettings,
         AcceptFriendStatus,
-        Friend
+        Friend,
+        ActionType
     } from "../types/generalTypes"
 import { acceptFriend, addFriend,  channelFetcher,  declineFriend,  messageFetcher} from "../services/apiService"
 import ReactTextareaAutosize from "react-textarea-autosize"
@@ -65,7 +66,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
 
-    // const {channelsDispatch, setModalVisible, modalVisible} = useChannelCustomContext()
+    const {channelsDispatch} = useChannelCustomContext()
 
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
@@ -88,7 +89,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const {setModalVisible} = useChannelCustomContext()
 
     //fetching channel data 
-    const {data:channelData, error: channelError, isLoading:channelIsLoading} = useSWR<ChannelDataStatus>(
+    const {data:channelData, error: channelError} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
         channelFetcher(endpoint, token),
     )
@@ -109,9 +110,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             setCurrentChannel(channelData.channel)
             setCurrentChannelMembers(channelData.channel.members)
         }else if (channelError){
-            navigate('/@me')
         }
-    }, [channelData, channelError, channelIsLoading])
+    }, [channelData, channelError])
 
     const { data: messagesData, error: messagesError} = useSWR<ChannelMessagesStatus>(
         //if there's already a data in the cache, we no longer need to fetch 
@@ -150,8 +150,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
-            socket.emit('new_message_seen', {channelId:currentChannel._id})
             const handleReceiveMessage = (newMessage: ChannelMessage) => {
+                socket.emit('new_message_seen', {channelId:currentChannel._id})
                 if(newMessage.updated){
                     setMessageReceived(prevMessages=>{
                         const updatedMessages = [...prevMessages]
@@ -343,7 +343,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.target === e.currentTarget) {
-            e.preventDefault();
             if(!modalDisabled){
                 setModalVisible(false)
                 if(modalWindow.isOpen){
@@ -675,6 +674,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(socket && currentChannel && _id){
             if(!currentChannel.seen.includes(_id)){
                 socket.emit('new_message_seen', {channelId:currentChannel._id})
+                channelsDispatch({type:ActionType.Seen, payload:{channelId:currentChannel._id, currUserId:_id}})
                 mutate(channelCacheKey, (currChannelCachedData: ChannelDataStatus | undefined)=>{
                     if(!currChannelCachedData){
                         return undefined

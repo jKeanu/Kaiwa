@@ -52,6 +52,11 @@ export const createGroupChannel = catchAsync(async(req, res, next)=>{
             await session.abortTransaction();
             return next(new AppError("The creator of the group should be included in the group.", 400))
         }
+        const isGroupExists = await Channel.findOne({channelType:"Group", members:{$all: req.body.members}})
+        if(isGroupExists){
+            console.log(isGroupExists, '---')
+            return next(new AppError("The group with these members already exists.", 409))
+        }
         //since create query accepts an array OR as a spread, we need to use the array
         //if we don't, it would see the {session} as another entry.
         const newChannel = await Channel.create([{

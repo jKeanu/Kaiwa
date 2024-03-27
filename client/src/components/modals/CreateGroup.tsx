@@ -65,7 +65,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
             }
         }catch(err:unknown){
             if (axios.isAxiosError(err)){
-                if(err.response?.status===400){
+                if(err.response?.status===400 || err.response?.status === 409){
                     if (err.response.data.message.split('. ').length>1){
                         setCreateGroupErr({err:true, type:'createErr', message:err.response.data.message.split('. ')[1]})
                     }else{

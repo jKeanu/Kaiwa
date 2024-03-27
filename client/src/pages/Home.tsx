@@ -16,7 +16,7 @@ import {User, Channel,
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
 import { getCurrentUser } from '../services/apiService'
-import {AxiosResponse} from 'axios'
+import axios, {AxiosResponse} from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
 
@@ -34,7 +34,7 @@ function channelReducer(state:Channel[] | [], action:ChannelAction){
             return action.payload
         case ActionType.Seen: {
             const channels = [...state].map(channel => {
-                if (channel._id === action.payload.channelId) {
+                if (channel._id === action.payload.channelId && !channel.seen.includes(action.payload.currUserId)) {
                     // Create a new object for the changed channel
                     const currChannel = {...channel}
                     currChannel.seen.push(action.payload.currUserId)
@@ -42,7 +42,7 @@ function channelReducer(state:Channel[] | [], action:ChannelAction){
                 }
                 return channel; // Return the original channel object if no change is needed
             });
-            return [...channels];
+            return channels;
         }
         case ActionType.NewChannel:{
             const updateChannels = [...state]
@@ -126,7 +126,7 @@ const HomePage:React.FC = ()=>{
 
         //join rooms based on the channel id, so when there's an update in the channel
         //we will be notified
-        const ChannelIds:string[] = useMemo(()=>{
+        const channelIds:string[] = useMemo(()=>{
             return [...channels].map(channel => channel._id)
         }, [channels])
 
@@ -196,10 +196,13 @@ const HomePage:React.FC = ()=>{
                         channelsDispatch({type:ActionType.InitialFetch, payload: sortedChannels})
                     }
                 }catch(error: unknown){
-                    // localStorage.removeItem('token')
-                    // setToken('')
-                    // navigate('/login')
-                    console.log(error)
+                    if(axios.isAxiosError(error)){
+                        if(error.response?.status === 401 || error.response?.status === 404){
+                            localStorage.removeItem('token')
+                            setToken('')
+                            navigate('/login')
+                        }
+                    }
                 }
             }
             if (token) {
@@ -277,9 +280,9 @@ const HomePage:React.FC = ()=>{
 
         useEffect(()=>{
             if(channels&&socket){
-                socket.emit('channel_live_updates', ChannelIds)
+                socket.emit('channel_live_updates', channelIds)
                 return ()=>{
-                    socket.emit('leave_channel_live_updates', ChannelIds)
+                    socket.emit('leave_channel_live_updates', channelIds)
                 }
             }
         }, [channels, socket])

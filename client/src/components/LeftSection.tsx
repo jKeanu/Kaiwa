@@ -20,7 +20,6 @@ const LeftSection:React.FC<LeftSectionProps>=({
     const {setModalVisible} = useLeftCustomContext()
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
-        e.preventDefault()
         if (e.button===0 && e.target === e.currentTarget){
             if(!isDisabled){
                 setModalVisible(false)
@@ -127,7 +126,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
                                 </span>
                             </div>
                             {
-                            channel.seen.includes(_id)&&
+                            !channel.seen.includes(_id)&&
                             <div className='not-seen-indicator'>
 
                             </div>}

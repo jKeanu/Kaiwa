@@ -469,7 +469,7 @@ export type LeftContext={
     setUserData: React.Dispatch<SetStateAction<User|undefined>>,
     setToken: React.Dispatch<SetStateAction<string|null>>,
     setModalVisible: React.Dispatch<SetStateAction<boolean>>,
-    modalVisible: boolean
+    modalVisible: boolean,
 }
 
 //useReducer type

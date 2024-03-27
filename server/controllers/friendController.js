@@ -259,7 +259,6 @@ export const declineFriend = catchAsync(async(req, res, next)=>{
             res.status(204).end()
         }catch(err){
             if(err instanceof MongoServerError && err.code === 112 && retries > 0){
-                console.log(`WriteConflict detected, retrying... Retries left: ${retries}`);
                 retries--;
                 await delay(delayTime); // Wait for a specified delayTime before retrying
                 await session.abortTransaction(); // Important to abort the current transaction

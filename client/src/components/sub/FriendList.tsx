@@ -65,7 +65,6 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
     })
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
-        e.preventDefault()
         if (e.target === e.currentTarget) {
             if(!isModalDisabled){
                 setModalVisible(false)
