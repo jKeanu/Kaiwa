@@ -113,11 +113,17 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                                 <span className="pending-request-error">An error occurred</span>}
                                 <button className="accept-friend-request-button" 
                                 onClick={(e)=>handleAcceptRequest(e, request.friend._id, request._id)}>
-                                    <img src="/img/accept.svg" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+                                        fill="none" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" 
+                                        className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
                                 </button>
                                 <button className="decline-friend-request-button" 
                                 onClick={(e)=>handleRejectRequest(e, request.friend._id)}>
-                                    <img src="/img/decline.svg"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                                    stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
                                 </button>
                             </>
                             }

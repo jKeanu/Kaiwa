@@ -55,9 +55,13 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                         errMessages = errMessages.split('. ')[1]
                         setUserSettErr({err:true, message: errMessages})
                     }else{
-                        setUserSettErr({err:true, message: 'There was an error changing the user password.'})
+                        setUserSettErr({err:true, message: 'There was an error changing the user information.'})
                     }
-                }else{
+                
+                }else if(err.response?.status===429){
+                    setUserSettErr({err:true, message: 'Too many user info change attempts, please try again later.'})
+                }
+                else{
                     setUserSettErr({err:true, message:'There was an error changing the user information.'})
                 }
             }else{
@@ -93,11 +97,16 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                     }else{
                         setUserSettErr({err:true, message: 'There was an error changing the user password.'})
                     }
-                }else{
-                    setUserSettErr({err:true, message: 'There was an error changing the user password.'})
+                }else if(err.response?.status===429){
+                    setUserSettErr({err:true, message: 'Too many password change attempts, please try again later.'})
+                }else if(err.response?.status===401){
+                    setUserSettErr({err:true, message: err.response.data.message})
+                }
+                else{
+                    setUserSettErr({err:true, message: 'There was an error changing the group settings.'})
                 }
             }else{
-                setUserSettErr({err:true, message: 'There was an error changing the user password.'})
+                setUserSettErr({err:true, message: 'There was an error changing the group settings.'})
             }
             setIsDisabled(false)
             setIsLoading(false)

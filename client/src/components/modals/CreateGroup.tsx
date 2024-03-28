@@ -71,7 +71,10 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                     }else{
                         setCreateGroupErr({err:true, type:'createErr', message:err.response.data.message})
                     }
-                }else{
+                }else if(err.response?.status===429){
+                    setCreateGroupErr({err:true, type:'createErr', message:'Too many group creation detected, please try again later.'})
+                }
+                else{
                     setCreateGroupErr({err:true, type:'createErr', message:'An unknown error occurred. Please try again later.'})
                 }
             }else{

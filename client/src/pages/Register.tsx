@@ -55,9 +55,8 @@ const RegisterPage = () => {
                         setErrorMessage({type:'other', message:'Something went wrong'})
                     }
                 }else if(error.response?.status === 429){
-                    setErrorMessage({type:'other', message:'Too many login attempts. Please try again later'})
+                    setErrorMessage({type:'other', message:'Too many registration attempts detected, please try again later'})
                 }else{
-                    console.log(error.response?.data.message,' -----')
                     setErrorMessage({type:'other', message:'An unknown error occurred. Please try again later.'})
                 }
             } else if (error instanceof Error) {

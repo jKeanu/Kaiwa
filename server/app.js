@@ -37,6 +37,24 @@ if (process.env.NODE_ENV === 'development') {
 // });
 // app.use('/api', limiter);
 
+
+const loginLimiter = rateLimit({
+  max: 15,
+  windowMs: 60*30*1000,
+  message: 'Too many login attempts, please try again later.',
+  skipSuccessfulRequests: true
+})
+
+const registerLimiter = rateLimit({
+  max: 3,
+  windowMs: 60*1000*60*2,
+  message: 'Too many registration attempts detected, please try again later.',
+  skipFailedRequests: true
+})
+
+app.use('/api/v1/users/login', loginLimiter)
+app.use('/api/v1/users/register', registerLimiter)
+
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 

@@ -65,9 +65,21 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
             }
         }catch(err:unknown){
             if(axios.isAxiosError(err)){
-                setGroupSettErr({err:false, message:err.response?.data.message})
+                if(err.response?.status===429){
+                    setGroupSettErr({err:true, message:'Too many group setting change attempts were detected, please try again later.'})
+                }else if(err.response?.status === 400){
+                    let errMessages = err.response.data.message
+                    if(errMessages.split('. ').length>1){
+                        errMessages = errMessages.split('. ')[1]
+                        setGroupSettErr({err:true, message: errMessages})
+                    }else{
+                        setGroupSettErr({err:true, message: 'There was an error changing group settings.'})
+                    }
+                }else{
+                    console.log(err.response?.data)
+                }
             }else{
-                setGroupSettErr({err:false, message:'There was a problem changing the group channel information.'})
+                setGroupSettErr({err:true, message:'There was a problem changing the group channel information.'})
             }
             setIsLoading(false)
             setModalDisabled(false)
