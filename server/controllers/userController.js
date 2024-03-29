@@ -4,10 +4,7 @@ import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import multer from 'multer';
 import sharp from 'sharp';
-import { S3Client, PutObjectCommand, DeleteObjectCommand} from '@aws-sdk/client-s3';
-import dotenv from'dotenv'
-//although we have already configure the dotenv in the app.js we have to configure it here as well
-dotenv.config({ path: './config.env' });
+import { S3Client, PutObjectCommand, DeleteObjectCommand, CompressionType} from '@aws-sdk/client-s3';
 
 const bucketName = process.env.BUCKET_NAME
 const bucketRegion = process.env.BUCKET_REGION

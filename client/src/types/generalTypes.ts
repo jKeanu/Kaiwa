@@ -193,8 +193,6 @@ export type ChannelDataStatus={
 export type ChannelMessagesStatus={
     status:string,
     messages:ChannelMessage[],
-    updateType?:string,
-    loadedMessage?:number
 }
 
 export type ChannelMemberUpdate={

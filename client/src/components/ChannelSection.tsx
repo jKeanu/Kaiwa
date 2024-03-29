@@ -151,6 +151,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
             const handleReceiveMessage = (newMessage: ChannelMessage) => {
+                //Notify the server that you have seen the latest message
                 socket.emit('new_message_seen', {channelId:currentChannel._id})
                 if(newMessage.updated){
                     setMessageReceived(prevMessages=>{
@@ -165,7 +166,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         return [newMessage, ...prevMessages];
                     });
                 }
-                //Notify the server that you have seen the latest message
                 mutate(channelCacheKey, (currChannelCachedData: ChannelDataStatus | undefined)=>{
                     if(!currChannelCachedData){
                         return undefined
@@ -682,7 +682,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     const updateChannelData = {...currChannelCachedData.channel}
                     updateChannelData.seen.push(_id)
                     return {status: currChannelCachedData.status, channel: updateChannelData}
-                }, false)
+                })
             }
         }
     }, [socket, currentChannel, _id])

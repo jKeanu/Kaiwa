@@ -76,7 +76,7 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                         setGroupSettErr({err:true, message: 'There was an error changing group settings.'})
                     }
                 }else{
-                    console.log(err.response?.data)
+                    setGroupSettErr({err:true, message: 'There was an error changing group settings.'})
                 }
             }else{
                 setGroupSettErr({err:true, message:'There was a problem changing the group channel information.'})

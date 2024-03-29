@@ -6,6 +6,7 @@ import User from './models/userModel.js';
 import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
 import dotenv from'dotenv'
+import mongoose from 'mongoose'
 dotenv.config({ path: './config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
@@ -126,16 +127,22 @@ export default (httpServer) => {
     //Invite a user to the group channel
     socket.on('user_invite_success', async(data)=>{
       //add status on select, if status is already implemented ------------------------------
-      const user = await User.findById(data.inviteUser).select('displayName friendTag _id photo status')
-      const userObject = user.toObject()
-      userObject.photoUrl = `${cloudfrontDomainName}/${userObject.photo}`
-      const currChannel = await Channel.findById(data.channelId)
-        .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage seen')
-      const currChannelObject = currChannel.toObject()
-      currChannelObject.photoUrl = `${cloudfrontDomainName}/${currChannelObject.photo}`
-      io.to(`channel-${data.channelId}`).emit(`channel_member_update`, 
-      {user:userObject, channelNumber:currChannel.channelNumber, newTime:data.newTime, type:'Joined'})
-      socket.to(`user-${userObject._id}`).emit('invited_to_group', currChannelObject)
+      try{
+        const session = await mongoose.startSession()
+        session.startTransaction()
+        const user = await User.findById(data.inviteUser).select('displayName friendTag _id photo status').session(session)
+        const userObject = user.toObject()
+        userObject.photoUrl = `${cloudfrontDomainName}/${userObject.photo}`
+        const currChannel = await Channel.findById(data.channelId)
+          .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage seen').session(session)
+        const currChannelObject = currChannel.toObject()
+        currChannelObject.photoUrl = `${cloudfrontDomainName}/${currChannelObject.photo}`
+        io.to(`channel-${data.channelId}`).emit(`channel_member_update`, 
+        {user:userObject, channelNumber:currChannel.channelNumber, newTime:data.newTime, type:'Joined'})
+        socket.to(`user-${userObject._id}`).emit('invited_to_group', currChannelObject)
+      }catch(err){
+        console.log('USER INVITE SUCESS LIVE UPDATE ERROR: ', err)
+      }
     })
 
     //When a user left the group channel

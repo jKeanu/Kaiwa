@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo, useCallback, useReducer} from 'reac
 import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import {jwtDecode} from 'jwt-decode'
-import {mutate} from "swr"
+import {useSWRConfig} from "swr"
 import LeftSection from '../components/LeftSection'
 import ChannelSection from '../components/ChannelSection'
 import {User, Channel, 
@@ -105,6 +105,7 @@ const HomePage:React.FC = ()=>{
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
         const [modalVisible, setModalVisible] = useState(false)
+        const {mutate} = useSWRConfig()
 
         const [channels, channelsDispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(channelReducer, [])
 
@@ -386,7 +387,7 @@ const HomePage:React.FC = ()=>{
                             updateChannelDataCache.members = [...updateChannelDataCache.members].filter(member=>member._id!==data.user._id)
                             return {status:channelDataCache.status, channel:updateChannelDataCache}
                         }
-                    }, false)
+                    })
                     if(data.type==='Joined'){
                         //update the channels when someone joined the channel
                         channelsDispatch({type:ActionType.NewMember, payload:{channelNumber:data.channelNumber, newTime:data.newTime}})
@@ -580,7 +581,7 @@ const HomePage:React.FC = ()=>{
                         const updateChannelData = {...prevChannelDataStatus.channel}
                         updateChannelData.groupLeader = data.newLeaderId
                         return {status:prevChannelDataStatus.status, channel:updateChannelData}
-                    }, false)
+                    })
                 })
             }
         }, [socket])

@@ -3,6 +3,12 @@
     position: relative
     width: 100vw
     height: 100vh
+    .modal-window-container
+      @include modal-container
+      .notice-modal-container
+        @include modal-mobile
+        .notice-modal-button-container
+           @include modal-button-container
 
 =home-page-desktop
   @media (min-width: $breakpoint-tablet + 1px )

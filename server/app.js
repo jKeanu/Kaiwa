@@ -1,4 +1,6 @@
 import express from 'express';
+import dotenv from 'dotenv'
+dotenv.config({ path: './config.env' });
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
@@ -12,8 +14,7 @@ import groupRouter from './routes/groupRoutes.js';
 import userFriendRouter from './routes/userFriendRoutes.js';
 import userGroupRouter from './routes/userGroupRoutes.js';
 import userChannelRouter from './routes/userChannelRoutes.js';
-import dotenv from'dotenv'
-dotenv.config({ path: './config.env' });
+
 const app = express();
 
 
