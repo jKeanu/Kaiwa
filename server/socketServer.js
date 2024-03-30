@@ -94,34 +94,38 @@ export default (httpServer) => {
     })
     // Listen for messages
     socket.on('send_message', async (data) => {
-      await Chat.create({
-        sender: verifiedCurrentUserId,
-        channel: data.channel,
-        content: data.content,
-        time: data.time,
-        formattedDate: data.formattedDate
-      });
-      // Update the last message of the channel
-      const updateChannel = await Channel.findByIdAndUpdate(
-        { _id: data.channel },
-        { lastMessage: data.time, formattedLastMessage: data.formattedDate }
-      )
-      updateChannel.seen = [`${verifiedCurrentUserId}`]
-      updateChannel.save()
-      // Although the newMessage document consists of sender as a mongoose object id,
-      // we can use spread operator and add a similar key to overwrite it.
-      const messageInfo = {
-        time: data.time,
-        content: data.content,
-        channel:data.channel,
-        sender: data.sender,
-        formattedDate: data.formattedDate
-      };
-
-      io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
-      {channelId:data.channel, channelNumber:data.channelNumber,  seen: updateChannel.seen,
-      newTime:data.time, newFormattedTime:data.formattedDate, message:messageInfo, channelType:data.channelType})
-      socket.to(`${data.channelNumber}`).emit('receive_message', messageInfo);
+      try{
+        await Chat.create({
+          sender: verifiedCurrentUserId,
+          channel: data.channel,
+          content: data.content,
+          time: data.time,
+          formattedDate: data.formattedDate
+        });
+        // Update the last message of the channel
+        const updateChannel = await Channel.findByIdAndUpdate(
+          { _id: data.channel },
+          { lastMessage: data.time, formattedLastMessage: data.formattedDate }
+        )
+        updateChannel.seen = [`${verifiedCurrentUserId}`]
+        updateChannel.save()
+        // Although the newMessage document consists of sender as a mongoose object id,
+        // we can use spread operator and add a similar key to overwrite it.
+        const messageInfo = {
+          time: data.time,
+          content: data.content,
+          channel:data.channel,
+          sender: data.sender,
+          formattedDate: data.formattedDate
+        };
+  
+        io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
+        {channelId:data.channel, channelNumber:data.channelNumber,  seen: updateChannel.seen,
+        newTime:data.time, newFormattedTime:data.formattedDate, message:messageInfo, channelType:data.channelType})
+        socket.to(`${data.channelNumber}`).emit('receive_message', messageInfo);
+      }catch(err){
+        console.log('SEND MESSAGE ERROR: ', err)
+      }
     });
 
     //Invite a user to the group channel
@@ -153,31 +157,34 @@ export default (httpServer) => {
     })
     
     socket.on("continue_message", async(data)=>{
-      const updatedMessage = await Chat.findOneAndUpdate(
-        {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
-        {time:data.newTime, $push:{content:data.content}},
-           {new:true})
-      //we don't need to update the formattedLastMessage too, since this is a continue_message
-      const updateChannel = await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime})
-      updateChannel.seen = [`${verifiedCurrentUserId}`]
-      updateChannel.save()
-      //Since we need the sender details, we cannot just pass the updatedMessage
-      //directly to the receive_message, the only sender info we have on chat model is the id      
-      const messageInfo = {
-        time: updatedMessage.time,
-        sender:data.sender,
-        content: updatedMessage.content,
-        channel: updatedMessage.channel,
-        formattedDate: updatedMessage.formattedDate,
-        updated:true,
+      try{
+        const updatedMessage = await Chat.findOneAndUpdate(
+          {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
+          {time:data.newTime, $push:{content:data.content}},
+             {new:true})
+        //we don't need to update the formattedLastMessage too, since this is a continue_message
+        const updateChannel = await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime})
+        updateChannel.seen = [`${verifiedCurrentUserId}`]
+        updateChannel.save()
+        //Since we need the sender details, we cannot just pass the updatedMessage
+        //directly to the receive_message, the only sender info we have on chat model is the id      
+        const messageInfo = {
+          time: updatedMessage.time,
+          sender: data.sender,
+          content: updatedMessage.content,
+          channel: updatedMessage.channel,
+          formattedDate: updatedMessage.formattedDate,
+          updated: true,
+        }
+        socket.to(data.channelNumber).emit('receive_message', messageInfo)
+        io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
+        {channelId:updatedMessage.channel, channelNumber:data.channelNumber, 
+          seen: updateChannel.seen,
+          channelType:data.channelType,
+          newTime:updatedMessage.time, message:messageInfo, })
+      }catch(err){
+        console.log('CONTINUE MESSAGE ERROR: ', err)
       }
-
-      socket.to(data.channelNumber).emit('receive_message', messageInfo)
-      io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
-      {channelId:updatedMessage.channel, channelNumber:data.channelNumber, 
-        seen: updateChannel.seen,
-        channelType:data.channelType,
-        newTime:updatedMessage.time, message:messageInfo, })
     })
 
     //When a user havent seen the latest message and opened the channel

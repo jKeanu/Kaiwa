@@ -165,7 +165,8 @@ export type ChannelMessage={
     formattedDate:string,
     time:number|Date,
     _id?:string,
-    updated?:true
+    updated?:true,
+    notSent?:boolean
 }
 
 //Since the implementation of Friend Channel and Group Channel is different

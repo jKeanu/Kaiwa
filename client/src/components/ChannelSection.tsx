@@ -49,6 +49,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [messagesSkip, setMessagesSkip] = useState<number>(0)
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
+    const [notSentMessages, setNotSentMessages] = useState<ChannelMessage[]>([])
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
@@ -65,6 +66,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [isMemberVisible, setIsMemberVisible] = useState(false)
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
+    //Network status
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     const {channelsDispatch} = useChannelCustomContext()
 
@@ -98,6 +101,28 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setIsVisible(true)
     }, [])
     
+
+    //tracking network status
+    useEffect(() => {
+      const handleOnline = () => {
+        setIsOnline(true);
+      };
+  
+      const handleOffline = () => {
+        setIsOnline(false);
+      };
+  
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+  
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }, [])
+
+
+
     useEffect(()=>{
         setMessagesSkip(0)
         setMessageReceived([])
@@ -147,6 +172,21 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
         }
     }, [socket, channelNumber]);
+
+
+    // useEffect(()=>{
+    //     if(isOnline && notSentMessages.length>1){
+    //         setMessageReceived(prevMessages=>{
+    //             const removeNotSent = [...notSentMessages].map(message=>{
+    //                 const updateMessage = {...message}
+    //                 updateMessage.notSent = undefined
+    //                 return updateMessage
+    //             })
+    //             return [...removeNotSent, ...prevMessages]
+    //         })
+    //     }
+
+    // }, [notSentMessages, isOnline, socket])
 
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
@@ -254,85 +294,107 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(!currentChannel){
             return navigate('/')
         }
-        const timestamp = Date.now()
-        const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
-        const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime()
-        //If the sent more then one message within one minute since the first message, we're just going to 
-        //add the content of the message from the previous message.
-        if(messageReceived.length>0&&messageReceived[0].sender._id === _id && timeDifference <= 60*1000){
-            //We won't change the formattedDate since, to have more user-friendly approach
-            //Since we base the date of the  message on the first message content.
-            socket.emit("continue_message",
-            {
-                //we need to convert it to this format since that is the time format in the DB
-                prevTime:messageReceived[0].time,
-                sender:{photo, displayName, _id:_id, friendTag, photoUrl},
-                channel:currentChannel._id,
-                content:inputMessage,
-                newTime: timestamp,
-                channelNumber,
-                channelType: currentChannel.channelType
-            })
-            setMessageReceived((prevMessages)=>{
-                const updatedMessages = [...prevMessages]
-                //Append the input message to the content array of the last message.
-                updatedMessages[0]={
-                    ...updatedMessages[0],
-                    time:timestamp,
-                    content:[
-                        ...updatedMessages[0].content,
-                        inputMessage
-                    ]
+        if(isOnline){
+            const timestamp = Date.now()
+            const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
+            const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime()
+            //If the sent more then one message within one minute since the first message, we're just going to 
+            //add the content of the message from the previous message.
+            if(messageReceived.length>0&&messageReceived[0].sender._id === _id && timeDifference <= 60*1000){
+                //We won't change the formattedDate since, to have more user-friendly approach
+                //Since we base the date of the  message on the first message content.
+                socket.emit("continue_message",
+                {
+                    //we need to convert it to this format since that is the time format in the DB
+                    prevTime:messageReceived[0].time,
+                    sender:{photo, displayName, _id:_id, friendTag, photoUrl},
+                    channel:currentChannel._id,
+                    content: inputMessage,
+                    newTime: timestamp,
+                    channelNumber,
+                    channelType: currentChannel.channelType
+                })
+                setMessageReceived((prevMessages)=>{
+                    const updatedMessages = [...prevMessages]
+                    //Append the input message to the content array of the last message.
+                    updatedMessages[0]={
+                        ...updatedMessages[0],
+                        time:timestamp,
+                        content:[
+                            ...updatedMessages[0].content,
+                            inputMessage
+                        ]
+                    }
+                    return updatedMessages
+                })
+                mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
+                    if (!currMsgCachedData) {
+                        return undefined;
+                    }
+                    const updatedMessages = [...currMsgCachedData.messages]
+                    updatedMessages[0]={
+                        ...updatedMessages[0],
+                        time:timestamp,
+                        content:[
+                            ...updatedMessages[0].content,
+                            inputMessage
+                        ]
+                    }
+                    return {status:currMsgCachedData.status, messages:updatedMessages}
+                }, false)
+            }else{
+                const messageContents:ChannelMessage = {
+                    content:[inputMessage],
+                    channel:currentChannel._id,
+                    time: timestamp,
+                    formattedDate:formatDate(timestamp),
+                    sender:{
+                        photo, displayName, _id:_id, friendTag, photoUrl
+                }}
+                socket.emit("send_message", {
+                    ...messageContents,
+                    channelNumber,
+                    channelType: currentChannel.channelType
+                })
+                setMessageReceived((prevMessages) => {
+                    return [messageContents, ...prevMessages]
+                })
+                //Since in the message that we sent, the socket only sends
+                //the message to the user besides the sender, we 
+                //update the MessageReceived manually.
+                mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
+                    if (!currMsgCachedData) {
+                        return undefined;
+                    }
+                    const updatedMessages = [...currMsgCachedData.messages]
+                    updatedMessages.unshift(messageContents)
+                    return {status:currMsgCachedData.status, messages:updatedMessages}
+                }, false)
+            }
+            setInputMessage('')
+            if(messageBoxRef.current){
+                messageBoxRef.current.scrollTop=0
                 }
-                return updatedMessages
-            })
-            mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
-                if (!currMsgCachedData) {
-                    return undefined;
-                  }
-                const updatedMessages = [...currMsgCachedData.messages]
-                updatedMessages[0]={
-                    ...updatedMessages[0],
-                    time:timestamp,
-                    content:[
-                        ...updatedMessages[0].content,
-                        inputMessage
-                    ]
-                }
-                return {status:currMsgCachedData.status, messages:updatedMessages}
-            }, false)
         }else{
-            const messageContents:ChannelMessage = {
-                content:[inputMessage],
-                channel:currentChannel._id,
-                time: timestamp,
-                formattedDate:formatDate(timestamp),
-                sender:{
-                    photo, displayName, _id:_id, friendTag, photoUrl
-            }}
-            socket.emit("send_message", {
-                ...messageContents,
-                channelNumber,
-                channelType: currentChannel.channelType
-            })
-            setMessageReceived((prevMessages) => {
-                return [messageContents, ...prevMessages]
-            })
-            //Since in the message that we sent, the socket only sends
-            //the message to the user besides the sender, we 
-            //update the MessageReceived manually.
-            mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
-                if (!currMsgCachedData) {
-                    return undefined;
-                }
-                const updatedMessages = [...currMsgCachedData.messages]
-                updatedMessages.unshift(messageContents)
-                return {status:currMsgCachedData.status, messages:updatedMessages}
-            }, false)
-        }
-        setInputMessage('')
-        if(messageBoxRef.current){
-            messageBoxRef.current.scrollTop=0
+            const timestamp = Date.now()
+            // setNotSentMessages((prevMessages)=>{
+            //     if(prevMessages.length>=1){
+                    
+            //     }else{
+            //         const updatedMessages = [...prevMessages]
+            //         //Append the input message to the content array of the last message.
+            //         updatedMessages[0]={
+            //             ...updatedMessages[0],
+            //             notSent: true,
+            //             time:timestamp,
+            //             content:[
+            //                 ...updatedMessages[0].content,
+            //                 inputMessage
+            //             ]
+            //         }
+            //         return updatedMessages
+            //     }
+            // })
         }
     }
     
@@ -925,6 +987,40 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 </div>
                             )):
                             <div></div>
+                        }{
+                            notSentMessages.length>1&&
+                            notSentMessages.map((message, index)=>(
+                                <div 
+                                    className={message.sender._id===_id?"my-message-info-container user-message-info-container"
+                                    :"user-message-info-container"} 
+                                    key={index}>
+                                    <img className='sender-photo' 
+                                    src={`${message.sender.photo==='default.jpeg'?'/img/default.jpeg':message.sender.photoUrl}`}/>
+                                    <div className="message-info">
+                                        <div className="message-date-displayname">
+                                            <span className="message-sender">
+                                                {message.sender.displayName}
+                                            </span>
+                                            <span className="message-date">
+                                                {formatToTodayIfCurrentDate(message.formattedDate.toString())}
+                                            </span>
+                                        </div>
+                                        <div className="message-content-container">
+                                            {
+                                            message.content.map((m, i)=>(
+                                                <div key={i} className="message-content" style={{backgroundColor:`${message.notSent?'white':''}`}}>
+                                                    {m.split('\n').map((line, index)=>(
+                                                        <React.Fragment key={index}>
+                                                            {line}
+                                                            {index < line.length -1 && <br/>}
+                                                        </React.Fragment>
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
                         }
                     </div>
                     <div className="message-input-container">
