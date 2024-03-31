@@ -26,6 +26,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
                 if(socket){
                     socket.emit('leave_group', {channelId, channelNumber})
                 }
+                setModalVisible(false)
             }
         }catch(err){
             setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})

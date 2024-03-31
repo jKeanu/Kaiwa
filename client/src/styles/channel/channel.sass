@@ -86,17 +86,17 @@
                 @include scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
                 overflow-y: scroll
                 transition: left 0.15s ease-in-out
-
+                background-color: $primary-bg !important
                 &.mob-member-visible
                     left: 0%
                 .member-list
-                    box-shadow: 3px 3px 3px 3px #00000064 !important
+                    box-shadow: 3px 3px 3px 5px #00000064 !important
                     flex: 1
                     overflow-x: visible
                     margin: 1rem 2rem 0.5rem 2rem
                     border-radius: 1rem
                     padding: 0.5rem 0
-                    background-color: #26324064
+                    background-color: $primary-bg
                     .member-container
                         .member-popup-button
                             width: 100%
@@ -121,7 +121,7 @@
                                     width: 0.8rem
                                     height: 0.8rem
                                     border-radius: 0.4rem
-                                    border: 0.2rem solid $secondary-bg
+                                    border: 0.2rem solid $primary-bg
                             .member-name
                                 font-size: 0.9rem
                                 font-family: 'Roboto', sans-serif
@@ -133,7 +133,7 @@
                                 box-shadow: inset 1px 1px 10px 3px #0000004c
                                 height: 0
                                 display: flex
-                                background-color: $secondary-bg
+                                background-color: $primary-bg
                                 flex-direction: column
                                 transition: all 0.15s ease-in-out
                                 overflow-y: scroll
@@ -536,7 +536,7 @@
                                     width: 0.8rem
                                     height: 0.8rem
                                     border-radius: 0.4rem
-                                    border: 0.2rem solid $secondary-bg
+                                    border: 0.2rem solid $primary-bg
         .modal-window-container
             @include modal-container
             .group-settings-modal-container
@@ -717,12 +717,13 @@
     +channel-desktop
     .channel-container
         width: 100%
-        background-color: $secondary-bg
+        background: rgb(35,41,51)
+        background: linear-gradient(117deg, rgba(35,41,51,1) 0%, rgba(12,16,23,1) 100%, rgba(28,38,52,1) 100%)
         position: relative
         .channel-nav
             min-height: 2.5rem
             width: 100%
-            background-color: $secondary-bg
+            background-color: $primary-bg
             height: max-content
             padding: 0.25rem 0.5rem
             display: flex
@@ -876,12 +877,11 @@
             .message-input-container
                 width: 100%
                 display: flex
-                background-color: $secondary-bg
+                background-color: #ffffff00
                 justify-content: center
                 align-items: flex-end
                 padding: 0.5rem 7rem 1rem 7rem
                 textarea
-                    box-shadow: 0px 3px 5px 3px #0000007e
                     width: 100%
                     background-color: $primary-bg
                     border: none
@@ -899,7 +899,7 @@
         .channel-members-section
             display: flex
             flex-direction: column
-            background-color: #1c2331
+            background-color: #30303018
             .member-list
                 .member-container
                     //friend-channel-member
@@ -923,7 +923,7 @@
                                 width: 0.8rem
                                 height: 0.8rem
                                 border-radius: 0.4rem
-                                border: 0.2rem solid $secondary-bg
+                                border: 0.2rem solid $primary-bg
                         .member-name
                             font-size: 1.1rem
                             font-family: 'Roboto', sans-serif

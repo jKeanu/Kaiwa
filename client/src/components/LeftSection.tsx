@@ -66,8 +66,8 @@ const LeftSection:React.FC<LeftSectionProps>=({
         </dialog>
         }
         <div className='upper-left-section-container'>
-            <div className='logo-container'>
-                <Link to={'/@me'}>
+            <div className='home-button-container'>
+                <Link to={'/@me'} className='home-button'>
                     Home
                 </Link>
             </div>

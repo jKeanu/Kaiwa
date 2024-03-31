@@ -135,6 +135,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             setCurrentChannel(channelData.channel)
             setCurrentChannelMembers(channelData.channel.members)
         }else if (channelError){
+            navigate('/@me')
         }
     }, [channelData, channelError])
 
@@ -156,7 +157,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 setMessageReceived([...messagesData.messages].slice(0, messagesLimit+messagesSkip))
             }
         }else if(messagesError){
-            console.log('-------------ERROR')
+            navigate('/')
         }
     }, [messagesData, messagesError, messageReceived])
 
@@ -292,7 +293,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             return
         }
         if(!currentChannel){
-            return navigate('/')
+            return navigate('/@me')
         }
         if(isOnline){
             const timestamp = Date.now()

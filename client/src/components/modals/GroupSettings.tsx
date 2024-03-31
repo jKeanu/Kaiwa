@@ -60,8 +60,8 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                 })
                 setIsLoading(false)
                 setModalDisabled(false)
+                setModalVisible(false)
                 setModalWindow({isOpen:false, window:''})
-                setModalDisabled(false)
             }
         }catch(err:unknown){
             if(axios.isAxiosError(err)){

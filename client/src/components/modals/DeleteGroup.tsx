@@ -28,6 +28,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
                 }
                 navigate('/@me')
                 setModalDisabled(false)
+                setModalVisible(false)
                 
             }
         }catch(err){

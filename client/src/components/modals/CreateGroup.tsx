@@ -62,6 +62,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                 navigate(`channels/${newChannel.channelNumber}`)
                 setModal({active:false, type:''})
                 setLoading(false)
+                setModalVisible(false)
             }
         }catch(err:unknown){
             if (axios.isAxiosError(err)){

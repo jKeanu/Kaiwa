@@ -24,6 +24,7 @@ const Unfriend:React.FC<UnfriendProps>=({channelId, friendId, token, socket, han
                 setModalSettings({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
                 setIsLoading(false)
                 setIsModalDisabled(false)
+                setModalVisible(false)
             }
         }catch(err){
             setIsLoading(false)

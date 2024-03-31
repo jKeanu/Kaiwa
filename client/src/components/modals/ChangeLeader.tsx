@@ -32,6 +32,7 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
                 }
                 setModalDisabled(false)
                 setLoading(false)
+                setModalVisible(false)
                 setModalSettings({isOpen:false, ids:{channelId:'', memberId:''}, displayName:'', type:'', channelNumber:undefined})
             }
         }catch{
