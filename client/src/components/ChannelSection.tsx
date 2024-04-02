@@ -20,7 +20,7 @@ import useSWR, {useSWRConfig} from "swr"
 import LeaveGroupModal from "./modals/LeaveGroup"
 import DeleteGroupModal from "./modals/DeleteGroup"
 import InviteUserModal from "./modals/InviteUser"
-import { AxiosResponse } from "axios"
+import axios, { AxiosResponse } from "axios"
 import UnfriendMemberModal from "./modals/UnfriendMember"
 import ChangeLeaderModal from "./modals/ChangeLeader"
 import throttle from 'lodash.throttle'
@@ -68,7 +68,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [activePopup, setActivePopup] = useState(false)
     //Network status
     const [isOnline, setIsOnline] = useState(navigator.onLine);
-
+    //This determines if we're connected to the socket room 
     const {channelsDispatch} = useChannelCustomContext()
 
     const {cache, mutate} = useSWRConfig()
@@ -135,7 +135,12 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             setCurrentChannel(channelData.channel)
             setCurrentChannelMembers(channelData.channel.members)
         }else if (channelError){
-            navigate('/@me')
+            if(axios.isAxiosError(channelError)){
+                console.log(messagesError)
+                if(channelError.response?.status===404 || channelError.response?.status===401){
+                    navigate('/@me')
+                }
+            }
         }
     }, [channelData, channelError])
 
@@ -157,7 +162,12 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 setMessageReceived([...messagesData.messages].slice(0, messagesLimit+messagesSkip))
             }
         }else if(messagesError){
-            navigate('/')
+            if(axios.isAxiosError(messagesError)){
+                console.log(messagesError)
+                if(messagesError.response?.status===404 || messagesError.response?.status===401){
+                    navigate('/@me')
+                }
+            }
         }
     }, [messagesData, messagesError, messageReceived])
 

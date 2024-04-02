@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo, useCallback, useReducer} from 'reac
 import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import {jwtDecode} from 'jwt-decode'
-import {useSWRConfig} from "swr"
+import useSWR, {useSWRConfig} from "swr"
 import LeftSection from '../components/LeftSection'
 import ChannelSection from '../components/ChannelSection'
 import {User, Channel, 
@@ -15,7 +15,7 @@ import {User, Channel,
         ActionType} 
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
-import { getCurrentUser } from '../services/apiService'
+import { getCurrentUser, getCurrUserFetcher } from '../services/apiService'
 import axios, {AxiosResponse} from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
@@ -105,11 +105,14 @@ const HomePage:React.FC = ()=>{
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
         const [modalVisible, setModalVisible] = useState(false)
+        
         const {mutate} = useSWRConfig()
 
         const [channels, channelsDispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(channelReducer, [])
 
         const location = useLocation()
+
+        const userCacheKey = 'api/v1/users/me'
 
         const friendChannelIds = useMemo(()=>{
             return [...friendChannels].map(friendChannel => friendChannel.channel._id)
@@ -145,75 +148,61 @@ const HomePage:React.FC = ()=>{
             }     
         }, [token])
 
+        const { data:currUserData, error:currUserDataError, isLoading:currUserLoading } = useSWR<UserDataStatus>(
+            token ? userCacheKey : null,  // Fetch data only if token is present
+            token ? (endpoint: string) => getCurrUserFetcher(endpoint, token) : null,
+            {
+                revalidateOnFocus: false
+            }
+          )
+
         useEffect(()=>{
-            const currentUser:()=>Promise<void> = async ()=>{
-                try{
-                    //Fetching logged in user's data
-                    const res:AxiosResponse<UserDataStatus> = await getCurrentUser(token)
-                    //If the response was success
-                    if(res.data.status === 'success'){
-                        //Save the logged in user's data to a state
-                        setUserData(res.data.user)
-                        const groupChannels:Channel[] = [...res.data.user.groups??[]]
-                        const friendReqData:FriendReq[] = res.data.user?.friends?.filter(friend=>friend.status === 'Pending')??[]
-                        setFriendReqs(friendReqData)
-                        const sentReqData:SentReq[] = res.data.user?.friends?.filter(friend=>friend.status === 'Sent')??[]
-                        setSentReqs(sentReqData)
-                        const friendChannels:Friend[] = res.data.user?.friends?.filter(friend => friend.status === 'Friend')??[]
-                        //Since the implementation of channels of friend channel is different to group channel is different
-                        //we need to change the structure of the friends array to match group array so we could use sort.
-                        const newFriendChannels:Channel[] = friendChannels.map((friend:Friend)=>{
-                            return{ 
-                                channelNumber: friend.channel.channelNumber,
-                                lastMessage:friend.channel.lastMessage,
-                                _id:friend.channel._id,
-                                id:friend.channel.id,
-                                channelName: friend.friend.displayName,
-                                photo: friend.friend.photo,
-                                photoUrl: friend.friend.photoUrl,
-                                channelType: friend.channel.channelType,
-                                formattedLastMessage: friend.channel.formattedLastMessage,
-                                seen: friend.channel.seen
-                            }
-                        })
-                        //In this case, we only need the friend information, not including the channel.
-                        //Since
-                        setFriendChannels(friendChannels)
-                        //Combine all friend and group channels.
-                        const allChannels:Channel[] = [...newFriendChannels, ...groupChannels]
-                        const sortedChannels:Channel[] = allChannels.sort((a, b) => {
-                            const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
-                            const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
-                            return dateB - dateA; // Compare the millisecond values
-                        })
-                        //Save the sorted channels to a state
-                        //NOTE: we implemented the channels based on the fetched user data, since
-                        //if we based it on the userData state variable, we need to create a new useEffect hook,
-                        //and since we base it on the userData we need to use the useData as a dependency,
-                        //(updating the friends and groups channels in the userData)
-                        //and every change, the methods above gets executed each time, which is redundant.
-                        //In other words, its like redefining channels state variable again and again.
-                        //When we can just save the channels right away and apply the changes on the setter.
-                        channelsDispatch({type:ActionType.InitialFetch, payload: sortedChannels})
+            if(currUserData){
+                //Save the logged in user's data to a state
+                setUserData(currUserData.user)
+                const groupChannels:Channel[] = [...currUserData.user.groups??[]]
+                const friendReqData:FriendReq[] = currUserData.user?.friends?.filter(friend=>friend.status === 'Pending')??[]
+                setFriendReqs(friendReqData)
+                const sentReqData:SentReq[] = currUserData.user?.friends?.filter(friend=>friend.status === 'Sent')??[]
+                setSentReqs(sentReqData)
+                const friendChannels:Friend[] = currUserData.user?.friends?.filter(friend => friend.status === 'Friend')??[]
+                //Since the implementation of channels of friend channel is different to group channel is different
+                //we need to change the structure of the friends array to match group array so we could use sort.
+                const newFriendChannels:Channel[] = friendChannels.map((friend:Friend)=>{
+                    return{ 
+                        channelNumber: friend.channel.channelNumber,
+                        lastMessage:friend.channel.lastMessage,
+                        _id:friend.channel._id,
+                        id:friend.channel.id,
+                        channelName: friend.friend.displayName,
+                        photo: friend.friend.photo,
+                        photoUrl: friend.friend.photoUrl,
+                        channelType: friend.channel.channelType,
+                        formattedLastMessage: friend.channel.formattedLastMessage,
+                        seen: friend.channel.seen
                     }
-                }catch(error: unknown){
-                    if(axios.isAxiosError(error)){
-                        if(error.response?.status === 401 || error.response?.status === 404){
-                            localStorage.removeItem('token')
-                            setToken('')
-                            navigate('/login')
-                        }
+                })
+                //In this case, we only need the friend information, not including the channel.
+                //Since
+                setFriendChannels(friendChannels)
+                //Combine all friend and group channels.
+                const allChannels:Channel[] = [...newFriendChannels, ...groupChannels]
+                const sortedChannels:Channel[] = allChannels.sort((a, b) => {
+                    const dateA = new Date(a.lastMessage).getTime() // Convert to milliseconds
+                    const dateB = new Date(b.lastMessage).getTime() // Convert to milliseconds
+                    return dateB - dateA; // Compare the millisecond values
+                })
+                channelsDispatch({type:ActionType.InitialFetch, payload: sortedChannels})
+            }else if(currUserDataError){
+                if(axios.isAxiosError(currUserDataError)){
+                    if(currUserDataError.response?.status === 401 || currUserDataError.response?.status === 404){
+                        localStorage.removeItem('token')
+                        setToken('')
+                        navigate('/login')
                     }
                 }
             }
-            if (token) {
-                //if there is a token, run the currentUser data fetching function
-                currentUser();
-            }else {
-                //If not, go back to login page
-                navigate('/login');
-            }
-        }, [token, navigate])
+        }, [currUserData, currUserDataError])
 
 
         //We need this function specifically when we acccept a friend request, or someone accepted ours,
@@ -237,20 +226,18 @@ const HomePage:React.FC = ()=>{
             })
         }, [])
         
-
         //When we remove a friend from a friend list, or someone did remove us.
         const handleFriendChannelDelete = useCallback((channelId:string):void=>{
             setFriendChannels(prevFriendChannels=>{
                 return [...prevFriendChannels].filter(friendChannels => friendChannels.channel._id!==channelId)
             })
             channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:channelId}})
-
         }, [])
 
         useEffect(() => {
             // Check if token doesn't exist, then navigate to login
             if (!token) {
-              navigate('/login');
+                navigate('/login');
             }
           }, [token, navigate])
 
@@ -336,6 +323,7 @@ const HomePage:React.FC = ()=>{
                     channelsDispatch({type:ActionType.NewMessage, payload:{location:location.pathname,
                     newMessageInfo:data, currUserId:userData._id}})
                     if(location.pathname !== `/@me/channels/${data.channelNumber}`){
+                        console.log('NOT IN THE SAME CHANNEL')
                         mutate(`api/v1/channels/${data.channelNumber}`, (currChannelCachedData: ChannelDataStatus | undefined)=>{
                             if(!currChannelCachedData){
                                 return 

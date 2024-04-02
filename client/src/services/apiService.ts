@@ -115,33 +115,48 @@ export const removeFriend = async(token:string, friendId:string):Promise<AxiosRe
 }
 
 export const channelFetcher = async (endpoint: string, token:string) => {
-    const headers = {
-        'Authorization': `Bearer ${token}`
+    const config ={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
     }
-    return axios.get(`${API_URL}/${endpoint}`, { headers}).then(res => res.data);
+    return axios.get(`${API_URL}/${endpoint}`, config).then(res => res.data);
 }
 
 
 export const messageFetcher = async (endpoint: string, limit: number, skip: number, token:string):Promise<ChannelMessagesStatus> => {
-    const headers = {
-        'Authorization': `Bearer ${token}`
+    const config ={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
     }
-    return axios.get(`${API_URL}/${endpoint}?limit=${limit}&skip=${skip}`, { headers })
+    return axios.get(`${API_URL}/${endpoint}?limit=${limit}&skip=${skip}`, config)
             .then(response => {
                 return response.data
             });
 }
 
+export const getCurrUserFetcher = async(endpoint:string, token:string):Promise<UserDataStatus> =>{
+    console.log('FETCHINGZ')
+    const config ={
+        headers:{
+            'Authorization': `Bearer ${token}`
+        }
+    }
+    return axios.get(`${API_URL}/${endpoint}`, config).then(response => response.data)
+}
+
 
 
 export const getCurrentUser = async(token:string|null):Promise<AxiosResponse<UserDataStatus>> => {
-    const config ={
+    const headers ={
         headers: {
             'Authorization': `Bearer ${token}`
         }
     };
-    return axios.get(`${API_URL}/api/v1/users/me`, config)
+    return axios.get(`${API_URL}/api/v1/users/me`, headers)
 }
+
 
 export const updateCurrentUser = async (token:string, userInfo:FormData):Promise<AxiosResponse<UpdateUserStatus>>=>{
     const config ={

@@ -12,7 +12,7 @@ export const getUserChannel = catchAsync(async(req, res, next)=>{
         return next(new AppError("Channel not found.", 404));
     }
     //Since we populated the members it became an array of objects, so we need some to check each objects
-    if (!currentChannel.members.some(member => member._id.toString() === req.user._id.toString())) {
+    if (!currentChannel.members.some(member => member._id.toString() === req.user._id.toString())){
         return next(new AppError("You are are not permitted to commit this action.", 401));
     }
     const channelObject = currentChannel.toObject()
@@ -30,6 +30,12 @@ export const getChannelMessages = catchAsync(async(req, res, next)=>{
     const limit = parseInt(req.query.limit) || 15
     const skip = parseInt(req.query.skip) || 0
     const currentChannel = await Channel.findOne({channelNumber:req.params.channelNumber})
+    if (!currentChannel) {
+        return next(new AppError("Channel not found.", 404));
+    }
+    if (!currentChannel.members.some(member => member._id.toString() === req.user._id.toString())){
+        return next(new AppError("You are are not permitted to commit this action.", 401));
+    }
     const channelMessages = await Chat.find({channel:currentChannel._id})
                 .skip(skip)
                 .limit(limit)

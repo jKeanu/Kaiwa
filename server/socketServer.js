@@ -92,6 +92,7 @@ export default (httpServer) => {
         socket.leave(`channel-${channelId}`)
       })
     })
+
     // Listen for messages
     socket.on('send_message', async (data) => {
       try{
@@ -176,10 +177,11 @@ export default (httpServer) => {
         }
         socket.to(data.channelNumber).emit('receive_message', messageInfo)
         io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
-        {channelId:updatedMessage.channel, channelNumber:data.channelNumber, 
+        {
+          channelId: updatedMessage.channel, channelNumber:data.channelNumber, 
           seen: updateChannel.seen,
-          channelType:data.channelType,
-          newTime:updatedMessage.time, message:messageInfo, })
+          channelType: data.channelType,
+          newTime: updatedMessage.time, message:messageInfo})
       }catch(err){
         console.log('CONTINUE MESSAGE ERROR: ', err)
       }
