@@ -1,11 +1,13 @@
 import React, { SetStateAction, Dispatch } from 'react'
 import {Socket} from 'socket.io-client'
 
-// export interface LocalStorage {
-//     getItem(key: string): string | null;
-//     removeItem(key:string): void;
-//     setItem(key: string, value: string): void;
-// }
+
+
+export type AuthProps ={
+    setContainerVisible: React.Dispatch<SetStateAction<boolean>>,
+    containerVisible: boolean
+
+}
 
 //This is our ideal format for the channels
 //Since the imlementation of the group channel is similar to this,

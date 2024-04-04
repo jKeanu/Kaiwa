@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto'
 
 const userSchema = new mongoose.Schema({
     displayName:{
@@ -139,6 +140,18 @@ userSchema.methods.changedPasswordAfter = function(TokenIssued){
     return false
 }
 
+
+userSchema.methods.createPasswordResetToken = function(){
+    //32 number of characters
+    const resetToken =  crypto.randomBytes(32).toString('hex');
+    this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+    //10 * 60 * 1000 means 10 min, 1000(1s) * 10 * 60
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+    return resetToken
+}
 
 const User = mongoose.model('User', userSchema)
 

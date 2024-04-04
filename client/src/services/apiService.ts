@@ -137,7 +137,6 @@ export const messageFetcher = async (endpoint: string, limit: number, skip: numb
 }
 
 export const getCurrUserFetcher = async(endpoint:string, token:string):Promise<UserDataStatus> =>{
-    console.log('FETCHING USER INFO-----')
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`
@@ -146,33 +145,10 @@ export const getCurrUserFetcher = async(endpoint:string, token:string):Promise<U
     return axios.get(`${API_URL}/${endpoint}`, config).then(response => response.data)
 }
 
-
-
-export const getCurrentUser = async(token:string|null):Promise<AxiosResponse<UserDataStatus>> => {
-    const headers ={
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    };
-    return axios.get(`${API_URL}/api/v1/users/me`, headers)
+export const resetPassword = async(passwordToken:string, data:{passwordConfirm:string, password:string}):Promise<AxiosResponse<{status:string, token:string}>>=>{
+    return axios.post(`${API_URL}/api/v1/users/resetpassword/${passwordToken}`, data)
 }
 
-
-export const updateCurrentUser = async (token:string, userInfo:FormData):Promise<AxiosResponse<UpdateUserStatus>>=>{
-    const config ={
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    }
-    return axios.patch(`${API_URL}/api/v1/users/updateMe`, userInfo, config)
+export const forgotPassword = async(email:string):Promise<AxiosResponse<{status:string, message:string}>>=>{
+    return axios.post(`${API_URL}/api/v1/users/forgotPassword`, {email})
 }
-
-export const changeUserPassword = async (token:string, 
-    passwordInfo:{currentPassword:string, password:string, passwordConfirm:string}):Promise<AxiosResponse<{status:string, token:string}>>=>{
-        const config ={
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        }
-        return axios.patch(`${API_URL}/api/v1/users/changepassword`, passwordInfo, config)  
-    }
