@@ -86,7 +86,7 @@ function channelReducer(state:Channel[] | [], action:ChannelAction){
     }   
 }
 
-const HomePage:React.FC = ()=>{
+const HomePage:React.FC = () => {
         //Get token from local storage
         const [token, setToken] = useState(localStorage.getItem('token'))
         //We use this to navigate from pages to pages
@@ -105,6 +105,8 @@ const HomePage:React.FC = ()=>{
         const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>
         ({isOpen:false, channelId:'', type:''})
         const [modalVisible, setModalVisible] = useState(false)
+        //connection
+        const [isOnline, setIsOnline] = useState(true)
         
         const {mutate} = useSWRConfig()
 
@@ -139,26 +141,48 @@ const HomePage:React.FC = ()=>{
             //we need to determine if the webpage is fully visible before connecting to the socket since,
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
-            if (token) {
-                const socket = io('http://localhost:3001', { query: { token } });
-                setSocket(socket);
+            if (token && isOnline) {
+                console.log('RECONNECT SOCKET ------')
+                const socketConn = io('http://localhost:3001', { query: { token } });
+                setSocket(socketConn);
                 return ()=>{
-                    socket.disconnect()
+                    socketConn.disconnect()
                 }
             }     
-        }, [token])
+        }, [token, isOnline])
+
+
+        useEffect(() => {
+            const handleOnline = () => {
+              setIsOnline(true);
+            };
+        
+            const handleOffline = () => {
+              setIsOnline(false);
+            };
+        
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+        
+            return () => {
+              window.removeEventListener('online', handleOnline);
+              window.removeEventListener('offline', handleOffline);
+            };
+          }, [])
 
         const { data:currUserData, error:currUserDataError, isLoading:currUserLoading } = useSWR<UserDataStatus>(
             token ? userCacheKey : null,  // Fetch data only if token is present
-            token ? (endpoint: string) => getCurrUserFetcher(endpoint, token) : null,
+            token ? (endpoint) => getCurrUserFetcher(endpoint, token) : null,
             {
-                revalidateOnFocus: false
+                revalidateOnFocus: false,
+                refreshInterval: !isOnline?5000:20000
             }
           )
 
         useEffect(()=>{
             if(currUserData){
                 //Save the logged in user's data to a state
+                setIsOnline(true)
                 setUserData(currUserData.user)
                 const groupChannels:Channel[] = [...currUserData.user.groups??[]]
                 const friendReqData:FriendReq[] = currUserData.user?.friends?.filter(friend=>friend.status === 'Pending')??[]
@@ -193,17 +217,25 @@ const HomePage:React.FC = ()=>{
                     return dateB - dateA; // Compare the millisecond values
                 })
                 channelsDispatch({type:ActionType.InitialFetch, payload: sortedChannels})
-            }else if(currUserDataError){
+            }
+        }, [currUserData])
+
+        useEffect(()=>{
+            if(currUserDataError){
                 if(axios.isAxiosError(currUserDataError)){
                     if(currUserDataError.response?.status === 401 || currUserDataError.response?.status === 404){
                         localStorage.removeItem('token')
                         setToken('')
                         navigate('/login')
                     }
+                    console.log("FAILED FETCH USER 1")
+                    setIsOnline(false)
+                }else{
+                    console.log("FAILED FETCH USER 2")
+                    setIsOnline(false)
                 }
             }
-        }, [currUserData, currUserDataError])
-
+        }, [currUserDataError] )
 
         //We need this function specifically when we acccept a friend request, or someone accepted ours,
         //to create a new channel
@@ -323,7 +355,6 @@ const HomePage:React.FC = ()=>{
                     channelsDispatch({type:ActionType.NewMessage, payload:{location:location.pathname,
                     newMessageInfo:data, currUserId:userData._id}})
                     if(location.pathname !== `/@me/channels/${data.channelNumber}`){
-                        console.log('NOT IN THE SAME CHANNEL')
                         mutate(`api/v1/channels/${data.channelNumber}`, (currChannelCachedData: ChannelDataStatus | undefined)=>{
                             if(!currChannelCachedData){
                                 return 

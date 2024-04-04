@@ -137,7 +137,7 @@ export const messageFetcher = async (endpoint: string, limit: number, skip: numb
 }
 
 export const getCurrUserFetcher = async(endpoint:string, token:string):Promise<UserDataStatus> =>{
-    console.log('FETCHINGZ')
+    console.log('FETCHING USER INFO-----')
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`

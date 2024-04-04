@@ -71,3 +71,52 @@ export const changePassword = catchAsync(async (req, res, next)=>{
   await currentUser.save()
   createSendToken(currentUser, 200, req, res)
 })
+
+
+
+export const forgotPassword = catchAsync(async (req,res,next)=>{
+  // 1) Get user based on POSTed email
+  const user = await User.findOne({email: req.body.email})
+  if (!user){
+      return next(new AppError('There is no user with that email address.', 404))
+  }
+  // 2) Generate random reset
+  const resetToken = user.createPasswordResetToken();
+  await user.save({validateBeforeSave: false}) 
+  //Since we not only want to send message to the client(using AppError global error handler) when an error occurred during 
+  //sendEmail we also need to change the PasswordResetToken and passwordResetExpires to undefined
+  //thats why we need try and catch
+  try{
+      const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`
+      await new Email(user, resetURL).sendPasswordReset()
+      res.status(200).json({
+          status:'success',
+          message: 'Token sent to email!'
+      })
+  }
+  catch(err){
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({validateBeforeSave: false});
+      return next(new AppError('There was an error sending the email. Try again later!'), 500)
+  }
+})
+
+
+export const resetPassword = catchAsync(async(req,res,next)=>{
+  // 1) get user based on the token
+  const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex')
+  const user = await User.findOne({passwordResetToken: hashedToken, passwordResetExpires: {$gt: Date.now()}})
+  // 2) If token has not expired, and there is a user, set the new password
+  if (!user){
+      return next(new AppError('Token is invalid or has expired'), 400)}
+  user.password = req.body.password
+  // 3) Update changedpasswordAt property for the user
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  //we don't need validateBeforeSave: false since we need to check if the passwordConfirm is the same as the password.
+  await user.save()
+  // 4) Log the user in, send the JWT to client
+  createSendToken(user, 200, req, res)
+})

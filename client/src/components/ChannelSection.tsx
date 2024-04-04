@@ -100,27 +100,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     useEffect(()=>{
         setIsVisible(true)
     }, [])
-    
-
-    //tracking network status
-    useEffect(() => {
-      const handleOnline = () => {
-        setIsOnline(true);
-      };
-  
-      const handleOffline = () => {
-        setIsOnline(false);
-      };
-  
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
-  
-      return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-      };
-    }, [])
-
 
 
     useEffect(()=>{
@@ -702,7 +681,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 return {status:prevMessageData.status,
                                         messages:[...prevMessageData.messages, ...newMessagesData.messages]}
                             }catch(err){
-
+                                setMessagesSkip(prevSkip=>prevSkip-messagesLimit)
+                                return {status:prevMessageData.status, messages:[...prevMessageData.messages]}
                             }
                         //if its higher than 15, we can just get additional 15 messages from the cache
                         }else{
@@ -732,7 +712,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         setMsgFetchLoading(false)
                         return {status:prevMessageData.status, messages:allMessages}
                     }catch(err){
-                        
+                        setMessagesSkip(prevSkip=>prevSkip-messagesLimit)
+                        return {status:prevMessageData.status, messages:[...prevMessageData.messages]}
                     }
                 }, false)
             }
