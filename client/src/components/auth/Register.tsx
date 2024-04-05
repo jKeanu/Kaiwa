@@ -6,7 +6,7 @@ import { RegisterForm, AuthStatus, AuthProps } from '../../types/generalTypes';
 import { registerUser } from '../../services/apiService';
 import { useEffect } from 'react';
 
-const RegisterPage:React.FC<AuthProps>=({setContainerVisible, containerVisible})=>{
+const RegisterPage:React.FC=()=>{
     const [formData, setFormData] = useState<RegisterForm>({
         email:"",
         password:"",
@@ -14,12 +14,13 @@ const RegisterPage:React.FC<AuthProps>=({setContainerVisible, containerVisible})
         displayName:"",
     })
     const [errorMessage, setErrorMessage] = useState<{type:string, message:string}>()
+    const [containerVisible, setContainerVisible] = useState(false)
     const navigate = useNavigate()
 
 
-    useEffect(() => {
+    useEffect(()=>{
         setContainerVisible(true)
-    }, []);
+    },[])
 
     //The syntax could also be
     //const handleRegister: (e: FormEvent<HTMLFormElement>) => Promise<void> = async (e) =>

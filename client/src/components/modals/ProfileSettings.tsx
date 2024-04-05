@@ -4,7 +4,6 @@ import { ProfileSettings, UpdateUserStatus} from "../../types/generalTypes"
 import React, { useEffect, useMemo, useState } from "react"
 import { changeUserPassword, updateCurrentUser } from "../../services/apiService"
 
-
 const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, handleCloseButton, setIsDisabled})=>{
     const [userInfo, setUserInfo] = useState<{displayName:string, friendTag:string, profileImage:null|File}>
     ({displayName:currUserData.displayName, friendTag:currUserData.friendTag, profileImage:null})

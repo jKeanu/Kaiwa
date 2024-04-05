@@ -5,8 +5,6 @@ import LoginPage from '../components/auth/Login';
 import RegisterPage from '../components/auth/Register';
 
 const AuthenticationPage = () => {
-    const [containerVisible, setContainerVisible] = useState(false)
-
     const navigate = useNavigate()
     
     useEffect(() => {
@@ -16,11 +14,12 @@ const AuthenticationPage = () => {
         }
     }, []);
 
+
     return (
         <div className='auth-page-container'>
             <Routes>
-                <Route path='login' element={<LoginPage setContainerVisible={setContainerVisible} containerVisible={containerVisible}/>}/>
-                <Route path='register' element={<RegisterPage setContainerVisible={setContainerVisible} containerVisible={containerVisible}/>} />
+                <Route path='/login' element={<LoginPage />}/>
+                <Route path='register' element={<RegisterPage />} />
                 <Route path='/resetpassword/:resetPasswordToken' />
             </Routes>
         </div>

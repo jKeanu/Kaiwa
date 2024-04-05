@@ -1,38 +1,27 @@
 @mixin login-page($input-width, $login-container-w, $login-container-h, $button-width, $header-size-mult)
     @if $login-container-w == 100vw and $login-container-h == 100vh
-        height: fit-content
-        width: fit-content
-        background-color: $primary-bg
-        .login-container
-            display: flex
-            align-items: center
-            flex-direction: column
-            padding-top: 2rem
-            background-color: $secondary-bg
-            height: $login-container-h
-            width: $login-container-w
-    @else
-        width: 100vw
-        height: 100vh
+        display: flex
+        align-items: center
+        flex-direction: column
+        padding-top: 2rem
         background: rgb(4,12,20)
         background: linear-gradient(169deg, rgba(4,12,20,1) 0%, rgba(31,40,52,1) 100%, rgba(255,240,0,1) 100%, rgba(25,26,29,1) 100%)
-        position: relative
-        .login-container
-            position: absolute
-            left: 50%
-            top: 20%
-            transform: translate(-50%, -50%)
-            background-color: #ffffff07
-            height: $login-container-h
-            width: $login-container-w
-            border-radius: 0.2rem
-            box-shadow: 0 8px 10px 5px rgb(0, 0, 0, 0.25)
-            opacity: 0
-            transition: top 0.35s ease, opacity 0.35s ease
-    .login-container
-        &.visible
-            top: 50%
-            opacity: 1
+        height: $login-container-h
+        width: $login-container-w
+    @else
+        position: absolute
+        left: 50%
+        top: 20%
+        transform: translate(-50%, -50%)
+        height: $login-container-h
+        width: $login-container-w
+        border-radius: 0.2rem
+        box-shadow: 0 8px 10px 5px rgb(0, 0, 0, 0.25)
+        opacity: 0
+        transition: top 0.35s ease, opacity 0.35s ease
+    &.visible
+        top: 50%
+        opacity: 1
         .login-header
             font-size: calc( 2rem * $header-size-mult )
             font-family: 'Bebas Neue', sans-serif
@@ -51,6 +40,21 @@
                 align-items: center
                 .input-container
                     @include input($w: $input-width)
+                .login-password-input-container
+                    .forgot-password-button
+                        position: absolute
+                        top: 100%
+                        right: 0%
+                        width: fit-content
+                        height: fit-content
+                        background-color: transparent
+                        padding: 0
+                        margin-top: 0.4rem
+                        font-family: 'Raleway', sans-serif
+                        font-size: 0.6rem
+                        color: rgb(54, 142, 200)
+                        &:hover
+                            text-decoration: underline
                 button
                     background-color: #37404d
                     color: white
@@ -79,7 +83,7 @@
                 color: rgb(54, 142, 200)
                 &:hover
                     text-decoration: underline
-    
+
 
     
 =login-page-mobile
@@ -99,7 +103,8 @@
         @include login-page($input-width: 21rem, $login-container-w: 25rem, $login-container-h: 20rem, $button-width: 13rem, $header-size-mult: 1)
         
 
-.login-page-container
+.login-container
+    background-color: #ffffff07
     +login-page-mobile
     +login-page-tablet
     +login-page-laptop

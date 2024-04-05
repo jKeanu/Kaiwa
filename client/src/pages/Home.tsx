@@ -15,7 +15,7 @@ import {User, Channel,
         ActionType} 
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
-import { getCurrentUser, getCurrUserFetcher } from '../services/apiService'
+import {  getCurrUserFetcher } from '../services/apiService'
 import axios, {AxiosResponse} from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
@@ -227,10 +227,8 @@ const HomePage:React.FC = () => {
                         setToken('')
                         navigate('/login')
                     }
-                    console.log("FAILED FETCH USER 1")
                     setIsOnline(false)
                 }else{
-                    console.log("FAILED FETCH USER 2")
                     setIsOnline(false)
                 }
             }

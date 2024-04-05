@@ -1,25 +1,30 @@
-import { useState, useEffect} from 'react';
+import React, { useState, useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 import { AuthProps, AuthStatus } from '../../types/generalTypes';
 import { AxiosResponse } from 'axios';
-import { loginUser } from '../../services/apiService';
+import { forgotPassword, loginUser } from '../../services/apiService';
 
 
-const LoginPage:React.FC<AuthProps> = ({setContainerVisible, containerVisible}) => {
+const LoginPage:React.FC=()=> {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('')
+    const [forgotPassError, setForgotPassError] = useState<string>('')
+    const [forgotPassSuccess, setForgotPassSuccess] = useState<string>('')
+    const [containerVisible, setContainerVisible] = useState(false)
     const navigate = useNavigate()
-    
-    useEffect(() => {
+
+    useEffect(()=>{
         setContainerVisible(true)
-    }, []);
+    },[])
 
     const handleLogin = async (e:React.FormEvent<HTMLFormElement>):Promise<void> => {
         e.preventDefault();
         setErrorMessage('')
+        setForgotPassError('')
+        setForgotPassSuccess('')
         try {
             const res:AxiosResponse<AuthStatus> = await loginUser(email, password);
             if (res.data.status === "success") {
@@ -42,6 +47,36 @@ const LoginPage:React.FC<AuthProps> = ({setContainerVisible, containerVisible}) 
         }
     };
 
+    const handleForgotPassword = async (e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
+        e.preventDefault()
+        setForgotPassError('')
+        setErrorMessage('')
+        setForgotPassSuccess('')
+        if(!email){
+            setForgotPassError('Input field is empty.')
+            return
+        }
+        try{
+            const res:AxiosResponse<{status:string, message:string}> = await forgotPassword(email)
+            if(res.data.message==='success'){
+                setForgotPassSuccess('A reset password link has been sent to your email.')
+            }
+        }catch(err){
+            if(axios.isAxiosError(err)){
+                if(err.response?.status===429){
+                    setForgotPassError('Too many forgot password attempts. Please try again later.')
+                }else if(err.response?.status===404){
+                    setForgotPassError('Invalid email.')
+                }
+                else{
+                    setForgotPassError('Something went wrong. Please try again later')
+                }
+            }else{
+                setForgotPassError('Something went wrong. Please try again later')
+            }
+        }
+    }
+
     return (
         <div className={`login-container ${containerVisible?'visible':''}`}>
             <h1 className='login-header'>Log In</h1>
@@ -50,17 +85,20 @@ const LoginPage:React.FC<AuthProps> = ({setContainerVisible, containerVisible}) 
                     <div className="input-container">
                         <input type="email" className='input-field' id='email' placeholder=" "
                         value={email} onChange={e => setEmail(e.target.value)} required
-                        style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
+                        style={{borderBottomColor:`${errorMessage||forgotPassError&&'#c93a3a'}`}}/>
                         <label htmlFor="email" className="input-label">Email</label>
-                        {!errorMessage&&<span className='input-highlight'></span>}
-                        {errorMessage&&
-                        <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
+                        {!errorMessage&&!forgotPassError&&<span className='input-highlight'></span>}
+                        {errorMessage||forgotPassError&&
+                        <span className='input-error-message' id='input-error-message'>{errorMessage?errorMessage:forgotPassError}</span>}
                     </div>
-                    <div className="input-container">
+                    <div className="input-container login-password-input-container">
                         <input type="password" className='input-field' id='password' placeholder=" "
                         value={password} onChange={e => setPassword(e.target.value)} required
                         style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
                         <label htmlFor="password" className="input-label" >Password</label>
+                        <button className='forgot-password-button' type='button' onClick={handleForgotPassword}>
+                            Forgot your password?
+                        </button>
                         {!errorMessage&&<span className='input-highlight'></span>}
                         {errorMessage&&
                         <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}

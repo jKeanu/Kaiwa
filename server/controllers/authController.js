@@ -3,12 +3,13 @@ import { promisify } from 'util';
 import User from '../models/userModel.js';
 import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
+import { Email } from '../utils/email.js';
 
 function signToken(id){
   return jwt.sign({ id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN
     });
-  };
+};
 
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);

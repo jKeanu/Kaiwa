@@ -1,85 +1,75 @@
 @mixin register-page($input-width, $register-container-w, $register-container-h, $button-width, $header-size-mult)
     @if $register-container-w == 100vw and $register-container-h == 100vh
-        height: fit-content
-        width: fit-content
-        background-color: $primary-bg
-        .register-container
-            display: flex
-            align-items: center
-            flex-direction: column
-            padding-top: 2rem
-            background-color: $secondary-bg
-            height: $register-container-h
-            width: $register-container-w
-    @else
-        width: 100vw
-        height: 100vh
+        display: flex
+        align-items: center
+        flex-direction: column
+        padding-top: 2rem
         background: rgb(4,12,20)
         background: linear-gradient(169deg, rgba(4,12,20,1) 0%, rgba(31,40,52,1) 100%, rgba(255,240,0,1) 100%, rgba(25,26,29,1) 100%)
-        position: relative
-        .register-container
-            background-color: #ffffff07
-            height: $register-container-h
-            width: $register-container-w
-            border-radius: 0.2rem
-            box-shadow: 0 8px 10px 5px rgb(0, 0, 0, 0.25)
-            position: absolute
-            left: 50%
-            top: 10%
-            transform: translate(-50%, -50%)
-            opacity: 0
-            transition: top 0.35s ease, opacity 0.35s ease
-    .register-container
-        &.visible
-            top: 50%
-            opacity: 1
-        .register-header
-            margin: 0
-            font-size: calc( 2rem * $header-size-mult )
-            font-family: 'Bebas Neue', sans-serif
-            font-weight: 400
-            color: white
-            text-align: center
-            padding-top: 1.5rem
-            margin-bottom: 1rem
-        .register-form-container
+        height: $register-container-h
+        width: $register-container-w
+    @else
+        background-color: #ffffff07
+        height: $register-container-h
+        width: $register-container-w
+        border-radius: 0.2rem
+        box-shadow: 0 8px 10px 5px rgb(0, 0, 0, 0.25)
+        position: absolute
+        left: 50%
+        top: 10%
+        transform: translate(-50%, -50%)
+        opacity: 0
+        transition: top 0.35s ease, opacity 0.35s ease
+    &.visible
+        top: 50%
+        opacity: 1
+    .register-header
+        margin: 0
+        font-size: calc( 2rem * $header-size-mult )
+        font-family: 'Bebas Neue', sans-serif
+        font-weight: 400
+        color: white
+        text-align: center
+        padding-top: 1.5rem
+        margin-bottom: 1rem
+    .register-form-container
+        display: flex
+        justify-content: center
+        align-items: center
+        .register-form
             display: flex
-            justify-content: center
+            flex-direction: column
             align-items: center
-            .register-form
-                display: flex
-                flex-direction: column
-                align-items: center
-                .input-container
-                    @include input($w: $input-width)
-                button
-                    background-color: #37404d
-                    color: white
-                    width: $button-width
-                    height: 2.2rem
-                    border-radius: 1.1rem
-                    border-style: none
-                    transition: background-color 0.15s ease-in-out
-                    margin-top: 1.5rem
-                    font-family: 'Bellefair', serif
-                    cursor: pointer
-                    &:active
-                        background-color: rgb(51, 59, 69)
-                    &:hover
-                        background-color: $secondary-bg
-        .already-have-an-account-text
-            color: white
-            font-size: 0.7rem
-            font-family: 'Raleway', sans-serif
-            margin-top: 0.35rem
-            display: block
-            text-align: center
-        .log-in-link
-            text-decoration: none
-            font-size: 0.7rem
-            color: rgb(54, 142, 200)
-            &:hover
-                text-decoration: underline
+            .input-container
+                @include input($w: $input-width)
+            button
+                background-color: #37404d
+                color: white
+                width: $button-width
+                height: 2.2rem
+                border-radius: 1.1rem
+                border-style: none
+                transition: background-color 0.15s ease-in-out
+                margin-top: 1.5rem
+                font-family: 'Bellefair', serif
+                cursor: pointer
+                &:active
+                    background-color: rgb(51, 59, 69)
+                &:hover
+                    background-color: $secondary-bg
+    .already-have-an-account-text
+        color: white
+        font-size: 0.7rem
+        font-family: 'Raleway', sans-serif
+        margin-top: 0.35rem
+        display: block
+        text-align: center
+    .log-in-link
+        text-decoration: none
+        font-size: 0.7rem
+        color: rgb(54, 142, 200)
+        &:hover
+            text-decoration: underline
 
 
 =register-page-mobile
@@ -99,7 +89,7 @@
         @include register-page($input-width: 21rem, $register-container-w: 25rem, $register-container-h: 30rem, $button-width: 13rem, $header-size-mult: 1)
         
     
-.register-page-container
+.register-container
     +register-page-mobile
     +register-page-tablet
     +register-page-laptop

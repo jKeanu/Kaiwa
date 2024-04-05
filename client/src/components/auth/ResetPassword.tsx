@@ -60,7 +60,7 @@ const ResetPassword:React.FC<AuthProps>=({setContainerVisible, containerVisible}
     <div className={`reset-password-container ${containerVisible?'visible':''}`}>
         <form className="reset-password-container" onSubmit={handleSubmit}>
             <div className="input-container">
-                <input type="password" className='input-field' id='password' placeholder=" "
+                <input type="password" className='input-field' id='resetPassword' placeholder=" "
                 value={resetPassForm.password} onChange={handleChange} name="password" required
                 style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
                 <label htmlFor="password" className="input-label">Email</label>
@@ -69,7 +69,7 @@ const ResetPassword:React.FC<AuthProps>=({setContainerVisible, containerVisible}
                 <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
             </div>
             <div className="input-container">
-                <input type="password" className='input-field' id='passwordConfirm' placeholder=" "
+                <input type="password" className='input-field' id='resetPasswordConfirm' placeholder=" "
                 value={resetPassForm.password} onChange={handleChange} name="passwordConfirm" required
                 style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
                 <label htmlFor="passwordConfirm" className="input-label">Email</label>

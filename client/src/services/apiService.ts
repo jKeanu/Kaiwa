@@ -152,3 +152,23 @@ export const resetPassword = async(passwordToken:string, data:{passwordConfirm:s
 export const forgotPassword = async(email:string):Promise<AxiosResponse<{status:string, message:string}>>=>{
     return axios.post(`${API_URL}/api/v1/users/forgotPassword`, {email})
 }
+
+export const changeUserPassword = async (token:string, 
+    passwordInfo:{currentPassword:string, password:string, passwordConfirm:string}):Promise<AxiosResponse<{status:string, token:string}>>=>{
+        const config ={
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }
+        return axios.patch(`${API_URL}/api/v1/users/changepassword`, passwordInfo, config)  
+    }
+
+
+export const updateCurrentUser = async (token:string, userInfo:FormData):Promise<AxiosResponse<UpdateUserStatus>>=>{
+    const config ={
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    }
+    return axios.patch(`${API_URL}/api/v1/users/updateMe`, userInfo, config)
+}
