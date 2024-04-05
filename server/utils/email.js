@@ -54,7 +54,7 @@ export class Email{
 
     async sendPasswordReset(){
         await this.send(
-            'Your password reset request for Kaiwa'
+            'Your password reset request for Kaiwa (expires in 10min)'
         )
     }
 }

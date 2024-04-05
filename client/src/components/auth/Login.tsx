@@ -85,11 +85,13 @@ const LoginPage:React.FC=()=> {
                     <div className="input-container">
                         <input type="email" className='input-field' id='email' placeholder=" "
                         value={email} onChange={e => setEmail(e.target.value)} required
-                        style={{borderBottomColor:`${errorMessage||forgotPassError&&'#c93a3a'}`}}/>
+                        style={{borderBottomColor:`${(errorMessage||forgotPassError)&&'#c93a3a'}`}}/>
                         <label htmlFor="email" className="input-label">Email</label>
                         {!errorMessage&&!forgotPassError&&<span className='input-highlight'></span>}
-                        {errorMessage||forgotPassError&&
-                        <span className='input-error-message' id='input-error-message'>{errorMessage?errorMessage:forgotPassError}</span>}
+                        {errorMessage&&
+                        <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
+                        {forgotPassError&&
+                        <span className='input-error-message' id='input-error-message'>{forgotPassError}</span>}
                     </div>
                     <div className="input-container login-password-input-container">
                         <input type="password" className='input-field' id='password' placeholder=" "

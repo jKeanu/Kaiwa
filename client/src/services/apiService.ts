@@ -146,7 +146,7 @@ export const getCurrUserFetcher = async(endpoint:string, token:string):Promise<U
 }
 
 export const resetPassword = async(passwordToken:string, data:{passwordConfirm:string, password:string}):Promise<AxiosResponse<{status:string, token:string}>>=>{
-    return axios.post(`${API_URL}/api/v1/users/resetpassword/${passwordToken}`, data)
+    return axios.patch(`${API_URL}/api/v1/users/resetpassword/${passwordToken}`, data)
 }
 
 export const forgotPassword = async(email:string):Promise<AxiosResponse<{status:string, message:string}>>=>{

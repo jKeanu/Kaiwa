@@ -4,6 +4,7 @@ import User from '../models/userModel.js';
 import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import { Email } from '../utils/email.js';
+import crypto from 'crypto'
 
 function signToken(id){
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -88,7 +89,7 @@ export const forgotPassword = catchAsync(async (req,res,next)=>{
   //sendEmail we also need to change the PasswordResetToken and passwordResetExpires to undefined
   //thats why we need try and catch
   try{
-      const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`
+      const resetURL = `${req.protocol}://localhost:5173/resetPassword/${resetToken}`
       await new Email(user, resetURL).sendPasswordReset()
       res.status(200).json({
           status:'success',
@@ -110,7 +111,8 @@ export const resetPassword = catchAsync(async(req,res,next)=>{
   const user = await User.findOne({passwordResetToken: hashedToken, passwordResetExpires: {$gt: Date.now()}})
   // 2) If token has not expired, and there is a user, set the new password
   if (!user){
-      return next(new AppError('Token is invalid or has expired'), 400)}
+      return next(new AppError('Token is invalid or has expired', 400))
+  }
   user.password = req.body.password
   // 3) Update changedpasswordAt property for the user
   user.passwordConfirm = req.body.passwordConfirm;

@@ -6,10 +6,11 @@ import {useNavigate} from 'react-router-dom';
 import axios, { AxiosResponse } from "axios";
 
 
-const ResetPassword:React.FC<AuthProps>=({setContainerVisible, containerVisible})=>{
+const ResetPassword:React.FC=()=>{
     const [resetPassForm, setResetPassForm]= useState({passwordConfirm:'', password:''})
     const {resetPasswordToken} = useParams()
     const [errorMessage, setErrorMessage] = useState<string>('')
+    const [containerVisible, setContainerVisible] = useState(false)
     const navigate = useNavigate()
 
     const handleChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
@@ -36,12 +37,16 @@ const ResetPassword:React.FC<AuthProps>=({setContainerVisible, containerVisible}
                 }
             }catch(err){
                 if(axios.isAxiosError(err)){
+                    console.log(err, '===')
                     if(err.response?.status===400){
                         let errMessages = err.response.data.message
                         if(errMessages.split('. ').length>1){
                             errMessages = errMessages.split('. ')[1]
                             setErrorMessage(errMessages)
-                        }else{
+                        }else if(errMessages.includes('expired')){
+                            setErrorMessage(errMessages)
+                        }
+                        else{
                             setErrorMessage('There was an error changing the password.')
                         }
                     }else if(err.response?.status===429){
@@ -58,25 +63,26 @@ const ResetPassword:React.FC<AuthProps>=({setContainerVisible, containerVisible}
 
     return (
     <div className={`reset-password-container ${containerVisible?'visible':''}`}>
-        <form className="reset-password-container" onSubmit={handleSubmit}>
+        <form className="reset-password-form" onSubmit={handleSubmit}>
             <div className="input-container">
                 <input type="password" className='input-field' id='resetPassword' placeholder=" "
                 value={resetPassForm.password} onChange={handleChange} name="password" required
                 style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
-                <label htmlFor="password" className="input-label">Email</label>
+                <label htmlFor="resetPassword" className="input-label">New Password</label>
                 {!errorMessage&&<span className='input-highlight'></span>}
                 {errorMessage&&
                 <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
             </div>
             <div className="input-container">
                 <input type="password" className='input-field' id='resetPasswordConfirm' placeholder=" "
-                value={resetPassForm.password} onChange={handleChange} name="passwordConfirm" required
+                value={resetPassForm.passwordConfirm} onChange={handleChange} name="passwordConfirm" required
                 style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
-                <label htmlFor="passwordConfirm" className="input-label">Email</label>
+                <label htmlFor="resetPasswordConfirm" className="input-label">Cofirm Password</label>
                 {!errorMessage&&<span className='input-highlight'></span>}
                 {errorMessage&&
                 <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
             </div>
+            <button type="submit">Change Password</button>
         </form>
     </div>
     )

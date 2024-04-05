@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
 
-const useSettLimiter = rateLimit({
+const userSettLimiter = rateLimit({
     limit: 3,
     windowMs: 1000*60*60*12,
     message: 'Too many profile change attempts, please try again later.',
@@ -30,7 +30,7 @@ router.patch('/resetPassword/:token', authController.resetPassword)
 router.use(authController.protect);
 
 router.patch('/updateMe',
-    useSettLimiter,
+    userSettLimiter,
     userController.uploadProfileImage,
     userController.resizeUserPhoto,
     userController.updateUser);
