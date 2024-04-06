@@ -1,10 +1,14 @@
 @mixin login-page($input-width, $login-container-w, $login-container-h, $button-width, $header-size-mult)
+    &.visible
+        top: 50%
+        opacity: 1
     @if $login-container-w == 100vw and $login-container-h == 100vh
         display: flex
         align-items: center
         flex-direction: column
         padding-top: 2rem
         background: rgb(4,12,20)
+        padding-top: 5rem
         background: linear-gradient(169deg, rgba(4,12,20,1) 0%, rgba(31,40,52,1) 100%, rgba(255,240,0,1) 100%, rgba(25,26,29,1) 100%)
         height: $login-container-h
         width: $login-container-w
@@ -19,76 +23,73 @@
         box-shadow: 0 8px 10px 5px rgb(0, 0, 0, 0.25)
         opacity: 0
         transition: top 0.35s ease, opacity 0.35s ease
-    &.visible
-        top: 50%
-        opacity: 1
-        .login-header
-            font-size: calc( 2rem * $header-size-mult )
-            font-family: 'Bebas Neue', sans-serif
-            font-weight: 400
-            color: white
-            text-align: center
-            padding-top: 1.5rem
-            margin: 0
-        .login-form-container
+    .login-header
+        font-size: calc( 2rem * $header-size-mult )
+        font-family: 'Bebas Neue', sans-serif
+        font-weight: 400
+        color: white
+        text-align: center
+        padding-top: 1.5rem
+        margin: 0
+    .login-form-container
+        display: flex
+        justify-content: center
+        align-items: center
+        .login-form
             display: flex
-            justify-content: center
+            flex-direction: column
             align-items: center
-            .login-form
-                display: flex
-                flex-direction: column
-                align-items: center
-                .input-container
-                    @include input($w: $input-width)
-                .login-password-input-container
-                    .forgot-password-button
-                        position: absolute
-                        top: 100%
-                        right: 0%
-                        width: fit-content
-                        height: fit-content
-                        background-color: transparent
-                        padding: 0
-                        margin-top: 0.4rem
-                        font-family: 'Raleway', sans-serif
-                        font-size: 0.6rem
-                        color: rgb(54, 142, 200)
-                        &:hover
-                            text-decoration: underline
-                button
-                    background-color: #37404d
-                    color: white
-                    width: $button-width
-                    height: 2.2rem
-                    border-radius: 1.1rem
-                    border-style: none
-                    transition: background-color 0.15s ease-in-out
-                    margin-top: 1rem
-                    font-family: 'Bellefair', serif
-                    cursor: pointer
-                    &:active
-                        background-color: rgb(51, 59, 69)
+            .input-container
+                @include input($w: $input-width)
+            .login-password-input-container
+                .forgot-password-button
+                    position: absolute
+                    top: 100%
+                    right: 0%
+                    width: fit-content
+                    height: fit-content
+                    background-color: transparent
+                    padding: 0
+                    margin-top: 0.4rem
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.6rem
+                    color: rgb(54, 142, 200)
                     &:hover
-                        background-color: $secondary-bg
-        .need-an-account-text
-            color: white
-            font-size: 0.7rem
-            font-family: 'Raleway', sans-serif
-            margin-top: 0.35rem
-            display: block
-            text-align: center
-            .register-link
-                text-decoration: none
-                font-size: 0.7rem
-                color: rgb(54, 142, 200)
+                        text-decoration: underline
+            button
+                background-color: #37404d
+                color: white
+                width: $button-width
+                height: 2.2rem
+                border-radius: 1.1rem
+                border-style: none
+                transition: background-color 0.15s ease-in-out
+                margin-top: 1rem
+                font-family: 'Bellefair', serif
+                cursor: pointer
+                &:active
+                    background-color: rgb(51, 59, 69)
                 &:hover
-                    text-decoration: underline
+                    background-color: $secondary-bg
+    .need-an-account-text
+        color: white
+        font-size: 0.7rem
+        font-family: 'Raleway', sans-serif
+        margin-top: 0.35rem
+        display: block
+        text-align: center
+        .register-link
+            text-decoration: none
+            font-size: 0.7rem
+            color: rgb(54, 142, 200)
+            &:hover
+                text-decoration: underline
 
 
     
 =login-page-mobile
     @media (max-width: $breakpoint-mobile)
-        @include login-page($input-width: 12rem, $login-container-w: 100vw, $login-container-h: 100vh, $button-width: 10rem, $header-size-mult: 0.7)
+        @include login-page($input-width: 17rem, $login-container-w: 100vw, $login-container-h: 100vh, $button-width: 10rem, $header-size-mult: 0.7)
 
 =login-page-tablet
     @media (min-width: $breakpoint-mobile + 1px) and (max-width: $breakpoint-tablet)    

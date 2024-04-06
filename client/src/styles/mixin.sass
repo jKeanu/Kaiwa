@@ -170,6 +170,8 @@
         &:focus ~ .input-highlight,
         &:not(:placeholder-shown) ~ .input-highlight
             transform: scaleX(1)
+        &.input-field-error
+            border-bottom-color: #c93a3a
     .input-label
         position: absolute
         top: 5px
@@ -197,3 +199,18 @@
         font-family: 'Raleway', sans-serif
         font-size: 0.7rem
         color: $error-message
+        @media (max-width: $breakpoint-mobile)
+            position: absolute
+            top: 105%
+            left: 0
+            font-family: 'Raleway', sans-serif
+            font-size: 0.6rem
+            color: $error-message
+        
+    .input-success-message
+        position: absolute
+        top: 105%
+        left: 0
+        font-family: 'Raleway', sans-serif
+        font-size: 0.7rem
+        color: #14d31eca

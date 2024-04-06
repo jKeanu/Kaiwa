@@ -2,7 +2,7 @@ import React, { useState, useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
-import { AuthProps, AuthStatus } from '../../types/generalTypes';
+import { AuthStatus } from '../../types/generalTypes';
 import { AxiosResponse } from 'axios';
 import { forgotPassword, loginUser } from '../../services/apiService';
 
@@ -58,7 +58,7 @@ const LoginPage:React.FC=()=> {
         }
         try{
             const res:AxiosResponse<{status:string, message:string}> = await forgotPassword(email)
-            if(res.data.message==='success'){
+            if(res.data.status==='success'){
                 setForgotPassSuccess('A reset password link has been sent to your email.')
             }
         }catch(err){
@@ -89,9 +89,11 @@ const LoginPage:React.FC=()=> {
                         <label htmlFor="email" className="input-label">Email</label>
                         {!errorMessage&&!forgotPassError&&<span className='input-highlight'></span>}
                         {errorMessage&&
-                        <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
+                        <span className='input-error-message'>{errorMessage}</span>}
                         {forgotPassError&&
-                        <span className='input-error-message' id='input-error-message'>{forgotPassError}</span>}
+                        <span className='input-error-message'>{forgotPassError}</span>}
+                        {forgotPassSuccess&&
+                        <span className='input-success-message'>{forgotPassSuccess}</span>}
                     </div>
                     <div className="input-container login-password-input-container">
                         <input type="password" className='input-field' id='password' placeholder=" "
@@ -103,7 +105,7 @@ const LoginPage:React.FC=()=> {
                         </button>
                         {!errorMessage&&<span className='input-highlight'></span>}
                         {errorMessage&&
-                        <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
+                        <span className='input-error-message'>{errorMessage}</span>}
                     </div>
                     <button type="submit">Log In</button>
                 </form>

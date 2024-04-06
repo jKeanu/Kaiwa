@@ -5,6 +5,7 @@
         flex-direction: column
         padding-top: 2rem
         background: rgb(4,12,20)
+        padding-top: 5rem
         background: linear-gradient(169deg, rgba(4,12,20,1) 0%, rgba(31,40,52,1) 100%, rgba(255,240,0,1) 100%, rgba(25,26,29,1) 100%)
         height: $register-container-h
         width: $register-container-w
@@ -74,7 +75,7 @@
 
 =register-page-mobile
     @media (max-width: $breakpoint-mobile)
-        @include register-page($input-width: 12rem, $register-container-w: 100vw, $register-container-h: 100vh, $button-width: 10rem, $header-size-mult: 0.7)
+        @include register-page($input-width: 17rem, $register-container-w: 100vw, $register-container-h: 100vh, $button-width: 10rem, $header-size-mult: 0.7)
 
 =register-page-tablet
     @media (min-width: $breakpoint-mobile + 1px) and (max-width: $breakpoint-tablet)    

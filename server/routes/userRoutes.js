@@ -20,12 +20,25 @@ const passwordChangeLimiter = rateLimit({
     skipFailedRequests: true
 })
 
+const forgotPasswordLimiter = rateLimit({
+    limit: 3,
+    windowMs: 1000*60*60*12,
+    message: 'Too many forgot password attempts, please try again later.',
+    skipFailedRequests: true
+})
+
+const resetPasswordLimiter = rateLimit({
+    limit: 10,
+    windowMs: 1000*60*60*6,
+    message: 'Too many reset password attempts, please try again later.'
+})
+
 router.post('/register', authController.signup)
 router.post('/login', authController.login)
 
 //Password reset
-router.post('/forgotPassword', authController.forgotPassword)
-router.patch('/resetPassword/:token', authController.resetPassword)
+router.post('/forgotPassword', forgotPasswordLimiter, authController.forgotPassword)
+router.patch('/resetPassword/:token', resetPasswordLimiter, authController.resetPassword)
 
 router.use(authController.protect);
 

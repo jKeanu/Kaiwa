@@ -2,7 +2,7 @@ import React, { useState} from 'react';
 import { Link } from 'react-router-dom';
 import axios, {AxiosResponse} from 'axios';
 import {useNavigate} from 'react-router-dom'
-import { RegisterForm, AuthStatus, AuthProps } from '../../types/generalTypes';
+import { RegisterForm, AuthStatus} from '../../types/generalTypes';
 import { registerUser } from '../../services/apiService';
 import { useEffect } from 'react';
 
@@ -29,7 +29,6 @@ const RegisterPage:React.FC=()=>{
         setErrorMessage({type:'', message:''})
         try {
             const res:AxiosResponse<AuthStatus> = await registerUser(formData)
-            console.log(res)
             if (res.data.status === "success") {
                 localStorage.setItem('token', res.data.token)
                 navigate('/@me')
