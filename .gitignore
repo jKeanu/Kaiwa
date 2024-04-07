@@ -13,6 +13,8 @@ node_modules/
 # Ignore .env files in the server directory
 /server/*.env
 
+/server/*.log
+
 todo.txt
 
 /cra

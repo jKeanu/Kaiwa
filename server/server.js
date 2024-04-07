@@ -7,7 +7,6 @@ import app from './app.js';
 const server = http.createServer(app);
 // Set up the socket server
 socketServerSetup(server);
-console.log(process.env.NODE_ENV, '---')
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {

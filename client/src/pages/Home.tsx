@@ -174,7 +174,7 @@ const HomePage:React.FC = () => {
             token ? (endpoint) => getCurrUserFetcher(endpoint, token) : null,
             {
                 revalidateOnFocus: false,
-                refreshInterval: !isOnline?5000:20000
+                refreshInterval: !isOnline?5000:undefined
             }
           )
 

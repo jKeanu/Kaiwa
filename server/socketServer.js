@@ -7,59 +7,98 @@ import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
 import dotenv from'dotenv'
 import mongoose from 'mongoose'
+import winston from 'winston';
+
 dotenv.config({ path: './config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
-const redisClient = Redis.createClient();
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+const logger = winston.createLogger({
+  level: 'error',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: 'error.log' })
+  ]
+})
+
+
+const redisClient = Redis.createClient({
+  socket: {
+    //add this with actual redist host
+    //add this with actual redist post
+    reconnectStrategy: function(retries){
+      if(retries > 10){
+        throw new Error ("Too many redis connection retries.")
+      }else{
+        return 5000
+      }
+    }
+  }
+});
+
+
+redisClient.on('error', (err) => {
+  logger.error('Redis Client Error', {message:err.message, stack:err.stack})
+});
+
 redisClient.connect();
 
 //Flush all data during server restart.
 //Since we only use redis for updating user status, this works.
 const clearRedisData = async () => {
-  await redisClient.flushAll();
-};
-clearRedisData();
-
+  await redisClient.flushAll()
+}
+clearRedisData()
 const getUserIdFromSocket = async (token) => {
   try {
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    return decoded.id;
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
+    return decoded.id
   } catch (error) {
-    console.log(error)
     return null;
   }
 };
+
+// const io = socketIo(server, {
+//   cors: {
+//     origin: '*://example.com',
+//     methods: ['GET', 'POST']
+//   }
+// });
 
 // Manage connections
 export default (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: '*',
+      origin: 'http://localhost:5173', //http://localhost:*
       methods: ['GET', 'POST'],
     },
   });
 
   io.on('connection', async (socket) => {
     const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
-    const incrStatusCount = await redisClient.incr(`user:${verifiedCurrentUserId}:connections`)
-    if(incrStatusCount === 1){
-      const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Online'}, {new:true})
-        .select('friends groups')
-        .populate({path:'friends.friend', select:'status'})
-        .populate({path:'friends.channel', select:'channelNumber'})
-        .populate({path:'groups', select:'channelNumber'})
-      const filteredFriends = [...currentUserData.friends].filter(friend=>friend.status==='Friend')
-      const friendChannels = filteredFriends.map(friend=>friend.channel)
-      friendChannels.forEach(channel=>{
-        io.to(`channel-${channel._id}`).emit(`user_status_update_online`,
-        {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber, type:'Friend'})
-      })
-      const groupChannels = [...currentUserData.groups]
-      groupChannels.forEach(channel=>{
-        io.to(`channel-${channel.id}`).emit(`user_status_update_online`,
-        {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
-      })
+    //err
+    try{
+      const incrStatusCount = await redisClient.incr(`user:${verifiedCurrentUserId}:connections`)
+      if(incrStatusCount === 1){
+        const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Online'}, {new:true})
+          .select('friends groups')
+          .populate({path:'friends.friend', select:'status'})
+          .populate({path:'friends.channel', select:'channelNumber'})
+          .populate({path:'groups', select:'channelNumber'})
+        const filteredFriends = [...currentUserData.friends].filter(friend=>friend.status==='Friend')
+        const friendChannels = filteredFriends.map(friend=>friend.channel)
+        friendChannels.forEach(channel=>{
+          io.to(`channel-${channel._id}`).emit(`user_status_update_online`,
+          {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber, type:'Friend'})
+        })
+        const groupChannels = [...currentUserData.groups]
+        groupChannels.forEach(channel=>{
+          io.to(`channel-${channel.id}`).emit(`user_status_update_online`,
+          {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
+        })
+      }
+    }catch(err){
+      logger.error('User Status Icrement Error', {message:err.message, stack:err.stack})
     }
 
     //JOIN ROOM
@@ -95,6 +134,8 @@ export default (httpServer) => {
 
     // Listen for messages
     socket.on('send_message', async (data) => {
+      const session = await mongoose.startSession()
+      session.startTransaction()
       try{
         await Chat.create({
           sender: verifiedCurrentUserId,
@@ -102,12 +143,12 @@ export default (httpServer) => {
           content: data.content,
           time: data.time,
           formattedDate: data.formattedDate
-        });
+        }, {session:session});
         // Update the last message of the channel
         const updateChannel = await Channel.findByIdAndUpdate(
           { _id: data.channel }, 
           { lastMessage: data.time, formattedLastMessage: data.formattedDate, seen: [`${verifiedCurrentUserId}`]},
-          {new:true}
+          {new:true, session:session}
         )
         // Although the newMessage document consists of sender as a mongoose object id,
         // we can use spread operator and add a similar key to overwrite it.
@@ -118,53 +159,66 @@ export default (httpServer) => {
           sender: data.sender,
           formattedDate: data.formattedDate
         };
-  
+        await session.commitTransaction()
         io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
         {channelId:data.channel, channelNumber:data.channelNumber,  seen: updateChannel.seen,
         newTime:data.time, newFormattedTime:data.formattedDate, message:messageInfo, channelType:data.channelType})
         socket.to(`${data.channelNumber}`).emit('receive_message', messageInfo);
       }catch(err){
-        console.log('SEND MESSAGE ERROR: ', err)
+        logger.error('Send Message Error', {message:err.message, stack:err.stack})
+        await session.abortTransaction()
+      }finally{
+        await session.endSession()
       }
     });
 
     //Invite a user to the group channel
     socket.on('user_invite_success', async(data)=>{
       //add status on select, if status is already implemented ------------------------------
+      const session = await mongoose.startSession()
+      session.startTransaction()
       try{
-        const session = await mongoose.startSession()
-        session.startTransaction()
         const user = await User.findById(data.inviteUser).select('displayName friendTag _id photo status').session(session)
         const userObject = user.toObject()
         userObject.photoUrl = `${cloudfrontDomainName}/${userObject.photo}`
         const currChannel = await Channel.findById(data.channelId)
           .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage seen').session(session)
+        await session.commitTransaction()
         const currChannelObject = currChannel.toObject()
         currChannelObject.photoUrl = `${cloudfrontDomainName}/${currChannelObject.photo}`
         io.to(`channel-${data.channelId}`).emit(`channel_member_update`, 
         {user:userObject, channelNumber:currChannel.channelNumber, newTime:data.newTime, type:'Joined'})
         socket.to(`user-${userObject._id}`).emit('invited_to_group', currChannelObject)
       }catch(err){
-        console.log('USER INVITE SUCESS LIVE UPDATE ERROR: ', err)
+        logger.error('User Invite Success Live Update Error', {message:err.message, stack:err.stack})
+        await session.abortTransaction()
+      }finally{
+        await session.endSession()
       }
     })
 
     //When a user left the group channel
     socket.on('leave_group', async(data)=>{
-      const user = await User.findById(verifiedCurrentUserId).select('displayName friendTag_id photo status')
-      user.photoUrl = `${cloudfrontDomainName}/${user.photo}`
-      io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Left'})
+      try{
+        const user = await User.findById(verifiedCurrentUserId).select('displayName friendTag_id photo status')
+        user.photoUrl = `${cloudfrontDomainName}/${user.photo}`
+        io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Left'})
+      }catch(err){
+        logger.error('Leave Group Live Update Error', {message:err.message, stack:err.stack})
+      }
     })
     
     socket.on("continue_message", async(data)=>{
+      const session = await mongoose.startSession()
+      session.startTransaction()
       try{
         const updatedMessage = await Chat.findOneAndUpdate(
           {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
           {time:data.newTime, $push:{content:data.content}},
-             {new:true})
+             {new:true}).session(session)
         //we don't need to update the formattedLastMessage too, since this is a continue_message
         const updateChannel = await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime, seen:[`${verifiedCurrentUserId}`]},
-        {new:true})
+        {new:true}).session(session)
         //Since we need the sender details, we cannot just pass the updatedMessage
         //directly to the receive_message, the only sender info we have on chat model is the id      
         const messageInfo = {
@@ -175,6 +229,7 @@ export default (httpServer) => {
           formattedDate: updatedMessage.formattedDate,
           updated: true,
         }
+        await session.commitTransaction()
         socket.to(data.channelNumber).emit('receive_message', messageInfo)
         io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
         {
@@ -183,16 +238,23 @@ export default (httpServer) => {
           channelType: data.channelType,
           newTime: updatedMessage.time, message:messageInfo})
       }catch(err){
-        console.log('CONTINUE MESSAGE ERROR: ', err)
+        logger.error('Continue Message Error', {message:err.message, stack:err.stack})
+        await session.abortTransaction()
+      }finally{
+        await session.endSession()
       }
     })
 
     //When a user havent seen the latest message and opened the channel
     socket.on('new_message_seen', async (data)=>{
-      const u = await Channel.findByIdAndUpdate({_id:data.channelId}, {
-        $push: {
-            seen: verifiedCurrentUserId
-        }}, {new:true})
+      try{
+        await Channel.findByIdAndUpdate({_id:data.channelId}, {
+          $push: {
+              seen: verifiedCurrentUserId
+          }}, {new:true})
+      }catch(err){
+        logger.error('New Message Seen Error', {message:err.message, stack:err.stack})
+      }
     })
 
     //When a user sends a friend-request live update
@@ -238,23 +300,27 @@ export default (httpServer) => {
     })
 
     socket.on('disconnect', async () => {
-      const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
-      if(decrStatusCount<=0){
-        const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Offline'}, {new:true})
-        .populate({path:'friends.friend', select:'status'})
-        .populate({path:'friends.channel', select:'channelNumber'})
-        .populate({path:'groups', select:'channelNumber'})
-        const filteredFriends = [...currentUserData.friends].filter(friend=>friend.status==='Friend')
-        const friendChannels = filteredFriends.map(friend=>friend.channel)
-        friendChannels.forEach(channel=>{
-          socket.to(`channel-${channel.id}`).emit(`user_status_update_offline`,
-          {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber, type:'Friend'})
-        })
-        const groupChannels = [...currentUserData.groups]
-        groupChannels.forEach(channel=>{
-          socket.to(`channel-${channel.id}`).emit(`user_status_update_offline`,
-          {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
-        })
+      try{
+        const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
+        if(decrStatusCount<=0){
+          const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Offline'}, {new:true})
+          .populate({path:'friends.friend', select:'status'})
+          .populate({path:'friends.channel', select:'channelNumber'})
+          .populate({path:'groups', select:'channelNumber'})
+          const filteredFriends = [...currentUserData.friends].filter(friend=>friend.status==='Friend')
+          const friendChannels = filteredFriends.map(friend=>friend.channel)
+          friendChannels.forEach(channel=>{
+            socket.to(`channel-${channel.id}`).emit(`user_status_update_offline`,
+            {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber, type:'Friend'})
+          })
+          const groupChannels = [...currentUserData.groups]
+          groupChannels.forEach(channel=>{
+            socket.to(`channel-${channel.id}`).emit(`user_status_update_offline`,
+            {userId:currentUserData._id, channelId:channel._id, channelNumber:channel.channelNumber})
+          })
+        }
+      }catch(err){
+        logger.error('User Status Decrement Error', {message:err.message, stack:err.stack})
       }
     })
   })

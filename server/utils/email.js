@@ -36,20 +36,16 @@ export class Email{
     }
 
     async send(subject){
-        try {
-            const source = fs.readFileSync(`${__dirname}/../templates/passwordReset.hbs`, 'utf8');
-            const template = handlebars.compile(source);
-            const html = template({ url: this.url, displayName: this.displayName, subject });
-            const mailOptions = {
-                from: this.from,
-                to: this.to,
-                subject,
-                html,
-            }; 
-            await this.newTransport().sendMail(mailOptions);
-        } catch (error) {
-            console.error('Error sending email:', error);
-        }
+        const source = fs.readFileSync(`${__dirname}/../templates/passwordReset.hbs`, 'utf8');
+        const template = handlebars.compile(source);
+        const html = template({ url: this.url, displayName: this.displayName, subject });
+        const mailOptions = {
+            from: this.from,
+            to: this.to,
+            subject,
+            html,
+        }; 
+        await this.newTransport().sendMail(mailOptions);
     }
 
     async sendPasswordReset(){

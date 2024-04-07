@@ -18,10 +18,14 @@ import userChannelRouter from './routes/userChannelRoutes.js';
 const app = express();
 
 
-app.use(cors());
-app.options('*', cors());
+const corsOptions = {
+  origin: 'http://localhost:5173'
+}
 
-// Set Security HTTP headers
+app.use(cors(corsOptions));
+app.options('*', cors());
+ 
+// Set Security HTTP headersc
 app.use(helmet());
 
 // Development logging
@@ -29,21 +33,10 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Limit requests from the same API
-// const limiter = rateLimit({
-//   max: 100,
-//   // Milliseconds to an hour
-//   windowMs: 60 * 60 * 1000,
-//   message: 'Too many requests from this IP, please try again in an hour',
-// });
-// app.use('/api', limiter);
-
-
 const loginLimiter = rateLimit({
   max: 15,
   windowMs: 60*30*1000,
-  message: 'Too many login attempts, please try again later.',
-  skipSuccessfulRequests: true
+  message: 'Too many login attempts, please try again later.'
 })
 
 const registerLimiter = rateLimit({
