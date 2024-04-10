@@ -292,16 +292,24 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     }
 
     useEffect(()=>{
-        setTimeout(()=>{
-            setMessageSentStatus(true)
-        }, 500)
-        return ()=>{
-            setMessageSentStatus(false)   
+        if(messageReceived[0].sender._id===_id){
+            setTimeout(()=>{
+                setMessageSentStatus(true)
+            }, 500)
+            return ()=>{
+                setMessageSentStatus(false)   
+            }
         }
     },
-    [notSentMessages])
+    [messageReceived])
 
-    
+
+    useEffect(()=>{
+        if(notSentMessages.length>5){
+            setModalWindow({isOpen:true, window:'messageLimit'})
+        }
+    }, [notSentMessages])
+
     const sendMessage = ():void =>{
         if(!socket){
             return
@@ -310,6 +318,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             return navigate('/@me')
         }
         setMessageSentStatus(false)
+
+
         if(isOnline){
             const timestamp = Date.now()
             const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
