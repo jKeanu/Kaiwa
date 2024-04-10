@@ -2,7 +2,6 @@ import express from 'express';
 import dotenv from 'dotenv'
 dotenv.config({ path: './config.env' });
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss-clean';
@@ -32,22 +31,6 @@ app.use(helmet());
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-
-const loginLimiter = rateLimit({
-  max: 15,
-  windowMs: 60*30*1000,
-  message: 'Too many login attempts, please try again later.'
-})
-
-const registerLimiter = rateLimit({
-  max: 3,
-  windowMs: 60*1000*60*2,
-  message: 'Too many registration attempts detected, please try again later.',
-  skipFailedRequests: true
-})
-
-app.use('/api/v1/users/login', loginLimiter)
-app.use('/api/v1/users/register', registerLimiter)
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));

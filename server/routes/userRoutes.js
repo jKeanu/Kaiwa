@@ -6,6 +6,20 @@ import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
 
+
+const loginLimiter = rateLimit({
+    max: 15,
+    windowMs: 60*30*1000,
+    message: 'Too many login attempts, please try again later.'
+  })
+  
+  const registerLimiter = rateLimit({
+    max: 3,
+    windowMs: 60*1000*60*2,
+    message: 'Too many registration attempts detected, please try again later.',
+    skipFailedRequests: true
+  })
+
 const userSettLimiter = rateLimit({
     limit: 3,
     windowMs: 1000*60*60*12,
@@ -33,8 +47,8 @@ const resetPasswordLimiter = rateLimit({
     message: 'Too many reset password attempts, please try again later.'
 })
 
-router.post('/register', authController.signup)
-router.post('/login', authController.login)
+router.post('/register', registerLimiter, authController.signup)
+router.post('/login', loginLimiter, authController.login)
 
 //Password reset
 router.post('/forgotPassword', forgotPasswordLimiter, authController.forgotPassword)

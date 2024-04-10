@@ -54,7 +54,7 @@ const getUserIdFromSocket = async (token) => {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
     return decoded.id
   } catch (error) {
-    return null;
+    logger.error('Token Decoding Error', {message:err.message, stack:err.stack})
   }
 };
 
@@ -107,9 +107,12 @@ export default (httpServer) => {
     })
 
     socket.on('join_channel_room', (data) => {
-      console.log(`${data.displayName} JOINED ${data.channelNumber}`)
       socket.join(data.channelNumber);
     });
+
+    socket.on('join_channel_verify_message', (data)=>{
+      socket.join(`channel-${data.channelNumber}-verify-message-${verifiedCurrentUserId}`)
+    })
 
     socket.on('channel_live_updates', (channelIds)=>{
       channelIds.forEach(channelId=>{
@@ -117,6 +120,7 @@ export default (httpServer) => {
       })
     })
 
+    
     //Leave Room
     socket.on('leave_personal_live_update', ()=>{
       socket.leave(`user-${verifiedCurrentUserId}`)
@@ -132,26 +136,31 @@ export default (httpServer) => {
       })
     })
 
+    socket.on('leave_channel_verify_message', (data)=>{
+      socket.leave(`channel-${data.channelNumber}-verify-message-${verifiedCurrentUserId}`)
+    })
+
+
     // Listen for messages
     socket.on('send_message', async (data) => {
       const session = await mongoose.startSession()
       session.startTransaction()
       try{
-        await Chat.create({
+        await Chat.create([{
           sender: verifiedCurrentUserId,
           channel: data.channel,
           content: data.content,
           time: data.time,
           formattedDate: data.formattedDate
-        }, {session:session});
+        }], {session:session});
         // Update the last message of the channel
         const updateChannel = await Channel.findByIdAndUpdate(
           { _id: data.channel }, 
           { lastMessage: data.time, formattedLastMessage: data.formattedDate, seen: [`${verifiedCurrentUserId}`]},
           {new:true, session:session}
         )
-        // Although the newMessage document consists of sender as a mongoose object id,
-        // we can use spread operator and add a similar key to overwrite it.
+        //Although the newMessage document consists of sender as a mongoose object id,
+        //we can use spread operator and add a similar key to overwrite it.
         const messageInfo = {
           time: data.time,
           content: data.content,
@@ -160,6 +169,9 @@ export default (httpServer) => {
           formattedDate: data.formattedDate
         };
         await session.commitTransaction()
+        io.to(`channel-${data.channelNumber}-verify-message-${verifiedCurrentUserId}`).emit('message_verified',
+        {sentContent:data.content[0]}
+        )
         io.to(`channel-${data.channel}`).emit('channel_lastmsg_update', 
         {channelId:data.channel, channelNumber:data.channelNumber,  seen: updateChannel.seen,
         newTime:data.time, newFormattedTime:data.formattedDate, message:messageInfo, channelType:data.channelType})
@@ -174,7 +186,6 @@ export default (httpServer) => {
 
     //Invite a user to the group channel
     socket.on('user_invite_success', async(data)=>{
-      //add status on select, if status is already implemented ------------------------------
       const session = await mongoose.startSession()
       session.startTransaction()
       try{
@@ -209,16 +220,15 @@ export default (httpServer) => {
     })
     
     socket.on("continue_message", async(data)=>{
-      const session = await mongoose.startSession()
-      session.startTransaction()
       try{
         const updatedMessage = await Chat.findOneAndUpdate(
           {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
           {time:data.newTime, $push:{content:data.content}},
-             {new:true}).session(session)
+             {new:true})
+        console.log(updatedMessage, '====')
         //we don't need to update the formattedLastMessage too, since this is a continue_message
         const updateChannel = await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime, seen:[`${verifiedCurrentUserId}`]},
-        {new:true}).session(session)
+        {new:true})
         //Since we need the sender details, we cannot just pass the updatedMessage
         //directly to the receive_message, the only sender info we have on chat model is the id      
         const messageInfo = {
@@ -229,19 +239,17 @@ export default (httpServer) => {
           formattedDate: updatedMessage.formattedDate,
           updated: true,
         }
-        await session.commitTransaction()
+        io.to(`channel-${data.channelNumber}-verify-message-${verifiedCurrentUserId}`).emit('message_verified',
+        {sentContent:data.content}
+        )
         socket.to(data.channelNumber).emit('receive_message', messageInfo)
         io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
-        {
-          channelId: updatedMessage.channel, channelNumber:data.channelNumber, 
+        {channelId:updatedMessage.channel, channelNumber:data.channelNumber, 
           seen: updateChannel.seen,
-          channelType: data.channelType,
-          newTime: updatedMessage.time, message:messageInfo})
+          channelType:data.channelType,
+          newTime:updatedMessage.time, message:messageInfo, })
       }catch(err){
         logger.error('Continue Message Error', {message:err.message, stack:err.stack})
-        await session.abortTransaction()
-      }finally{
-        await session.endSession()
       }
     })
 

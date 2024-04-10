@@ -287,7 +287,7 @@ const HomePage:React.FC = () => {
 
         //LIVE UPDATES
         useEffect(()=>{
-            if(socket){
+            if(socket && userData){
                 socket.emit('personal_live_update')
                 return ()=>{
                     socket.emit('leave_personal_live_update')
@@ -502,8 +502,6 @@ const HomePage:React.FC = () => {
                 return cleanup
         }},[socket, friendChannelIds])
 
-
-
         //When someone added you as a friend
         useEffect(()=>{
             if(socket){
@@ -517,7 +515,6 @@ const HomePage:React.FC = () => {
                 return cleanup
             }
         }, [socket])
-
 
         //When someone in your friends included you in a new group
         useEffect(()=>{

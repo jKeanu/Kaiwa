@@ -49,7 +49,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [messagesSkip, setMessagesSkip] = useState<number>(0)
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
-    const [notSentMessages, setNotSentMessages] = useState<ChannelMessage[]>([])
+    const [notSentMessages, setNotSentMessages] = useState<string[]>([])
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
@@ -68,6 +68,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [activePopup, setActivePopup] = useState(false)
     //Network status
     const [isOnline, setIsOnline] = useState(navigator.onLine);
+    //sent indicator
+    const [messageSentStatus, setMessageSentStatus] = useState(true)
     //This determines if we're connected to the socket room 
     const {channelsDispatch} = useChannelCustomContext()
 
@@ -155,13 +157,23 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     useEffect(() => {
         if (socket && channelNumber) {
             // Join the room
-            socket.emit('join_channel_room', {channelNumber, displayName});
+            socket.emit('join_channel_room', {channelNumber});
             // Handle socket disconnection or leaving the room when the component unmounts or changes
             return () => {
                 socket.emit('leave_channel_room', channelNumber);
             }
         }
     }, [socket, channelNumber]);
+
+
+    useEffect(()=>{
+        if(socket && channelNumber){
+            socket.emit('join_channel_verify_message', {channelNumber:channelNumber})
+            return () => {
+                socket.emit('leave_channel_verify_message', {channelNumber:channelNumber});
+            }  
+        }
+    }, [socket, channelNumber])
 
 
     // useEffect(()=>{
@@ -180,6 +192,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
+
             const handleReceiveMessage = (newMessage: ChannelMessage) => {
                 //Notify the server that you have seen the latest message
                 socket.emit('new_message_seen', {channelId:currentChannel._id})
@@ -225,6 +238,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 if(messageBoxRef.current){
                     if(messageBoxRef.current.scrollTop*-1<=800) messageBoxRef.current.scrollTop=0
                 }
+                setMessageSentStatus(false)
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
@@ -277,6 +291,17 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
     }
 
+    useEffect(()=>{
+        setTimeout(()=>{
+            setMessageSentStatus(true)
+        }, 500)
+        return ()=>{
+            setMessageSentStatus(false)   
+        }
+    },
+    [notSentMessages])
+
+    
     const sendMessage = ():void =>{
         if(!socket){
             return
@@ -284,6 +309,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(!currentChannel){
             return navigate('/@me')
         }
+        setMessageSentStatus(false)
         if(isOnline){
             const timestamp = Date.now()
             const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
@@ -361,6 +387,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     return {status:currMsgCachedData.status, messages:updatedMessages}
                 }, false)
             }
+            setNotSentMessages((prevNotSent)=>{
+                const updatedMessages = [...prevNotSent]
+                return [...updatedMessages, inputMessage]
+            })
             setInputMessage('')
             if(messageBoxRef.current){
                 messageBoxRef.current.scrollTop=0
@@ -388,6 +418,24 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }
     
+
+    useEffect(()=>{
+        if(socket && channelData){
+            const handleVerifiedMessage = (data:{sentContent:string})=>{
+                setNotSentMessages(prevMessage=>{
+                    const updateMessage = [...prevMessage]
+                    updateMessage.filter(message=>message!==data.sentContent)
+                    return updateMessage.filter(message=>message!==data.sentContent)
+                })
+            }
+            socket.on('message_verified', handleVerifiedMessage)
+            const cleanup = ():void  =>{
+                socket.removeListener('message_verified', handleVerifiedMessage);
+            }
+            return cleanup
+        }
+    }, [socket, channelData])
+
     const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
         e.preventDefault()
         setModalWindow({isOpen:true, window:action})
@@ -944,6 +992,14 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 </nav>
                 <section className="message-section">
                     <div className="message-box" ref={messageBoxRef} onScroll={handleScroll}>
+                    {messageReceived.length>0&&messageReceived[0].sender._id===_id&&
+                        <div className="sent-indicator-container">
+                            <span className={`sent-indicator ${(messageSentStatus)?'sent-visible':''}`}>
+                                {
+                                    notSentMessages.length===0?'Sent \u2713' :'Sending...'
+                                }
+                            </span>
+                        </div>}
                         {
                         messageReceived?
                             messageReceived.map((message, index)=>(
@@ -979,40 +1035,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 </div>
                             )):
                             <div></div>
-                        }{
-                            notSentMessages.length>1&&
-                            notSentMessages.map((message, index)=>(
-                                <div 
-                                    className={message.sender._id===_id?"my-message-info-container user-message-info-container"
-                                    :"user-message-info-container"} 
-                                    key={index}>
-                                    <img className='sender-photo' 
-                                    src={`${message.sender.photo==='default.jpeg'?'/img/default.jpeg':message.sender.photoUrl}`}/>
-                                    <div className="message-info">
-                                        <div className="message-date-displayname">
-                                            <span className="message-sender">
-                                                {message.sender.displayName}
-                                            </span>
-                                            <span className="message-date">
-                                                {formatToTodayIfCurrentDate(message.formattedDate.toString())}
-                                            </span>
-                                        </div>
-                                        <div className="message-content-container">
-                                            {
-                                            message.content.map((m, i)=>(
-                                                <div key={i} className="message-content" style={{backgroundColor:`${message.notSent?'white':''}`}}>
-                                                    {m.split('\n').map((line, index)=>(
-                                                        <React.Fragment key={index}>
-                                                            {line}
-                                                            {index < line.length -1 && <br/>}
-                                                        </React.Fragment>
-                                                    ))}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
                         }
                     </div>
                     <div className="message-input-container">

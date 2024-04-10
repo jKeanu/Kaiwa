@@ -6,12 +6,12 @@ import rateLimit from 'express-rate-limit';
 const router = express.Router();
 
 
-const createGroupLimiter = rateLimit({
-    limit: 3,
-    windowMs: 60*1000*60*3,
-    message: 'Too many create groups have been created, please try again later.',
-    skipFailedRequests: true
-})
+// const createGroupLimiter = rateLimit({
+//     limit: 3,
+//     windowMs: 60*1000*60*3,
+//     message: 'Too many create groups have been created, please try again later.',
+//     skipFailedRequests: true
+// })
 
 const groupSettLimiter = rateLimit({
     limit: 3,
@@ -23,7 +23,6 @@ const groupSettLimiter = rateLimit({
 router.use(authController.protect);
 
 router.post('/', 
-    createGroupLimiter, 
     groupController.createGroupChannel);
 
 router.route('/:groupId')
