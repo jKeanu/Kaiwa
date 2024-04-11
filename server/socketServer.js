@@ -8,6 +8,7 @@ import Channel from './models/channelModel.js';
 import dotenv from'dotenv'
 import mongoose from 'mongoose'
 import winston from 'winston';
+import { MongoServerError } from 'mongodb'
 
 dotenv.config({ path: './config.env' });
 
@@ -65,6 +66,8 @@ const getUserIdFromSocket = async (token) => {
 //   }
 // });
 
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 // Manage connections
 export default (httpServer) => {
   const io = new Server(httpServer, {
@@ -220,37 +223,45 @@ export default (httpServer) => {
     })
     
     socket.on("continue_message", async(data)=>{
-      try{
-        const updatedMessage = await Chat.findOneAndUpdate(
-          {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
-          {time:data.newTime, $push:{content:data.content}},
-             {new:true})
-        console.log(updatedMessage, '====')
-        //we don't need to update the formattedLastMessage too, since this is a continue_message
-        const updateChannel = await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime, seen:[`${verifiedCurrentUserId}`]},
-        {new:true})
-        //Since we need the sender details, we cannot just pass the updatedMessage
-        //directly to the receive_message, the only sender info we have on chat model is the id      
-        const messageInfo = {
-          time: updatedMessage.time,
-          sender: data.sender,
-          content: updatedMessage.content,
-          channel: updatedMessage.channel,
-          formattedDate: updatedMessage.formattedDate,
-          updated: true,
-        }
-        io.to(`channel-${data.channelNumber}-verify-message-${verifiedCurrentUserId}`).emit('message_verified',
-        {sentContent:data.content}
-        )
-        socket.to(data.channelNumber).emit('receive_message', messageInfo)
-        io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
-        {channelId:updatedMessage.channel, channelNumber:data.channelNumber, 
-          seen: updateChannel.seen,
-          channelType:data.channelType,
-          newTime:updatedMessage.time, message:messageInfo, })
-      }catch(err){
-        logger.error('Continue Message Error', {message:err.message, stack:err.stack})
-      }
+      let retries = 3; // Maximum number of retries
+      let delayTime = 1000; // Delay time in milliseconds
+      const attemptOperation = async ()=>{
+        try{
+          const updatedMessage = await Chat.findOneAndUpdate(
+            {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
+            {time:data.newTime, $push:{content:data.content}},
+               {new:true})
+          //we don't need to update the formattedLastMessage too, since this is a continue_message
+          const updateChannel = await Channel.findByIdAndUpdate({_id:data.channel}, {lastMessage:data.newTime, seen:[`${verifiedCurrentUserId}`]},
+          {new:true})
+          //Since we need the sender details, we cannot just pass the updatedMessage
+          //directly to the receive_message, the only sender info we have on chat model is the id      
+          const messageInfo = {
+            time: updatedMessage.time,
+            sender: data.sender,
+            content: updatedMessage.content,
+            channel: updatedMessage.channel,
+            formattedDate: updatedMessage.formattedDate,
+            updated: true,
+          }
+          io.to(`channel-${data.channelNumber}-verify-message-${verifiedCurrentUserId}`).emit('message_verified',
+          {sentContent:data.content}
+          )
+          socket.to(data.channelNumber).emit('receive_message', messageInfo)
+          io.to(`channel-${updatedMessage.channel}`).emit(`channel_lastmsg_update`,         
+          {channelId:updatedMessage.channel, channelNumber:data.channelNumber, 
+            seen: updateChannel.seen,
+            channelType:data.channelType,
+            newTime:updatedMessage.time, message:messageInfo, })
+        }catch(err){
+          if(retries > 0){
+            retries--;
+            await delay(delayTime); // Wait for a specified delayTime before retrying
+            return attemptOperation(); // Retry the operation
+          }
+          logger.error('Continue Message Error', {message:err.message, stack:err.stack})
+      }}
+      await attemptOperation()
     })
 
     //When a user havent seen the latest message and opened the channel

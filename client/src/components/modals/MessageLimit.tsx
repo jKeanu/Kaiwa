@@ -1,8 +1,10 @@
-import { Notice } from "../../types/generalTypes"
-import { useEffect, useState } from "react"
+import { useChannelCustomContext } from "../../context"
+import { MessageLimit} from "../../types/generalTypes"
+import { useEffect } from "react"
 
-const MessageLimitModal:React.FC<Notice>=({handleModalConfirm})=>{
-    const [modalVisible, setModalVisible] = useState(false)
+const MessageLimitModal:React.FC<MessageLimit>=({handleCloseButton})=>{
+
+    const {setModalVisible, modalVisible} = useChannelCustomContext()
 
     useEffect(()=>{
         setModalVisible(true)
@@ -10,13 +12,13 @@ const MessageLimitModal:React.FC<Notice>=({handleModalConfirm})=>{
     },[])
 
     return (
-        <div className={`message-limit-modal-container ${modalVisible?"visible":""}`}>
+        <div className={`message-limit-modal-container channel-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Whoa there, speedy fingers!</h2>
             <div className="modal-text">
                 Slow down on the messages, it's not a race!
             </div>
             <div className="message-limit-modal-button-container">
-                <button className="confirm-button" onClick={(e)=>handleModalConfirm(e)}>Confirm</button>
+                <button className="confirm-button" onClick={handleCloseButton}>Confirm</button>
             </div>
         </div>
     )

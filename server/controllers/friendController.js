@@ -176,7 +176,6 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
                     await session.abortTransaction(); // Important to abort the current transaction
                     return attemptOperation(); // Retry the operation
                 }
-                console.log('ERROR!!!!', err)
                 await session.abortTransaction();
                 next(err)
             //the finally block has a higher priority and will always execute before the return operation is completed.

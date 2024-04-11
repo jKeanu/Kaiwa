@@ -26,6 +26,7 @@ import ChangeLeaderModal from "./modals/ChangeLeader"
 import throttle from 'lodash.throttle'
 import GroupSettingsModal from "./modals/GroupSettings"
 import { useChannelCustomContext } from "../context"
+import MessageLimitModal from "./modals/MessageLimit"
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
@@ -50,6 +51,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
     const [notSentMessages, setNotSentMessages] = useState<string[]>([])
+    //Message Limit
+    const [messageLimit, setMessageLimit] = useState<number>(0)
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
@@ -109,6 +112,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setMessageReceived([])
         setMsgFetchLoading(false)
         setAllMessagesFetched(false)
+        setMessageLimit(0)
     }, [channelNumber])
 
     useEffect(() => {
@@ -292,7 +296,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     }
 
     useEffect(()=>{
-        if(messageReceived[0].sender._id===_id){
+        if(messageReceived.length>0&&messageReceived[0].sender._id===_id){
             setTimeout(()=>{
                 setMessageSentStatus(true)
             }, 500)
@@ -303,12 +307,16 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     },
     [messageReceived])
 
-
     useEffect(()=>{
-        if(notSentMessages.length>5){
-            setModalWindow({isOpen:true, window:'messageLimit'})
+        if(messageReceived.length>1&&messageReceived[0].sender._id===_id){
+            const timer = setTimeout(()=>{
+                setMessageLimit(0)
+            }, 5000)
+            return () => {
+                clearTimeout(timer);
+            }
         }
-    }, [notSentMessages])
+    }, [messageReceived])
 
     const sendMessage = ():void =>{
         if(!socket){
@@ -317,9 +325,18 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(!currentChannel){
             return navigate('/@me')
         }
+        if(notSentMessages.length>5){
+            setModalWindow({isOpen:true, window:'messageLimit'})
+            textareaRef.current?.blur()
+            return
+        }
+        if(messageLimit>=5){
+            setModalWindow({isOpen:true, window:'messageLimit'})
+            textareaRef.current?.blur()
+            return
+        }
+        setMessageLimit(prevLimit=>prevLimit+1)
         setMessageSentStatus(false)
-
-
         if(isOnline){
             const timestamp = Date.now()
             const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
@@ -404,7 +421,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             setInputMessage('')
             if(messageBoxRef.current){
                 messageBoxRef.current.scrollTop=0
-                }
+            }
         }else{
             const timestamp = Date.now()
             // setNotSentMessages((prevMessages)=>{
@@ -806,6 +823,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         <section className={`channel-section ${isVisible?'channel-section-mob':''}`}>
         {(modalWindow.isOpen||memberModal.isOpen)&&
             <dialog className='modal-window-container' onMouseDown={handleModalWindowClick}>
+                    {(modalWindow.window==='messageLimit')&&
+                    <MessageLimitModal handleCloseButton={handleCloseButton}/>}
                     {(modalWindow.window==='groupSettings')
                     &&currentChannel.photo&&currentChannel.photoUrl&&currentChannel.channelName&&
                     <GroupSettingsModal 

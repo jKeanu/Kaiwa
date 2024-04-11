@@ -170,6 +170,28 @@
                 @include modal-mobile
                 .channel-modal-button-container
                     @include modal-button-container
+                .message-limit-modal-button-container
+                    margin-top: 1.5rem
+                    display: flex
+                    align-items: center
+                    justify-content: end
+                    button
+                        border: none
+                        border: 1px solid rgb(24, 65, 159) 
+                        height: 2rem
+                        width: 5rem
+                        padding: 0.3rem 0.6rem
+                        font-family: 'Open Sans', sans-serif
+                        font-size: 0.9rem
+                        font-weight: 300
+                        background-color: transparent
+                        transition: background-color 0.1s ease-in
+                        display: flex
+                        justify-content: center
+                        align-items: center
+                        &:hover
+                            background-color: rgb(24, 65, 159) 
+                            cursor: pointer 
             .group-settings-modal-container
                 background-color: #1c2028
                 height: 100vh
@@ -637,6 +659,51 @@
                 @include modal($border-radius: 0.25rem)
                 .channel-modal-button-container
                     @include modal-button-container
+                .message-limit-modal-button-container
+                    margin-top: 1.5rem
+                    display: flex
+                    align-items: center
+                    justify-content: end
+                    button
+                        border: none
+                        border: 1px solid rgb(24, 65, 159) 
+                        height: 2rem
+                        width: 5rem
+                        padding: 0.3rem 0.6rem
+                        font-family: 'Open Sans', sans-serif
+                        font-size: 0.9rem
+                        font-weight: 300
+                        background-color: transparent
+                        transition: background-color 0.1s ease-in
+                        display: flex
+                        justify-content: center
+                        align-items: center
+                        &:hover
+                            background-color: rgb(24, 65, 159) 
+                            cursor: pointer 
+                .message-limit-modal-button-container
+                    margin-top: 1.5rem
+                    display: flex
+                    align-items: center
+                    justify-content: end
+                    button
+                        border: none
+                        border: 1px solid rgb(24, 65, 159) 
+                        height: 2rem
+                        width: 5rem
+                        padding: 0.3rem 0.6rem
+                        font-family: 'Open Sans', sans-serif
+                        font-size: 0.9rem
+                        font-weight: 300
+                        background-color: transparent
+                        transition: background-color 0.1s ease-in
+                        display: flex
+                        justify-content: center
+                        align-items: center
+                        &:hover
+                            background-color: rgb(24, 65, 159) 
+                            cursor: pointer 
+
             .invite-modal-container
                 @include modal($border-radius: 0.25rem)
                 .invite-modal-friend-list

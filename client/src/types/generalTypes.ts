@@ -232,6 +232,10 @@ export type ModalWindow={
     window:string
 }
 
+export type MessageLimit = {
+    handleCloseButton:(e:React.MouseEvent<HTMLButtonElement>)=>void
+}
+
 export type UnfriendModalSettings={
     isOpen:boolean,
     ids:{
