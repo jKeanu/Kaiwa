@@ -28,6 +28,7 @@ import GroupSettingsModal from "./modals/GroupSettings"
 import { useChannelCustomContext } from "../context"
 import MessageLimitModal from "./modals/MessageLimit"
 
+
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
         socket, 
@@ -73,8 +74,11 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     //sent indicator
     const [messageSentStatus, setMessageSentStatus] = useState(true)
+    //Error
+    const [memberError, setMemberError] = useState('')
     //This determines if we're connected to the socket room 
     const {channelsDispatch} = useChannelCustomContext()
+
 
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
@@ -148,7 +152,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
         }else if(messagesError){
             if(axios.isAxiosError(messagesError)){
-                console.log(messagesError)
                 if(messagesError.response?.status===404 || messagesError.response?.status===401){
                     navigate('/@me')
                 }
@@ -447,7 +450,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     
 
     useEffect(()=>{
-        if(socket && channelData){
+        if(socket){
             const handleVerifiedMessage = (data:{sentContent:string})=>{
                 setNotSentMessages(prevMessage=>{
                     const updateMessage = [...prevMessage]
@@ -461,7 +464,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
             return cleanup
         }
-    }, [socket, channelData])
+    }, [socket])
 
     const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
         e.preventDefault()
@@ -605,6 +608,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     const handleAddFriendMember = async(e:React.MouseEvent<HTMLButtonElement>, displayName:string, friendTag:string):Promise<void>=>{
         e.preventDefault()
+        setMemberError('')
         setMemberPopUp('')
         setActivePopup(false)
         try{
@@ -618,7 +622,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 }
             }
         }catch(err){
-
+            setMemberError('An error occurred while sending a friend request.')
         }
     }
 
@@ -627,6 +631,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         e.preventDefault()
         setMemberPopUp('')
         setActivePopup(false)
+        setMemberError('')
         if(friendId){
             try{
                 const res:AxiosResponse<AcceptFriendStatus>= await acceptFriend(token, memberId)
@@ -666,6 +671,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     }
                 }
             }catch(err){
+                setMemberError('An error occurred while accepting the friend request.')
             }
         }
         }
@@ -673,6 +679,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const handleDeclineRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string):Promise<void>=>{
         e.preventDefault()
         setMemberPopUp('')
+        setMemberError('')
         setActivePopup(false)
         try{
             const res:AxiosResponse<void>=await declineFriend(token, memberId)
@@ -686,7 +693,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 }
             }
         }catch(err){
-
+            setMemberError('An error occurred while declining the friend request.')
         }
     }
 
@@ -816,7 +823,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         }
     }, [socket, currentChannel, _id])
 
-
     return (
         <>
         {(currentChannel&&messagesData)?
@@ -898,6 +904,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             </dialog>}
             <div className="channel-container">
                 <nav className="channel-nav">
+                    <div className={`member-error-notice ${memberError?'visible':''}`}>
+                        {memberError}
+                    </div>
                     <button className="channel-back-to-home-button" onClick={isMemberVisible?handleMembersBack:handleChannelBack}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
                         strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
@@ -941,7 +950,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             {currentChannel.channelType==='Group'&&
                             <button className="channel-to-member-button" onClick={handleChannelToMembers}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                                stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'
+                                stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
                                 className="channel-to-group-image">
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
                                         </path>

@@ -20,6 +20,7 @@ import axios, {AxiosResponse} from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
 
+
 function sortChannels(channels:Channel[]):Channel[]{
     return channels.sort((a, b) => {
         const dateA = new Date(a.lastMessage).getTime() 
@@ -141,6 +142,7 @@ const HomePage:React.FC = () => {
             //we need to determine if the webpage is fully visible before connecting to the socket since,
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
+            console.log(socket, '------------------')
             if (token && isOnline) {
                 const socketConn = io('http://localhost:3001', { query: { token } });
                 setSocket(socketConn);
@@ -174,7 +176,7 @@ const HomePage:React.FC = () => {
             token ? (endpoint) => getCurrUserFetcher(endpoint, token) : null,
             {
                 revalidateOnFocus: false,
-                refreshInterval: !isOnline?5000:undefined
+                revalidateOnReconnect: true
             }
           )
 
@@ -288,6 +290,7 @@ const HomePage:React.FC = () => {
         //LIVE UPDATES
         useEffect(()=>{
             if(socket && userData){
+                console.log('CONNTECTED TO PERSONAL_LIVE_UPDATE')
                 socket.emit('personal_live_update')
                 return ()=>{
                     socket.emit('leave_personal_live_update')
@@ -620,6 +623,8 @@ const HomePage:React.FC = () => {
             localStorage.removeItem('token')
             window.location.href = '/login'
         };
+
+
         return(
             <>
             {userData&&token?

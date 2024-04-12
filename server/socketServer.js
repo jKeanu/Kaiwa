@@ -8,7 +8,6 @@ import Channel from './models/channelModel.js';
 import dotenv from'dotenv'
 import mongoose from 'mongoose'
 import winston from 'winston';
-import { MongoServerError } from 'mongodb'
 
 dotenv.config({ path: './config.env' });
 
@@ -78,6 +77,7 @@ export default (httpServer) => {
   });
 
   io.on('connection', async (socket) => {
+    console.log('CONNTECTED TO SOCKET ____________')
     const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
     //err
     try{
