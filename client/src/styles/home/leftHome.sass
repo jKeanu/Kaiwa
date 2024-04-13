@@ -682,6 +682,7 @@
                                 white-space: nowrap
                                 width: 100%
         .user-info-container
+            position: relative
             border-top: 1px solid $white-line
             display: flex
             justify-content: space-between
@@ -690,6 +691,28 @@
             height: 4rem
             flex-shrink: 0
             flex-grow: 0
+            .offline-notice-container
+                position: absolute
+                border-radius: 0.25rem
+                box-shadow: 3px 3px 5px 1px #000000ba
+                background-color: #212e3e
+                left: 1%
+                bottom: 115%
+                z-index: 5000
+                display: flex
+                padding: 0.85rem
+                justify-content: center
+                align-items: center
+                .offline-notice-text
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.9rem
+                    white-space: nowrap
+                    cursor: default
+                button
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.9rem
+                    color: #4884b9
+                    cursor: pointer
             .user-info-button
                 display: flex
                 .user-info-photo
@@ -1103,6 +1126,7 @@
                             transform: translate(-50%, -50%)
 
         .user-info-container
+            position: relative
             border-top: 1px solid $white-line
             display: flex
             justify-content: space-between
@@ -1112,6 +1136,28 @@
             flex-shrink: 0
             flex-grow: 0
             padding: 0.5rem 0
+            .offline-notice-container
+                position: absolute
+                border-radius: 0.25rem
+                box-shadow: 3px 3px 5px 1px #000000ba
+                background-color: #212e3e
+                left: 105%
+                bottom: 100%
+                z-index: 5000
+                display: flex
+                padding: 0.85rem
+                justify-content: center
+                align-items: center
+                .offline-notice-text
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.9rem
+                    white-space: nowrap
+                    cursor: default
+                button
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.9rem
+                    color: #4884b9
+                    cursor: pointer
             .user-info-button
                 display: flex
                 justify-content: center
@@ -1512,6 +1558,7 @@
                                 text-overflow: ellipsis
 
         .user-info-container
+            position: relative
             border-top: 1px solid $white-line
             display: flex
             justify-content: space-between
@@ -1521,6 +1568,28 @@
             width: 100%
             flex-shrink: 0
             flex-grow: 0
+            .offline-notice-container
+                position: absolute
+                border-radius: 0.25rem
+                box-shadow: 3px 3px 5px 1px #000000ba
+                background-color: #212e3e
+                left: 105%
+                bottom: 100%
+                z-index: 5000
+                display: flex
+                padding: 0.85rem
+                justify-content: center
+                align-items: center
+                .offline-notice-text
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.9rem
+                    white-space: nowrap
+                    cursor: default
+                button
+                    font-family: 'Raleway', sans-serif
+                    font-size: 0.9rem
+                    color: #4884b9
+                    cursor: pointer
             .user-info-button
                 background-color: transparent
                 border: none

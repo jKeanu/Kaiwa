@@ -11,7 +11,8 @@ const LeftSection:React.FC<LeftSectionProps>=({
     currentUserData, 
     friendReqs, 
     setIsFriendsOpen,
-    formatToTodayIfCurrentDate})=>{
+    formatToTodayIfCurrentDate,
+    isOnline})=>{
     const [searchQuery, setSearchQuery] = useState('')
     const {displayName, friendTag, _id, photoUrl, photo} = currentUserData
     //Modal
@@ -52,6 +53,11 @@ const LeftSection:React.FC<LeftSectionProps>=({
         setTimeout(() => {
             setModal({active:false, type:''})
         }, 210)
+    }
+
+    const handleReload = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        window.location.reload()
     }
 
     return(
@@ -139,6 +145,16 @@ const LeftSection:React.FC<LeftSectionProps>=({
             </ul>
         </div>
         <div className='user-info-container'>
+            {!isOnline&&
+            <div className='offline-notice-container'>
+                <span className='offline-notice-text'>
+                    You are currently offline.
+                </span>
+                <button onClick={handleReload}>
+                    Refresh
+                </button>
+            </div>
+            }
             <button className='user-info-button' onClick={()=>setModal({active:true, type:'userSetting'})}>
                 <img className='user-info-photo' alt='' src={`${photo==='default.jpeg'?'/img/default.jpeg':photoUrl}`}/>
                 <div className='user-info-text'>

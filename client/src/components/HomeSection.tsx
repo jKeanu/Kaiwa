@@ -3,7 +3,7 @@ import { HomeSectionProps } from "../types/generalTypes"
 import FriendList from "./sub/FriendList"
 import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"
-import { useSwipeable } from "react-swipeable"
+
 
 const HomeSection:React.FC<HomeSectionProps>=({friendChannels, friendReqs, isFriendsOpen})=>{
     const [isFriendConnection, setIsFriendConnection] = useState(false)

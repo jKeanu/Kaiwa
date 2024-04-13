@@ -123,7 +123,8 @@ export type LeftSectionProps ={
     currentUserData: User,
     friendReqs:FriendReq[], 
     setIsFriendsOpen: React.Dispatch<SetStateAction<boolean>>,
-    formatToTodayIfCurrentDate: (dateStr:string) => string
+    formatToTodayIfCurrentDate: (dateStr:string) => string,
+    isOnline: boolean
 }
 
 export type ChannelSectionProps={

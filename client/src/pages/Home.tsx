@@ -649,6 +649,7 @@ const HomePage:React.FC = () => {
                             currentUserData={userData}
                             friendReqs={friendReqs} 
                             setIsFriendsOpen={setIsFriendsOpen}
+                            isOnline={isOnline}
                         />
                     </LeftSectionContext.Provider>
                     <Routes>
