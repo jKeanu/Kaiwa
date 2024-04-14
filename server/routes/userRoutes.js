@@ -8,17 +8,17 @@ const router = express.Router();
 
 
 const loginLimiter = rateLimit({
-    max: 15,
+    max: 8,
     windowMs: 60*30*1000,
     message: 'Too many login attempts, please try again later.'
-  })
+})
   
-  const registerLimiter = rateLimit({
+const registerLimiter = rateLimit({
     max: 3,
     windowMs: 60*1000*60*2,
     message: 'Too many registration attempts detected, please try again later.',
     skipFailedRequests: true
-  })
+})
 
 const userSettLimiter = rateLimit({
     limit: 3,
@@ -47,22 +47,21 @@ const resetPasswordLimiter = rateLimit({
     message: 'Too many reset password attempts, please try again later.'
 })
 
-router.post('/register', registerLimiter, authController.signup)
-router.post('/login', loginLimiter, authController.login)
+router.post('/register', authController.signup)
+router.post('/login', authController.login)
 
 //Password reset
-router.post('/forgotPassword', forgotPasswordLimiter, authController.forgotPassword)
-router.patch('/resetPassword/:token', resetPasswordLimiter, authController.resetPassword)
+router.post('/forgotPassword', authController.forgotPassword)
+router.patch('/resetPassword/:token',authController.resetPassword)
 
 router.use(authController.protect);
 
 router.patch('/updateMe',
-    userSettLimiter,
     userController.uploadProfileImage,
     userController.resizeUserPhoto,
     userController.updateUser);
     
-router.patch('/changepassword', passwordChangeLimiter, authController.changePassword);
+router.patch('/changepassword', authController.changePassword);
 router.get('/me', userController.getMe);
 
 export default router;

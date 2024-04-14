@@ -53,7 +53,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
         try{
             const res:AxiosResponse<CreateGroupStatus> = await createGroup(token, members, groupName)
             const {members:newMembers, __v, ...newChannel} = {...res.data.newChannel}
-            if(res.status===201&&res.data.status==="success"){
+            if(res.data.status==="success"){
                 channelsDispatch({type:ActionType.NewChannel, payload:{data:newChannel}})
                 if(socket){
                     socket.emit('new_group_channel_created', {newMembers, newChannel})

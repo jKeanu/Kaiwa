@@ -11,7 +11,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
     const [currSetting, setCurrSetting] = useState('userInfo')
     const [userSettErr, setUserSettErr] = useState({err:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
-    const {socket, token, setUserData, setToken, setModalVisible, modalVisible} = useLeftCustomContext()
+    const {token, setUserData, setToken, setModalVisible, modalVisible} = useLeftCustomContext()
     const profileImagePreview = useMemo(()=>{
         return userInfo.profileImage? URL.createObjectURL(userInfo.profileImage):null
     }, [userInfo.profileImage])
@@ -44,6 +44,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
             setIsLoading(false)
             setModal({active:false, type:''})
             setIsDisabled(false)
+            setModalVisible(true)
         }catch(err:unknown){
             if(axios.isAxiosError(err)){
                 if(err.response?.status===409){

@@ -91,7 +91,7 @@ const RegisterPage:React.FC=()=>{
                         <span className='input-error-message'>{errorMessage.message}</span>}
                     </div>
                     <div className="input-container">
-                        <input type="text" maxLength={12} className='input-field' id='displayName' placeholder=" "
+                        <input type="text" maxLength={10} className='input-field' id='displayName' placeholder=" "
                         value={formData.displayName} onChange={handleChange} name='displayName'required
                         style={{borderBottomColor:`${(errorMessage&&(errorMessage.type==='displayName'||errorMessage.type==='other'))
                         ?'#c93a3a':'rgba(142, 142, 142, 0.5)'}`}}/>

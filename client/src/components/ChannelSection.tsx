@@ -183,19 +183,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     }, [socket, channelNumber])
 
 
-    // useEffect(()=>{
-    //     if(isOnline && notSentMessages.length>1){
-    //         setMessageReceived(prevMessages=>{
-    //             const removeNotSent = [...notSentMessages].map(message=>{
-    //                 const updateMessage = {...message}
-    //                 updateMessage.notSent = undefined
-    //                 return updateMessage
-    //             })
-    //             return [...removeNotSent, ...prevMessages]
-    //         })
-    //     }
-
-    // }, [notSentMessages, isOnline, socket])
 
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
@@ -311,15 +298,14 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     [messageReceived])
 
     useEffect(()=>{
-        if(messageReceived.length>1&&messageReceived[0].sender._id===_id){
-            const timer = setTimeout(()=>{
-                setMessageLimit(0)
-            }, 5000)
-            return () => {
-                clearTimeout(timer);
-            }
+        let timer:ReturnType<typeof setTimeout>
+        timer = setTimeout(()=>{
+            setMessageLimit(0)
+        }, 8000)
+        return ()=>{
+            clearTimeout(timer)
         }
-    }, [messageReceived])
+    }, [messageLimit])
 
     const sendMessage = ():void =>{
         if(!socket){
@@ -328,124 +314,102 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(!currentChannel){
             return navigate('/@me')
         }
+        if(messageLimit>5){
+            setModalWindow({isOpen:true, window:'messageLimit'})
+            textareaRef.current?.blur()
+            return
+        }
         if(notSentMessages.length>5){
             setModalWindow({isOpen:true, window:'messageLimit'})
             textareaRef.current?.blur()
-            return
-        }
-        if(messageLimit>=5){
-            setModalWindow({isOpen:true, window:'messageLimit'})
-            textareaRef.current?.blur()
-            return
         }
         setMessageLimit(prevLimit=>prevLimit+1)
         setMessageSentStatus(false)
-        if(isOnline){
-            const timestamp = Date.now()
-            const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
-            const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime()
-            //If the sent more then one message within one minute since the first message, we're just going to 
-            //add the content of the message from the previous message.
-            if(messageReceived.length>0&&messageReceived[0].sender._id === _id && timeDifference <= 60*1000){
-                //We won't change the formattedDate since, to have more user-friendly approach
-                //Since we base the date of the  message on the first message content.
-                socket.emit("continue_message",
-                {
-                    //we need to convert it to this format since that is the time format in the DB
-                    prevTime:messageReceived[0].time,
-                    sender:{photo, displayName, _id:_id, friendTag, photoUrl},
-                    channel:currentChannel._id,
-                    content: inputMessage,
-                    newTime: timestamp,
-                    channelNumber,
-                    channelType: currentChannel.channelType
-                })
-                setMessageReceived((prevMessages)=>{
-                    const updatedMessages = [...prevMessages]
-                    //Append the input message to the content array of the last message.
-                    updatedMessages[0]={
-                        ...updatedMessages[0],
-                        time:timestamp,
-                        content:[
-                            ...updatedMessages[0].content,
-                            inputMessage
-                        ]
-                    }
-                    return updatedMessages
-                })
-                mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
-                    if (!currMsgCachedData) {
-                        return undefined;
-                    }
-                    const updatedMessages = [...currMsgCachedData.messages]
-                    updatedMessages[0]={
-                        ...updatedMessages[0],
-                        time:timestamp,
-                        content:[
-                            ...updatedMessages[0].content,
-                            inputMessage
-                        ]
-                    }
-                    return {status:currMsgCachedData.status, messages:updatedMessages}
-                }, false)
-            }else{
-                const messageContents:ChannelMessage = {
-                    content:[inputMessage],
-                    channel:currentChannel._id,
-                    time: timestamp,
-                    formattedDate:formatDate(timestamp),
-                    sender:{
-                        photo, displayName, _id:_id, friendTag, photoUrl
-                }}
-                socket.emit("send_message", {
-                    ...messageContents,
-                    channelNumber,
-                    channelType: currentChannel.channelType
-                })
-                setMessageReceived((prevMessages) => {
-                    return [messageContents, ...prevMessages]
-                })
-                //Since in the message that we sent, the socket only sends
-                //the message to the user besides the sender, we 
-                //update the MessageReceived manually.
-                mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
-                    if (!currMsgCachedData) {
-                        return undefined;
-                    }
-                    const updatedMessages = [...currMsgCachedData.messages]
-                    updatedMessages.unshift(messageContents)
-                    return {status:currMsgCachedData.status, messages:updatedMessages}
-                }, false)
-            }
-            setNotSentMessages((prevNotSent)=>{
-                const updatedMessages = [...prevNotSent]
-                return [...updatedMessages, inputMessage]
+        const timestamp = Date.now()
+        const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
+        const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime()
+        //If the sent more then one message within one minute since the first message, we're just going to 
+        //add the content of the message from the previous message.
+        if(messageReceived.length>0&&messageReceived[0].sender._id === _id && timeDifference <= 60*1000){
+            //We won't change the formattedDate since, to have more user-friendly approach
+            //Since we base the date of the  message on the first message content.
+            socket.emit("continue_message",
+            {
+                //we need to convert it to this format since that is the time format in the DB
+                prevTime:messageReceived[0].time,
+                sender:{photo, displayName, _id:_id, friendTag, photoUrl},
+                channel:currentChannel._id,
+                content: inputMessage,
+                newTime: timestamp,
+                channelNumber,
+                channelType: currentChannel.channelType
             })
-            setInputMessage('')
-            if(messageBoxRef.current){
-                messageBoxRef.current.scrollTop=0
-            }
+            setMessageReceived((prevMessages)=>{
+                const updatedMessages = [...prevMessages]
+                //Append the input message to the content array of the last message.
+                updatedMessages[0]={
+                    ...updatedMessages[0],
+                    time:timestamp,
+                    content:[
+                        ...updatedMessages[0].content,
+                        inputMessage
+                    ]
+                }
+                return updatedMessages
+            })
+            mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
+                if (!currMsgCachedData) {
+                    return undefined;
+                }
+                const updatedMessages = [...currMsgCachedData.messages]
+                updatedMessages[0]={
+                    ...updatedMessages[0],
+                    time:timestamp,
+                    content:[
+                        ...updatedMessages[0].content,
+                        inputMessage
+                    ]
+                }
+                return {status:currMsgCachedData.status, messages:updatedMessages}
+            }, false)
         }else{
-            const timestamp = Date.now()
-            // setNotSentMessages((prevMessages)=>{
-            //     if(prevMessages.length>=1){
-                    
-            //     }else{
-            //         const updatedMessages = [...prevMessages]
-            //         //Append the input message to the content array of the last message.
-            //         updatedMessages[0]={
-            //             ...updatedMessages[0],
-            //             notSent: true,
-            //             time:timestamp,
-            //             content:[
-            //                 ...updatedMessages[0].content,
-            //                 inputMessage
-            //             ]
-            //         }
-            //         return updatedMessages
-            //     }
-            // })
+            const messageContents:ChannelMessage = {
+                content:[inputMessage],
+                channel:currentChannel._id,
+                time: timestamp,
+                formattedDate:formatDate(timestamp),
+                sender:{
+                    photo, displayName, _id:_id, friendTag, photoUrl
+            }}
+            socket.emit("send_message", {
+                ...messageContents,
+                channelNumber,
+                channelType: currentChannel.channelType
+            })
+            setMessageReceived((prevMessages) => {
+                return [messageContents, ...prevMessages]
+            })
+            //Since in the message that we sent, the socket only sends
+            //the message to the user besides the sender, we 
+            //update the MessageReceived manually.
+            mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
+                if (!currMsgCachedData) {
+                    return undefined;
+                }
+                const updatedMessages = [...currMsgCachedData.messages]
+                updatedMessages.unshift(messageContents)
+                return {status:currMsgCachedData.status, messages:updatedMessages}
+            }, false)
         }
+        setNotSentMessages((prevNotSent)=>{
+            const updatedMessages = [...prevNotSent]
+            return [...updatedMessages, inputMessage]
+        })
+        setInputMessage('')
+        if(messageBoxRef.current){
+            messageBoxRef.current.scrollTop=0
+        }
+        
     }
     
 
@@ -950,8 +914,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             {currentChannel.channelType==='Group'&&
                             <button className="channel-to-member-button" onClick={handleChannelToMembers}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                                stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
-                                className="channel-to-group-image">
+                                    stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
+                                    className="channel-to-group-image">
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
                                         </path>
                                         <circle cx="9" cy="7" r="4">
@@ -976,6 +940,11 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                         1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
                                         </path>
                                     </svg>
+                                <div className='channel-nav-button-tooltip'>
+                                    <span className='channel-nav-button-tooltip-text'>
+                                        Group Settings
+                                    </span>
+                                </div>
                             </button>}
                             {currentChannel.channelType==='Group'&&
                             <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'inviteUser')}>
