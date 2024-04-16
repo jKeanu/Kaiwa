@@ -303,7 +303,6 @@ export const inviteMember = catchAsync(async (req, res, next)=>{
                 await session.abortTransaction(); 
                 return attemptOperation(); 
             }
-            console.log(err, '-------123')
             await session.abortTransaction()
             next(err)
         }finally{
