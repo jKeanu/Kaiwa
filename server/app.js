@@ -13,9 +13,11 @@ import groupRouter from './routes/groupRoutes.js';
 import userFriendRouter from './routes/userFriendRoutes.js';
 import userGroupRouter from './routes/userGroupRoutes.js';
 import userChannelRouter from './routes/userChannelRoutes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 const app = express();
-
 
 const corsOptions = {
   origin: 'http://localhost:5173'
@@ -24,6 +26,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors());
  
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+
+app.use(express.static(path.join(__dirname, './public')));
 // Set Security HTTP headersc
 app.use(helmet());
 

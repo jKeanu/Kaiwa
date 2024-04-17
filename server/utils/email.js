@@ -12,7 +12,7 @@ export class Email{
         this.to = user.email;
         this.displayName = user.displayName.split(' ')[0];
         this.url = url;
-        this.from = `秘密エージェント <${process.env.EMAIL_FROM}>`
+        this.from = `Kaiwa <${process.env.EMAIL_FROM}>`
     }
     newTransport(){
         if(process.env.NODE_ENV === 'production'){

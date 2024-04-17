@@ -70,8 +70,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [isMemberVisible, setIsMemberVisible] = useState(false)
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false)
-    //Network status
-    const [isOnline, setIsOnline] = useState(navigator.onLine);
     //sent indicator
     const [messageSentStatus, setMessageSentStatus] = useState(true)
     //Error
