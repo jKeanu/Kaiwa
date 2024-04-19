@@ -52,7 +52,7 @@ const AddFriend:React.FC<AddFriendProps>=({currComponent})=>{
             <form className="add-friend-form" onSubmit={handleAddFriend}>
                 <div className="add-friend-input-container">
                     <label htmlFor="friend-displayName">Username</label>
-                    <input autoComplete='off' value={displayName} onChange={(e)=>setDisplayName(e.target.value)} id="friend-displayName" className="displayName-input"/>
+                    <input autoComplete='off' maxLength={10} value={displayName} onChange={(e)=>setDisplayName(e.target.value)} id="friend-displayName" className="displayName-input"/>
                     <label htmlFor="friend-friendTag">#</label>
                     <input maxLength={6} autoComplete="off" value={friendTag} onChange={(e)=>setFriendTag(e.target.value.toUpperCase())} type="text" id="friend-friendTag" className="friendTag-input"/>
                 </div>

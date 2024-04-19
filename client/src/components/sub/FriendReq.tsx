@@ -83,6 +83,10 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                     const updateUserReqs = [...prevUserReqs]
                     return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
                 })
+                setLoading(prevLoading=>{
+                    const updateLoading = [...prevLoading]
+                    return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
+                })
                 if(socket){
                     socket.emit("declined_pending_friend_request", {declinedUser: pendingUserId, userId:currUserId})
                 }

@@ -77,7 +77,6 @@ export default (httpServer) => {
   });
 
   io.on('connection', async (socket) => {
-    console.log('CONNTECTED TO SOCKET ____________')
     const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
     //err
     try{

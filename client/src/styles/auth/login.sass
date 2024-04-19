@@ -56,6 +56,8 @@
                     color: rgb(54, 142, 200)
                     &:hover
                         text-decoration: underline
+                    .forgot-password-loading
+                        @include loading(10px, 15px)
             button
                 background-color: #37404d
                 color: white
@@ -67,10 +69,15 @@
                 margin-top: 1rem
                 font-family: 'Bellefair', serif
                 cursor: pointer
+                display: flex
+                justify-content: center
+                align-items: center
                 &:active
                     background-color: rgb(51, 59, 69)
                 &:hover
                     background-color: $secondary-bg
+                .login-loading
+                    @include loading(20px, 30px)
     .need-an-account-text
         color: white
         font-size: 0.7rem

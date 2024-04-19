@@ -123,7 +123,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             setCurrentChannelMembers(channelData.channel.members)
         }else if (channelError){
             if(axios.isAxiosError(channelError)){
-                console.log(messagesError)
                 if(channelError.response?.status===404 || channelError.response?.status===401){
                     navigate('/@me')
                 }
@@ -299,7 +298,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         let timer:ReturnType<typeof setTimeout>
         timer = setTimeout(()=>{
             setMessageLimit(0)
-        }, 8000)
+        }, 10000)
         return ()=>{
             clearTimeout(timer)
         }
@@ -1050,6 +1049,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             onKeyDown={handleKeyDown}
                             onChange={(event)=>setInputMessage(event.target.value)} 
                             className="message-input"
+                            maxLength={120}
                         />
                     </div>
                 </section>

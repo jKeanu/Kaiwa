@@ -12,6 +12,7 @@ const LoginPage:React.FC=()=> {
     const [password, setPassword] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [forgotPassError, setForgotPassError] = useState<string>('')
+    const [loading, setLoading] = useState<{isLoading:boolean, type:string}>({isLoading:false, type:''})
     const [forgotPassSuccess, setForgotPassSuccess] = useState<string>('')
     const [containerVisible, setContainerVisible] = useState(false)
     const navigate = useNavigate()
@@ -22,6 +23,7 @@ const LoginPage:React.FC=()=> {
 
     const handleLogin = async (e:React.FormEvent<HTMLFormElement>):Promise<void> => {
         e.preventDefault();
+        setLoading({isLoading:true, type:'logIn'})
         setErrorMessage('')
         setForgotPassError('')
         setForgotPassSuccess('')
@@ -45,6 +47,7 @@ const LoginPage:React.FC=()=> {
                 setErrorMessage('An unknown error occurred. Please try again later.')
             }
         }
+        setLoading({isLoading:false, type:''})
     };
 
     const handleForgotPassword = async (e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
@@ -52,6 +55,7 @@ const LoginPage:React.FC=()=> {
         setForgotPassError('')
         setErrorMessage('')
         setForgotPassSuccess('')
+        setLoading({type:'forgotPassword', isLoading:true})
         if(!email){
             setForgotPassError('Input field is empty.')
             return
@@ -75,6 +79,7 @@ const LoginPage:React.FC=()=> {
                 setForgotPassError('Something went wrong. Please try again later')
             }
         }
+        setLoading({type:'', isLoading:false})
     }
 
     return (
@@ -100,14 +105,16 @@ const LoginPage:React.FC=()=> {
                         value={password} onChange={e => setPassword(e.target.value)} required
                         style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
                         <label htmlFor="password" className="input-label" >Password</label>
-                        <button className='forgot-password-button' type='button' onClick={handleForgotPassword}>
-                            Forgot your password?
+                        <button className='forgot-password-button' type='button' disabled={loading.isLoading} onClick={handleForgotPassword}>
+                            {loading.type==='forgotPassword'?<div className="forgot-password-loading"></div>:'Forgot your password?'}
                         </button>
                         {!errorMessage&&<span className='input-highlight'></span>}
                         {errorMessage&&
                         <span className='input-error-message'>{errorMessage}</span>}
                     </div>
-                    <button type="submit">Log In</button>
+                    <button type="submit" disabled={loading.isLoading}>
+                        {loading.type==='logIn'?<div className="login-loading"></div>:'Log In'}
+                    </button>
                 </form>
             </div>
             <span className='need-an-account-text'>

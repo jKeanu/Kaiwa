@@ -20,6 +20,20 @@ const groupSettLimiter = rateLimit({
     skipFailedRequests: true,
 })
 
+const userInviteLimiter = rateLimit({
+    limit: 50,
+    windowMs: 1000*60*60*6,
+    message: 'Too many invites detected, please try again later.',
+    skipFailedRequests: true,
+})
+
+const changeLeaderLimiter = rateLimit({
+    limit: 5,
+    windowMs: 1000*60*60*6,
+    message: 'Too many change leader request detected, please try again later.',
+    skipFailedRequests: true,
+})
+
 router.use(authController.protect);
 
 router.post('/', 

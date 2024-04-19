@@ -114,6 +114,7 @@ export const updateUser = catchAsync(async(req, res, next)=>{
 export const getMe = catchAsync(async(req, res, next)=>{
     //Since we only need to populate the group and friend channel when getting
     //the current logged information, we can just populate all of them here.
+    console.log('GET ME _-----------')
     const currentUser = await User.findById(req.user._id).select('-__v')
         .populate({path:'friends.friend', select:'displayName friendTag photo status'})
         .populate({path:'friends.channel', select:'channelNumber lastMessage formattedLastMessage channelType seen'})

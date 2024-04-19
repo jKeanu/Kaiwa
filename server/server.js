@@ -2,7 +2,15 @@ import mongoose from 'mongoose';
 import http from 'http';
 import socketServerSetup from './socketServer.js';
 import app from './app.js';
+import winston from 'winston'
 
+const logger = winston.createLogger({
+  level: 'error',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: 'error.log' })
+  ]
+})
 
 const server = http.createServer(app);
 // Set up the socket server
@@ -10,8 +18,7 @@ socketServerSetup(server);
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
-  console.log('UNCAUGHT EXCEPTION! Shutting down...');
-  console.error(err.name, err.message);
+  logger.error('UNCAUGHT EXCEPTION! Shutting down...', {name:err.name, message:err.message, stack:err.stack})
   // When there's an uncaught exception, we need to crash our application
   // since the entire node process is in an uncleaned state.
   process.exit(1);
@@ -19,7 +26,9 @@ process.on('uncaughtException', (err) => {
 
 // Connect to the Database
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
-mongoose.connect(DB, {}).then(() => console.log('DB connection successful')).catch((err) => console.error(err));
+mongoose.connect(DB, {}).then(() => console.log('DB connection successful')).catch((err) =>{
+  logger.error('DB connection error', {name:err.name, message:err.message, stack:err.stack})
+});
 
 const port = process.env.PORT || 3001;
 const httpServer = server.listen(port, () => {
@@ -28,8 +37,7 @@ const httpServer = server.listen(port, () => {
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-  console.log('UNHANDLED REJECTION! Shutting down...');
-  console.error(err);
+  logger.error('UNHANDLED REJECTION! Shutting down...', {message:err.message, stack:err.stack})
   httpServer.close(() => {
     // 0 for success, 1 for uncaught exception
     // 1 is usually used here
@@ -39,8 +47,8 @@ process.on('unhandledRejection', (err) => {
 
 // Handle SIGTERM signal
 process.on('SIGTERM', () => {
-  console.log('SIGTERM RECEIVED. Shutting down gracefully');
+  logger.error('SIGTERM RECEIVED. Shutting down gracefully!')
   httpServer.close(() => {
-    console.log('Process terminated!');
+    logger.error('Process terminated!')
   });
 });
