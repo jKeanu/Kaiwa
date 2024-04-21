@@ -4,7 +4,7 @@ import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import multer from 'multer';
 import sharp from 'sharp';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, CompressionType} from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand} from '@aws-sdk/client-s3';
 
 const bucketName = process.env.BUCKET_NAME
 const bucketRegion = process.env.BUCKET_REGION
@@ -75,7 +75,7 @@ export const resizeUserPhoto = catchAsync(async (req, res, next) => {
         req.file.filename = req.body.currPhoto.replace(versionRegex, `-v${newVersionNumber}.jpeg`);
         //buffer is the raw binary data of the uploaded image file,
         const buffer = await sharp(req.file.buffer)
-            .resize({height:150, width:150, fit:"cover"})
+            .resize({height:125, width:125, fit:"cover"})
             .toFormat('jpeg')
             .jpeg({ quality: 90 })
             .toBuffer()
@@ -98,7 +98,6 @@ export const updateUser = catchAsync(async(req, res, next)=>{
     if (req.body.password || req.body.passwordConfirm){
         return next(new AppError('This route is not for password updates.', 400))
     }
-    
     const filteredBody = filterObj(req.body, 'displayName', 'friendTag')
     //We can run validators since the passwordConfirm validator only works on create or save.
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
@@ -114,7 +113,6 @@ export const updateUser = catchAsync(async(req, res, next)=>{
 export const getMe = catchAsync(async(req, res, next)=>{
     //Since we only need to populate the group and friend channel when getting
     //the current logged information, we can just populate all of them here.
-    console.log('GET ME _-----------')
     const currentUser = await User.findById(req.user._id).select('-__v')
         .populate({path:'friends.friend', select:'displayName friendTag photo status'})
         .populate({path:'friends.channel', select:'channelNumber lastMessage formattedLastMessage channelType seen'})

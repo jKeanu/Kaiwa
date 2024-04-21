@@ -5,22 +5,37 @@ import { promisify } from 'util';
 import User from './models/userModel.js';
 import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
-import dotenv from'dotenv'
-import mongoose from 'mongoose'
+import dotenv from'dotenv';
+import mongoose from 'mongoose';
 import winston from 'winston';
+import WinstonCloudWatch from 'winston-cloudwatch'
+
 
 dotenv.config({ path: './config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
 
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
   level: 'error',
   format: winston.format.json(),
   transports: [
-    new winston.transports.File({ filename: 'error.log' })
+    process.env.NODE_ENV==='production'?
+    new WinstonCloudWatch({
+      awsOptions:{
+        credentials:{
+          accessKeyId: process.env.ACCESS_KEY,
+          secretAccessKey: process.env.SECRET_ACCESS_KEY
+        },
+        region: process.env.AWS_REGION
+      },
+      logGroupName: process.env.CLOUDWATCH_LOG_GROUP_NAME,
+      logStreamName: 'error-monitor',
+      awsRegion: process.env.CLOUDWATCH_REGION 
+    }
+    ):
+    new winston.transports.File({ filename: 'error.log'})
   ]
 })
-
 
 const redisClient = Redis.createClient({
   socket: {
@@ -226,6 +241,7 @@ export default (httpServer) => {
       let delayTime = 1000; // Delay time in milliseconds
       const attemptOperation = async ()=>{
         try{
+          throw new Error('HELLO')
           const updatedMessage = await Chat.findOneAndUpdate(
             {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
             {time:data.newTime, $push:{content:data.content}},

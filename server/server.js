@@ -2,15 +2,8 @@ import mongoose from 'mongoose';
 import http from 'http';
 import socketServerSetup from './socketServer.js';
 import app from './app.js';
-import winston from 'winston'
+import { logger } from './socketServer.js';
 
-const logger = winston.createLogger({
-  level: 'error',
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.File({ filename: 'error.log' })
-  ]
-})
 
 const server = http.createServer(app);
 // Set up the socket server
