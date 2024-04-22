@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 const router = express.Router();
 
 const getChannelLimiter = rateLimit({
-    max: 100,
+    max: 200,
     windowMs: 1000*60*60*2
 })
 

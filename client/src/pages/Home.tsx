@@ -16,7 +16,7 @@ import {User, Channel,
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
 import {  getCurrUserFetcher } from '../services/apiService'
-import axios, {AxiosResponse} from 'axios'
+import axios from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
 
@@ -108,6 +108,8 @@ const HomePage:React.FC = () => {
         const [modalVisible, setModalVisible] = useState(false)
         //connection
         const [isOnline, setIsOnline] = useState(true)
+        //Message Limit
+        const [messageLimit, setMessageLimit] = useState<number>(0)
         
         const {mutate} = useSWRConfig()
 
@@ -617,6 +619,16 @@ const HomePage:React.FC = () => {
             }
         }, []);
 
+        useEffect(()=>{
+            let timer:ReturnType<typeof setTimeout>
+            timer = setTimeout(()=>{
+                setMessageLimit(0)
+            }, 10000)
+            return ()=>{
+                clearTimeout(timer)
+            }
+        }, [messageLimit])
+
         const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
             e.preventDefault()
             setToken('')
@@ -682,6 +694,8 @@ const HomePage:React.FC = () => {
                             channelsDispatch, 
                             handleFriendChannelDelete}}>
                                 <ChannelSection
+                                setMessageLimit={setMessageLimit}
+                                messageLimit={messageLimit}
                                 friendReqs={friendReqs}
                                 sentReqs={sentReqs}
                                 setFriendReqs={setFriendReqs}

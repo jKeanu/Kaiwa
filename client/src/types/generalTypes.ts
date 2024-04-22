@@ -137,7 +137,9 @@ export type ChannelSectionProps={
     setFriendReqs: React.Dispatch<React.SetStateAction<FriendReq[]>>,
     friendReqs:FriendReq[],
     sentReqs: SentReq[],
-    formatToTodayIfCurrentDate: (dateStr:string) => string
+    formatToTodayIfCurrentDate: (dateStr:string) => string,
+    setMessageLimit: React.Dispatch<SetStateAction<number>>
+    messageLimit: number
 }
 
 export type HomeSectionProps={
@@ -197,6 +199,7 @@ export type ChannelDataStatus={
 export type ChannelMessagesStatus={
     status:string,
     messages:ChannelMessage[],
+    notSentMessages?:string[]
 }
 
 export type ChannelMemberUpdate={

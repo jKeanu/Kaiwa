@@ -39,7 +39,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setSentReqs,
         setFriendReqs,
         handleNewFriendChannel,
-        formatToTodayIfCurrentDate})=>{
+        formatToTodayIfCurrentDate,
+        setMessageLimit,
+        messageLimit})=>{
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
     const {photo, displayName, _id, friendTag, photoUrl} = currentUserData
@@ -52,8 +54,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
     const [notSentMessages, setNotSentMessages] = useState<string[]>([])
-    //Message Limit
-    const [messageLimit, setMessageLimit] = useState<number>(0)
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
@@ -102,6 +102,11 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const {data:channelData, error: channelError} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
         channelFetcher(endpoint, token),
+        {
+            revalidateOnFocus: false,
+            revalidateOnReconnect: true,
+            revalidateIfStale: false,
+        }
     )
 
     useEffect(()=>{
@@ -114,7 +119,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setMessageReceived([])
         setMsgFetchLoading(false)
         setAllMessagesFetched(false)
-        setMessageLimit(0)
+        setNotSentMessages([])
     }, [channelNumber])
 
     useEffect(() => {
@@ -146,6 +151,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(messagesData){
             if(messageReceived.length===0&&messagesData.messages.length>0){
                 setMessageReceived([...messagesData.messages].slice(0, messagesLimit+messagesSkip))
+                if(messagesData.notSentMessages){
+                    setNotSentMessages(messagesData.notSentMessages)
+                }
             }
         }else if(messagesError){
             if(axios.isAxiosError(messagesError)){
@@ -294,15 +302,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     },
     [messageReceived])
 
-    useEffect(()=>{
-        let timer:ReturnType<typeof setTimeout>
-        timer = setTimeout(()=>{
-            setMessageLimit(0)
-        }, 10000)
-        return ()=>{
-            clearTimeout(timer)
-        }
-    }, [messageLimit])
 
     const sendMessage = ():void =>{
         if(!socket){
@@ -311,14 +310,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(!currentChannel){
             return navigate('/@me')
         }
-        if(messageLimit>5){
-            setModalWindow({isOpen:true, window:'messageLimit'})
-            textareaRef.current?.blur()
-            return
-        }
         if(notSentMessages.length>5){
             setModalWindow({isOpen:true, window:'messageLimit'})
             textareaRef.current?.blur()
+            return 
         }
         setMessageLimit(prevLimit=>prevLimit+1)
         setMessageSentStatus(false)
@@ -367,7 +362,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         inputMessage
                     ]
                 }
-                return {status:currMsgCachedData.status, messages:updatedMessages}
+                return {status:currMsgCachedData.status, messages:updatedMessages, 
+                    notSentMessages: [inputMessage, ...(currMsgCachedData.notSentMessages || [])]}
             }, false)
         }else{
             const messageContents:ChannelMessage = {
@@ -395,7 +391,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 }
                 const updatedMessages = [...currMsgCachedData.messages]
                 updatedMessages.unshift(messageContents)
-                return {status:currMsgCachedData.status, messages:updatedMessages}
+                return {status:currMsgCachedData.status, messages:updatedMessages, 
+                    notSentMessages: [inputMessage, ...(currMsgCachedData.notSentMessages || [])]}
             }, false)
         }
         setNotSentMessages((prevNotSent)=>{
@@ -418,6 +415,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     updateMessage.filter(message=>message!==data.sentContent)
                     return updateMessage.filter(message=>message!==data.sentContent)
                 })
+                mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
+                    if (!currMsgCachedData) {
+                        return undefined;
+                    }
+                    return {status:currMsgCachedData.status, messages:currMsgCachedData.messages, 
+                        notSentMessages: [...(currMsgCachedData.notSentMessages||[]).filter(message=>message!==data.sentContent)]}
+                }, false)
             }
             socket.on('message_verified', handleVerifiedMessage)
             const cleanup = ():void  =>{

@@ -241,7 +241,6 @@ export default (httpServer) => {
       let delayTime = 1000; // Delay time in milliseconds
       const attemptOperation = async ()=>{
         try{
-          throw new Error('HELLO')
           const updatedMessage = await Chat.findOneAndUpdate(
             {channel:data.channel, sender:verifiedCurrentUserId, time:data.prevTime},
             {time:data.newTime, $push:{content:data.content}},
