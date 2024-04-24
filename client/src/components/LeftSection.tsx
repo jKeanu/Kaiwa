@@ -72,32 +72,32 @@ const LeftSection:React.FC<LeftSectionProps>=({
         </dialog>
         }
         <div className='upper-left-section-container'>
-            <div className='home-button-container'>
+            <div className='left-section-button-container left-section-button-container-mob'>
                 <Link to={'/@me'} className='home-button'>
-                    Home
+                    <img src='/Kaiwa_icon.svg' className='home-img'/>
                 </Link>
-            </div>
-            <div className='create-group-container left-section-button-container-mob'>
                 <div className='messages-text'>Messages</div>
-                <button className='create-group-modal-button' onClick={handleOpenCreateGroup}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                    stroke="#b9b9b9 " strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'
-                    className="create-group-image-1">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87">
-                        </path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
-                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="create-group-image-2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    <div className='create-group-tooltip'>
-                        <span className='create-group-tooltip-text'>
-                            Create Group
-                        </span>
-                    </div>
-                </button>
+                <div className='create-group-modal-button-container'>
+                    <button className='create-group-modal-button' onClick={handleOpenCreateGroup}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                        stroke="#b9b9b9 " strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" id='create-group-image'
+                        className="create-group-image-1">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87">
+                            </path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
+                            strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="create-group-image-2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <div className='create-group-tooltip'>
+                            <span className='create-group-tooltip-text'>
+                                Create Group
+                            </span>
+                        </div>
+                    </button>
+                </div>
                 <button className="open-friend-section-button" onClick={handleOpenFriend}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#b9b9b9" 
                     stroke="#b9b9b9" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-user">

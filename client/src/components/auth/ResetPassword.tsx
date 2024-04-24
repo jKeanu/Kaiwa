@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { resetPassword } from "../../services/apiService";
 import {useNavigate} from 'react-router-dom';

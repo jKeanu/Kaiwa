@@ -310,6 +310,11 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(!currentChannel){
             return navigate('/@me')
         }
+        if(messageLimit>5){
+            setModalWindow({isOpen:true, window:'messageLimit'})
+            textareaRef.current?.blur()
+            return
+        }
         if(notSentMessages.length>5){
             setModalWindow({isOpen:true, window:'messageLimit'})
             textareaRef.current?.blur()

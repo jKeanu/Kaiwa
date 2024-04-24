@@ -144,8 +144,8 @@ const HomePage:React.FC = () => {
             //we need to determine if the webpage is fully visible before connecting to the socket since,
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
-            console.log(socket, '------------------')
             if (token && isOnline) {
+                console.log('1-23-123-')
                 const socketConn = io('http://localhost:3001', { query: { token } });
                 setSocket(socketConn);
                 return ()=>{
@@ -173,7 +173,7 @@ const HomePage:React.FC = () => {
             };
           }, [])
 
-        const { data:currUserData, error:currUserDataError, isLoading:currUserLoading } = useSWR<UserDataStatus>(
+        const { data:currUserData, error:currUserDataError} = useSWR<UserDataStatus>(
             token ? userCacheKey : null,  // Fetch data only if token is present
             token ? (endpoint) => getCurrUserFetcher(endpoint, token) : null,
             {

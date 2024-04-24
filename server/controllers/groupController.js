@@ -141,7 +141,7 @@ export const resizeGroupPhoto = catchAsync(async(req, res, next)=>{
         req.file.filename = req.body.currPhoto.replace(versionRegex, `-v${newVersionNumber}.jpeg`);
         //buffer is the raw binary data of the uploaded image file,
         const buffer = await sharp(req.file.buffer)
-            .resize({height:250, width:250, fit:"cover"})
+            .resize({height:125, width:125, fit:"cover"})
             .toFormat('jpeg')
             .jpeg({ quality: 90 })
             .toBuffer()

@@ -1,6 +1,6 @@
 import axios, {AxiosResponse} from 'axios';
-import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, User, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus, ChannelMessagesStatus, UpdateUserStatus, UpdateGroupStatus } from '../types/generalTypes';
-import { ChannelMessage } from '../types/generalTypes';
+import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus, ChannelMessagesStatus, UpdateUserStatus, UpdateGroupStatus } from '../types/generalTypes';
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 

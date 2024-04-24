@@ -539,13 +539,13 @@
             padding: 0 0.5rem
             height: 4.5rem
             flex-shrink: 0
-            .logo-container
-                display: none
             .left-section-button-container-mob
                 display: flex
                 justify-content: start
                 align-items: center
                 margin-bottom: 0.1rem
+                .home-button
+                    display: none
                 .open-friend-section-button
                     background-color: transparent
                     border: none
@@ -567,31 +567,33 @@
                     font-size: 0.9rem
                     margin-right: auto
                     font-family: 'Roboto', sans-serif
-                .create-group-modal-button
-                    cursor: pointer
-                    background-color: transparent
-                    border: none
-                    width: 6.5rem
-                    border-radius: 1rem
-                    background-color: #00000049
-                    display: flex
-                    align-items: center
-                    justify-content: space-around
-                    padding: 0.35rem
-                    margin: 0.25rem 0
-                    .create-group-image-1
-                        fill: $white-text
-                        width: 1rem
-                        height: 1rem
-                        align-self: center
-                    .create-group-image-2
-                        display: none
-                    .create-group-tooltip
-                        pointer-events: none
-                        .create-group-tooltip-text
-                            font-family: 'Open Sans', sans-serif
-                            font-size: 0.7rem
-                            width: 4rem
+                .create-group-modal-button-container
+                    width: fit-content
+                    .create-group-modal-button
+                        cursor: pointer
+                        background-color: transparent
+                        border: none
+                        width: 6.5rem
+                        border-radius: 1rem
+                        background-color: #00000049
+                        display: flex
+                        align-items: center
+                        justify-content: space-around
+                        padding: 0.35rem
+                        margin: 0.25rem 0
+                        .create-group-image-1
+                            fill: $white-text
+                            width: 1rem
+                            height: 1rem
+                            align-self: center
+                        .create-group-image-2
+                            display: none
+                        .create-group-tooltip
+                            pointer-events: none
+                            .create-group-tooltip-text
+                                font-family: 'Open Sans', sans-serif
+                                font-size: 0.7rem
+                                width: 4rem
                     
             .search-conversation-container
                 display: flex
@@ -995,59 +997,71 @@
             padding: 0 0.5rem
             flex-shrink: 0
             display: flex
-            height: 5.5rem
+            height: 6rem
             flex-direction: column
             justify-content: center
-            align-items: center
-            .create-group-container
+            .left-section-button-container
                 display: flex
-                justify-content: end
+                flex-direction: column
+                justify-content: center
                 align-items: center
                 margin-bottom: 0.1rem
+                .home-button
+                    height: 2.5rem
+                    width: 2.5rem
+                    border-radius: 1.25rem
+                    object-fit: cover
+                    .home-img
+                        height: 100%
+                        width: 100%
+
                 .open-friend-section-button
                     display: none //
                 .messages-text
                     display: none
-                .create-group-modal-button
-                    background-color: transparent
-                    cursor: pointer
-                    border: none
-                    width: 2.5rem
-                    height: 2.5rem
-                    border-radius: 1.25rem
-                    background-color: #29476768
-                    position: relative
-                    display: flex
-                    justify-content: center
-                    align-items: center
-                    transition: all 0.15s ease-in-out
-                    &:hover > .create-group-tooltip
-                        opacity: 1
-                        pointer-events: auto
-                    &:hover
-                        background-color: #43648768
-                    .create-group-image-1
-                        display: none
-                    .create-group-tooltip
-                        left: 30px
-                        position: absolute
-                        padding: 0.35rem
-                        background-color: #1d222d
-                        opacity: 0
+                .create-group-modal-button-container
+                    width: fit-content
+                    margin-top: 0.5rem
+                    .create-group-modal-button
+                        background-color: transparent
+                        cursor: pointer
+                        border: none
+                        width: 2.5rem
+                        height: 2.5rem
+                        border-radius: 1.25rem
+                        background-color: #29476768
+                        position: relative
                         display: flex
                         justify-content: center
                         align-items: center
-                        transition: opacity 0.15s ease-in
-                        bottom: 90%
-                        height: fit-content
-                        z-index: 105
-                        border-radius: 0.15rem
-                        transform: translateX(-50%)
-                        pointer-events: none
-                        .create-group-tooltip-text
-                            font-family: 'Open Sans', sans-serif
-                            font-size: 0.6rem
-                            width: 4rem
+                        transition: all 0.15s ease-in-out
+                        &:hover > .create-group-tooltip
+                            opacity: 1
+                            pointer-events: auto
+                        &:hover
+                            background-color: #43648768
+                        .create-group-image-1
+                            display: none
+                        .create-group-tooltip
+                            left: 105%
+                            position: absolute
+                            padding: 0.35rem
+                            background-color: #1d222d
+                            opacity: 0
+                            display: flex
+                            justify-content: center
+                            align-items: center
+                            transition: opacity 0.15s ease-in
+                            bottom: 50%
+                            height: fit-content
+                            z-index: 105
+                            border-radius: 0.15rem
+                            transform: translateY(50%)
+                            pointer-events: none
+                            .create-group-tooltip-text
+                                font-family: 'Open Sans', sans-serif
+                                font-size: 0.6rem
+                                width: 4rem
             .logo-container
                 height: 2rem
             .search-conversation-container
@@ -1407,56 +1421,75 @@
             padding: 0 0.5rem
             height: 6rem
             flex-shrink: 0
-            .home-button-container
+            .left-section-button-container
+                margin-top: 0.25rem
+                display: flex
+                justify-content: space-between
+                align-items: center
+                margin-bottom: 0.1rem
                 .home-button
                     text-decoration: none
                     font-size: 1.3rem
                     font-family: 'Raleway', sans-serif
                     font-weight: bold
-            .create-group-container
-                display: flex
-                justify-content: end
-                align-items: center
-                margin-bottom: 0.1rem
+                    display: flex
+                    justify-content: start
+                    align-items: center
+                    width: fit-content
+                    .home-img
+                        width: 3rem
+                        height: 3rem
+                        object-fit: cover
+                        border-radius: 1.75rem
                 .open-friend-section-button
                     display: none //
                 .messages-text
                     display: none
-                .create-group-modal-button
-                    background-color: transparent
-                    cursor: pointer
-                    border: none
-                    width: 2rem
-                    height: 2rem
-                    border-radius: 1rem
-                    position: relative
-                    .create-group-image-2
-                        display: none
-                    &:hover > .create-group-image-1
-                        fill: $white-text
-                    &:hover > .create-group-tooltip
-                        opacity: 1
-                        pointer-events: auto
-                    .create-group-tooltip
-                        position: absolute
-                        padding: 0.35rem
-                        background-color: #1d222d
-                        opacity: 0
+                .create-group-modal-button-container
+                    width: fit-content
+                    height: 3.5rem
+                    display: flex
+                    flex-direction: column
+                    justify-content: end
+                    align-items: center
+                    .create-group-modal-button
+                        background-color: transparent
+                        cursor: pointer
+                        border: none
+                        width: 2rem
+                        height: 2rem
+                        border-radius: 1rem
+                        position: relative
                         display: flex
                         justify-content: center
                         align-items: center
-                        transition: opacity 0.15s ease-in
-                        bottom: 90%
-                        height: fit-content
-                        z-index: 105
-                        left: 50%
-                        border-radius: 0.15rem
-                        transform: translateX(-50%)
-                        pointer-events: none
-                        .create-group-tooltip-text
-                            font-family: 'Open Sans', sans-serif
-                            font-size: 0.6rem
-                            width: 4rem
+                        .create-group-image-2
+                            display: none
+                        &:hover > .create-group-image-1
+                            fill: $white-text
+                        &:hover > .create-group-tooltip
+                            opacity: 1
+                            pointer-events: auto
+                        .create-group-tooltip
+                            position: absolute
+                            padding: 0.35rem
+                            background-color: #1d222d
+                            opacity: 0
+                            display: flex
+                            justify-content: center
+                            align-items: center
+                            transition: opacity 0.15s ease-in
+                            bottom: 90%
+                            height: fit-content
+                            z-index: 105
+                            left: 50%
+                            border-radius: 0.15rem
+                            transform: translateX(-50%)
+                            pointer-events: none
+                            .create-group-tooltip-text
+                                font-family: 'Open Sans', sans-serif
+                                font-size: 0.6rem
+                                width: 4rem
             .logo-container
                 height: 2rem
             .search-conversation-container

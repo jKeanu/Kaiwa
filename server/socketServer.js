@@ -63,7 +63,9 @@ redisClient.connect();
 const clearRedisData = async () => {
   await redisClient.flushAll()
 }
+
 clearRedisData()
+
 const getUserIdFromSocket = async (token) => {
   try {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
@@ -336,6 +338,7 @@ export default (httpServer) => {
       try{
         const decrStatusCount = await redisClient.decr(`user:${verifiedCurrentUserId}:connections`)
         if(decrStatusCount<=0){
+          await redisClient.del(`user:${verifiedCurrentUserId}:connections`)
           const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Offline'}, {new:true})
           .populate({path:'friends.friend', select:'status'})
           .populate({path:'friends.channel', select:'channelNumber'})

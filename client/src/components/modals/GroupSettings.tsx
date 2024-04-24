@@ -5,7 +5,7 @@ import { changeGroupSettings } from "../../services/apiService"
 import { useChannelCustomContext } from "../../context"
 
 const GroupSettingsModal:React.FC<GroupSettingsProps>=
-    ({  socket, 
+    ({ 
         token, 
         channelId, 
         channelName, 
