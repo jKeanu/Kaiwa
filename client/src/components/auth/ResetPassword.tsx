@@ -36,7 +36,6 @@ const ResetPassword:React.FC=()=>{
                 }
             }catch(err){
                 if(axios.isAxiosError(err)){
-                    console.log(err, '===')
                     if(err.response?.status===400){
                         let errMessages = err.response.data.message
                         if(errMessages.split('. ').length>1){

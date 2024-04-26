@@ -88,7 +88,6 @@ export const addFriend = async(token:string, displayName:string, friendTag:strin
 }
 
 export const acceptFriend = async(token:string, pendingUserId:string):Promise<AxiosResponse<AcceptFriendStatus>>=>{
-    console.log(token, '---')
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`

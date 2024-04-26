@@ -99,7 +99,6 @@ export const addFriend = catchAsync(async (req, res, next)=>{
             pendingRequestDetails:newPendingObject,
             sentRequestDetails:newSentObject
     })}catch(err){
-        console.log('ERROR!!!!', err)
         await session.abortTransaction();
         next(err) // Use 500 for server errors
     }finally{
@@ -218,7 +217,6 @@ export const unfriend = catchAsync(async(req, res, next)=>{
         await session.commitTransaction();
         res.status(204).end()
     }catch(err){
-        console.log('ERROR!!!!', err)
         await session.abortTransaction();
         next(err)
     }finally{

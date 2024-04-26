@@ -1,4 +1,4 @@
-import { AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import { LeaveGroup } from "../../types/generalTypes";
 import { leaveGroup } from "../../services/apiService";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +29,22 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
                 setModalVisible(false)
             }
         }catch(err){
-            setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
+
+            if(axios.isAxiosError(err)){
+                if(err.response?.status === 400){
+                    let errMessages = err.response.data.message
+                    if(errMessages.split('. ').length>1){
+                        errMessages = errMessages.split('. ')[1]
+                        setErrorMsg({isError:true, message:errMessages})
+                    }else{
+                        setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
+                    }
+                }else{
+                    setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
+                }
+            }else{
+                setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
+            }
             setIsLoading(false)
             setModalDisabled(false)
         }

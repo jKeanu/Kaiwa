@@ -145,7 +145,6 @@ const HomePage:React.FC = () => {
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
             if (token && isOnline) {
-                console.log('1-23-123-')
                 const socketConn = io('http://localhost:3001', { query: { token } });
                 setSocket(socketConn);
                 return ()=>{
@@ -282,9 +281,9 @@ const HomePage:React.FC = () => {
                 const isExpired = (decodedToken.exp??0) * 1000 < Date.now();
                 //if expired remove the token, and navigate to login page
                 if (isExpired) {
-                    navigate('/login')
                     setToken('')
                     localStorage.removeItem('token')
+                    navigate('/login')
                 }
             }
         }, [token, navigate]);
@@ -292,7 +291,6 @@ const HomePage:React.FC = () => {
         //LIVE UPDATES
         useEffect(()=>{
             if(socket && userData){
-                console.log('CONNTECTED TO PERSONAL_LIVE_UPDATE')
                 socket.emit('personal_live_update')
                 return ()=>{
                     socket.emit('leave_personal_live_update')

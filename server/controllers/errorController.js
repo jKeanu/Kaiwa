@@ -1,4 +1,5 @@
 import AppError from '../utils/appError.js';
+import { logger } from '../socketServer.js';
 
 const handleCastErrorDB = err =>{
     //err.value is the value we passed in the /:id, while the err.path is where we are trying to match 
@@ -21,7 +22,6 @@ const handleDuplicateFieldsDB = err => {
 
 const handleValidationErrorDB = err => {
     if(Object.keys(err.errors).includes("members.1")){
-        console.log(err.errors, '---')
         return new AppError("Invalid Input", 400)
     }
     const errors = Object.values(err.errors).map(el => el.message);
@@ -52,8 +52,8 @@ const sendErrorProd=(err, req, res)=>{
             message: err.message
         })
     }
+    logger.error('Uncaught error', {message:err.message, stack:err.stack})
     //This line would execute if there was an unhandled error that we have not caught.
-    console.error('ERROR 💥', err);
     return res.status(500).json({
         status:'error',
         message:'Something went very wrong'

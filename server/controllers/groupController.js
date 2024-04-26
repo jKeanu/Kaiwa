@@ -181,7 +181,6 @@ export const updateGroupDetails = catchAsync( async(req, res, next)=>{
         })
     }catch(err){
         await session.abortTransaction()
-        console.log('ERRROR!!!', err)
         next(err)
     }finally{
         await session.endSession()
@@ -221,7 +220,6 @@ export const deleteGroup = catchAsync(async (req, res, next)=>{
         res.status(204).end()
     }catch(err){
         await session.abortTransaction()
-        console.log('ERROR!!!', err)
         next(err)
     }finally{
         await session.endSession()
@@ -297,7 +295,6 @@ export const inviteMember = catchAsync(async (req, res, next)=>{
             })
         }catch(err){
             if(err instanceof MongoServerError && err.code === 112 && retries > 0){
-                console.log(`WriteConflict detected, retrying... Retries left: ${retries}`);
                 retries--;
                 await delay(delayTime);
                 await session.abortTransaction(); 
@@ -340,7 +337,6 @@ export const leaveGroup = catchAsync(async (req, res, next)=>{
         res.status(204).end()
     }catch(err){
         await session.abortTransaction()
-        console.log("ERROR!!!", err)
         next(err)
     }finally{
         await session.endSession()
@@ -351,7 +347,6 @@ export const leaveGroup = catchAsync(async (req, res, next)=>{
 export const changeGroupLeader =  catchAsync(async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();
-    console.log(req.params.groupId, '------')
     try{
         const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"}).session(session)
         if (!groupChannel){
@@ -375,7 +370,6 @@ export const changeGroupLeader =  catchAsync(async (req, res, next) => {
         })
     }catch(err){
         await session.abortTransaction()
-        console.log("ERROR!!!", err)
         next(err)
     }finally{
         await session.endSession()
