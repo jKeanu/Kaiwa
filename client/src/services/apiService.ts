@@ -1,8 +1,7 @@
 import axios, {AxiosResponse} from 'axios';
 import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, AcceptFriendStatus, AddFriendStatus, CreateGroupStatus, ChannelMessagesStatus, UpdateUserStatus, UpdateGroupStatus } from '../types/generalTypes';
 
-
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.PROD? import.meta.env.API_URL_PROD : 'http://localhost:3001';
 
 export const registerUser = async (formData:RegisterForm):Promise<AxiosResponse<AuthStatus>> => {
     return axios.post(`${API_URL}/api/v1/users/register`, formData);

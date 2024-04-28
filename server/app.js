@@ -20,11 +20,12 @@ import { fileURLToPath } from 'url';
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:5173'
+  origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL_PROD : process.env.CLIENT_URL_DEV,
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
 app.use(cors(corsOptions));
-app.options('*', cors());
+app.options('*', cors(corsOptions));
  
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory

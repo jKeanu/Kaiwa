@@ -89,7 +89,8 @@ export const forgotPassword = catchAsync(async (req,res,next)=>{
   //sendEmail we also need to change the PasswordResetToken and passwordResetExpires to undefined
   //thats why we need try and catch
   try{
-      const resetURL = `${req.protocol}://localhost:5173/resetPassword/${resetToken}`
+      const client = process.env.NODE_ENV==='production'?process.env.CLIENT_DOMAIN_PROD:process.env.CLIENT_DOMAIN_DEV
+      const resetURL = `${req.protocol}://${client}/resetPassword/${resetToken}`
       await new Email(user, resetURL).sendPasswordReset()
       res.status(200).json({
           status:'success',

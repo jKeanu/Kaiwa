@@ -86,9 +86,10 @@ const getUserIdFromSocket = async (token) => {
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 // Manage connections
 export default (httpServer) => {
+  const clientUrl = process.env.NODE_ENV === 'production'? process.env.CLIENT_URL_PROD :process.env.CLIENT_URL_DEV
   const io = new Server(httpServer, {
     cors: {
-      origin: 'http://localhost:5173', //http://localhost:*
+      origin: clientUrl, //http://localhost:*
       methods: ['GET', 'POST'],
     },
   });

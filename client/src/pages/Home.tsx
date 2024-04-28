@@ -145,7 +145,8 @@ const HomePage:React.FC = () => {
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
             if (token && isOnline) {
-                const socketConn = io('http://localhost:3001', { query: { token } });
+                const url = import.meta.env.PROD? import.meta.env.API_URL_PROD : import.meta.env.API_URL_DEV
+                const socketConn = io(url, { query: { token } });
                 setSocket(socketConn);
                 return ()=>{
                     socketConn.disconnect()
