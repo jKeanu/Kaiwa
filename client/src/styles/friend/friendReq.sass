@@ -9,8 +9,6 @@
         background-position:0%  50%, 50%  50%,100% 100%
 
 
-
-
 =pending-request-mobile
     @media (max-width: $breakpoint-tablet)
         background-color: #ffffff09
@@ -99,6 +97,10 @@
         &::-webkit-scrollbar-thumb
             background-color: rgb(81, 84, 110)
             border-radius: 0.2rem
+        display: none
+        height: 100%
+        &.pending-request-section-active
+            display: block
         .pending-request
             display: flex
             flex-direction: column

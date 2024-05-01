@@ -118,7 +118,8 @@ const LeftSection:React.FC<LeftSectionProps>=({
                     value={searchQuery}
                     onChange={(e)=>setSearchQuery(e.target.value)}
                     className='search-conversation-input'
-                    placeholder='Search conversation...'/>
+                    placeholder='Search conversation...'
+                    id='conversation-search-input-id'/>
             </div>
         </div>
         <div className='channel-list-container'>

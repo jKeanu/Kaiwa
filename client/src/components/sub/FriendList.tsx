@@ -140,7 +140,7 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
 
                 <h2 className="friends-header">Friends</h2>
                 <input className="friend-list-search-input" placeholder="Search friends..."
-                onChange={(e)=>setSearchQuery(e.target.value)} value={searchQuery}/>
+                onChange={(e)=>setSearchQuery(e.target.value)} value={searchQuery} id="friend-list-search-input-id"/>
             </div>
             <ul className="friend-list" ref={friendListRef}>
                 {filteredFriends.map(friend=>(

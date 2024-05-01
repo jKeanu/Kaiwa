@@ -6,12 +6,12 @@ import rateLimit from 'express-rate-limit';
 const router = express.Router();
 
 
-// const createGroupLimiter = rateLimit({
-//     limit: 3,
-//     windowMs: 60*1000*60*3,
-//     message: 'Too many create groups have been created, please try again later.',
-//     skipFailedRequests: true
-// })
+const createGroupLimiter = rateLimit({
+    limit: 3,
+    windowMs: 60*1000*60*3,
+    message: 'Too many create groups have been created, please try again later.',
+    skipFailedRequests: true
+})
 
 const groupSettLimiter = rateLimit({
     limit: 3,
@@ -21,7 +21,7 @@ const groupSettLimiter = rateLimit({
 })
 
 const userInviteLimiter = rateLimit({
-    limit: 50,
+    limit: 30,
     windowMs: 1000*60*60*6,
     message: 'Too many invites detected, please try again later.',
     skipFailedRequests: true,
@@ -37,6 +37,7 @@ const changeLeaderLimiter = rateLimit({
 router.use(authController.protect);
 
 router.post('/', 
+    createGroupLimiter,
     groupController.createGroupChannel);
 
 router.route('/:groupId')
@@ -52,10 +53,12 @@ router.patch('/:groupId/update',
 router.route('/:groupId/members')
     .get(groupController.getGroupMembers);
 
-router.route('/:groupId/invite')
-    .patch(groupController.inviteMember);
+router.patch('/:groupId/invite', 
+    userInviteLimiter, 
+    groupController.inviteMember);
 
-router.route('/:groupId/changeleader')
-    .patch(groupController.changeGroupLeader);
+router.patch('/:groupId/changeleader',
+    changeLeaderLimiter,
+    groupController.changeGroupLeader);
 
 export default router;

@@ -1,19 +1,8 @@
 import express from 'express';
 import * as authController from '../controllers/authController.js';
 import * as channelController from '../controllers/channelController.js';
-import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
-
-const getChannelLimiter = rateLimit({
-    max: 200,
-    windowMs: 1000*60*60*2
-})
-
-const getChannelMessageLimiter = rateLimit({
-    max: 300,
-    windowMs: 1000*60*60*2
-})
 
 router.use(authController.protect);
 

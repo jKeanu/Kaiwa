@@ -147,13 +147,13 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                     </div>
                 </div>
                 <input className="create-group-search-mob" placeholder="Search friends..."
-                value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>
+                value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)} id="friend-search-mob-create-group"/>
                 <div className={`create-group-modal-invite-container ${field==='memberSelect'?'invite-container-active':''}`}>
                     <div className="modal-text">
                         Form a new group with your friends
                     </div>
                     <input className="create-group-search" placeholder="Search friends..."
-                    value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)}/>
+                    value={searchQuery} onChange={(e)=>setSearchQuery(e.currentTarget.value)} id="search-friend-create-group"/>
                     <div className="create-group-form">
                         {(createGroupErr.err&&createGroupErr.type==='createErr')&&
                         <div className="create-group-err">{createGroupErr.message}</div>}

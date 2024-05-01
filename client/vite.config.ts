@@ -29,5 +29,5 @@ export default defineConfig({
     },
     reportCompressedSize: isProduction,
   },
-  base: isProduction ? '/production-sub-path/' : '/',
+  base: '/',
 });

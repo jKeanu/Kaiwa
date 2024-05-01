@@ -12,7 +12,8 @@ import {User, Channel,
         ChannelMessagesStatus, UserStatusUpdate, FriendReq, SentReq, FriendRequestAccepted, NoticeModalSettings,
         FIdChannelInfo,
         ChannelAction,
-        ActionType} 
+        ActionType,
+        MemberUpdateInfo} 
         from '../types/generalTypes'
 import HomeSection from '../components/HomeSection'
 import {  getCurrUserFetcher } from '../services/apiService'
@@ -137,6 +138,12 @@ const HomePage:React.FC = () => {
         //we will be notified
         const channelIds:string[] = useMemo(()=>{
             return [...channels].map(channel => channel._id)
+        }, [channels])
+
+        const channelNumberAndIds:{channelNumber:number, channelId:string}[] = useMemo(()=>{
+            return [...channels].map(channel => {
+                return {channelNumber:channel.channelNumber, channelId:channel._id}
+            })
         }, [channels])
 
     
@@ -435,6 +442,30 @@ const HomePage:React.FC = () => {
             }
         }, [socket])
 
+
+        useEffect(()=>{
+            if(socket){
+                const handleChannelMemberInfoUpdate = (data:MemberUpdateInfo) =>{
+                    mutate(`api/v1/channels/${data.channelNumber}`, (ChannelCachedData: ChannelDataStatus | undefined)=>{
+                        if(!ChannelCachedData){
+                            return
+                        }
+                        const currentChannel = {...ChannelCachedData.channel}
+                        const updateMembers = currentChannel.members.map(member=>{
+                            if(member._id!==data.updatedUser._id){
+                                return member
+                            }else{
+                                return  {...member, ...data.updatedUser}
+                            }
+                        })
+                        currentChannel.members = updateMembers
+                        return {status:ChannelCachedData.status, channel: currentChannel}
+                    })
+                }
+                socket.on("channel-member-update", handleChannelMemberInfoUpdate)
+            }
+        }, [socket])
+
         //When a friend or a member of the group you're part of went online
         useEffect(()=>{
             if(socket){
@@ -652,6 +683,7 @@ const HomePage:React.FC = () => {
                         token, 
                         socket, 
                         setToken, 
+                        channelNumberAndIds,
                         setUserData}}>
                         <LeftSection 
                             formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}

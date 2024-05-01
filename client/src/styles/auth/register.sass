@@ -74,15 +74,15 @@
 
 
 =register-page-mobile
-    @media (max-width: $breakpoint-mobile)
+    @media (max-width: $breakpoint-mobile + 0.99)
         @include register-page($input-width: 17rem, $register-container-w: 100vw, $register-container-h: 100vh, $button-width: 10rem, $header-size-mult: 0.7)
 
 =register-page-tablet
-    @media (min-width: $breakpoint-mobile + 1px) and (max-width: $breakpoint-tablet)    
+    @media (min-width: $breakpoint-mobile + 1px) and (max-width: $breakpoint-tablet + 0.99)    
         @include register-page($input-width: 16rem, $register-container-w: 22rem, $register-container-h: 30rem, $button-width: 14rem, $header-size-mult: 0.8)
 
 =register-page-laptop
-    @media (min-width: $breakpoint-tablet+ 1px) and (max-width: $breakpoint-laptop)
+    @media (min-width: $breakpoint-tablet+ 1px) and (max-width: $breakpoint-laptop + 0.99)
         @include register-page($input-width: 16rem, $register-container-w: 22rem, $register-container-h: 30rem, $button-width: 14rem, $header-size-mult: 0.9)
 
 =register-page-desktop

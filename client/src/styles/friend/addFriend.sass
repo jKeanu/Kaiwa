@@ -1,5 +1,5 @@
 =add-friend-mobile
-    @media (max-width: $breakpoint-tablet)
+    @media (max-width: $breakpoint-tablet + 0.99)
         background-color: #ffffff09
         border-radius: 1rem
         box-shadow: 3px 3px 3px 3px #00000064
@@ -65,6 +65,9 @@
         box-shadow: 1px 2px 1px 3px rgba(0, 0, 0, 0.4)
         position: relative
         width: 26rem
+        display: none
+        &.add-friend-section-active
+            display: block
         .request-status
             position: absolute
             bottom: 100%

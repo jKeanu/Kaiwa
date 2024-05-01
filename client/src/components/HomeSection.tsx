@@ -49,10 +49,6 @@ const HomeSection:React.FC<HomeSectionProps>=({friendChannels, friendReqs, isFri
                         <FriendReq pendingRequests={friendReqs} currComponent={currComponent}/>
                         <AddFriend currComponent={currComponent}/>
                     </div>
-                    {currComponent==='friendReq'&&
-                    <FriendReq pendingRequests={friendReqs} currComponent={currComponent}/>}
-                    {currComponent==='addFriend'&&
-                    <AddFriend currComponent={currComponent}/>}
                 </div>
             </section>
         </section>

@@ -162,7 +162,7 @@
     
     
 =left-home-mobile
-    @media (max-width: $breakpoint-tablet)
+    @media (max-width: $breakpoint-tablet + 0.99)
         width: 100vw
         height: 100vh
         font-family: 'Open Sans', sans-serif
@@ -723,7 +723,7 @@
                     border-radius: 1.25rem
                     margin-right: 0.5rem
                 .user-info-text
-                    @media (min-width: $breakpoint-mobile + 1) and (max-width: $breakpoint-tablet)  
+                    @media (min-width: $breakpoint-mobile + 1) and (max-width: $breakpoint-tablet + 0.99)  
                         width: 15rem
                         display: flex
                         justify-content: center
@@ -741,7 +741,7 @@
                             color: rgb(191, 191, 191)
                             font-size: 0.7rem     
                             text-align: start     
-                    @media (max-width: $breakpoint-mobile)
+                    @media (max-width: $breakpoint-mobile + 0.99)
                         width: 10rem
                         display: flex
                         justify-content: center
@@ -777,7 +777,7 @@
 
 
 =left-home-laptop
-    @media (min-width: $breakpoint-tablet + 1) and (max-width: $breakpoint-laptop)
+    @media (min-width: $breakpoint-tablet + 1) and (max-width: $breakpoint-laptop + 0.99)
         background-color: $primary-bg
         border-right: 1px solid rgba(142, 142, 142, 0.3)
         font-family: 'Open Sans', sans-serif

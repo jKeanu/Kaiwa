@@ -74,6 +74,11 @@ export type UpdateUserStatus={
     }
 }
 
+export type MemberUpdateInfo={
+    updatedUser:UpdateUserStatus["user"],
+    channelNumber:number
+}
+
 export type RegisterForm={
     email:string,
     password:string,
@@ -479,6 +484,7 @@ export type LeftContext={
     setToken: React.Dispatch<SetStateAction<string|null>>,
     setModalVisible: React.Dispatch<SetStateAction<boolean>>,
     modalVisible: boolean,
+    channelNumberAndIds: {channelNumber:number, channelId:string}[]
 }
 
 //useReducer type

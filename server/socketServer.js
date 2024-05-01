@@ -14,22 +14,25 @@ import WinstonCloudWatch from 'winston-cloudwatch'
 dotenv.config({ path: './config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
+const isProduction = process.env.NODE_ENV === 'production'
+
+const awsCredentials ={
+  credentials:{
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY
+  },
+  region: process.env.AWS_REGION
+}
 
 export const logger = winston.createLogger({
   level: 'error',
   format: winston.format.json(),
   transports: [
-    process.env.NODE_ENV==='production'?
+    isProduction?
     new WinstonCloudWatch({
-      awsOptions:{
-        credentials:{
-          accessKeyId: process.env.ACCESS_KEY,
-          secretAccessKey: process.env.SECRET_ACCESS_KEY
-        },
-        region: process.env.AWS_REGION
-      },
-      logGroupName: process.env.CLOUDWATCH_LOG_GROUP_NAME,
-      logStreamName: 'error-monitor',
+      awsOptions:awsCredentials,
+      logGroupName: process.env.CLOUDWATCH_ERROR_LOG_GROUP_NAME,
+      logStreamName: process.env.CLOUDWATCH_ERROR_LOG_STREAM,
       awsRegion: process.env.CLOUDWATCH_REGION 
     }
     ):
@@ -37,15 +40,34 @@ export const logger = winston.createLogger({
   ]
 })
 
+const infoLogger = winston.createLogger({
+  level:'info',
+  format: winston.format.json(),
+  transports: [
+    isProduction?
+    new WinstonCloudWatch({
+      awsOptions:awsCredentials,
+      logGroupName: process.env.CLOUDWATCH_INFO_LOG_GROUP_NAME,
+      logStreamName: process.env.CLOUDWATCH_INFO_LOG_STREAM,
+      awsRegion: process.env.CLOUDWATCH_REGION 
+    }
+    ):
+    new winston.transports.File({ filename: 'info.log'})
+  ]
+})
+
 const redisClient = Redis.createClient({
+  url:isProduction?process.env.AWS_ELASTICACHE_REDIS_ENDPOINT:'redis://localhost:6379',
+  password:isProduction?process.env.AWS_ELASTICACHE_REDIS_TOKEN:undefined,
   socket: {
     //add this with actual redist host
     //add this with actual redist post
     reconnectStrategy: function(retries){
       if(retries > 10){
-        throw new Error ("Too many redis connection retries.")
+        logger.error("Too many Redis connection retries, stopping retries.")
+        return false
       }else{
-        return 5000
+        return 8000
       }
     }
   }
@@ -53,18 +75,32 @@ const redisClient = Redis.createClient({
 
 
 redisClient.on('error', (err) => {
-  logger.error('Redis Client Error', {message:err.message, stack:err.stack})
+  logger.error('Redis Client Error', {message:err})
 });
 
-redisClient.connect();
+redisClient.connect()
+  .then(() => {
+  infoLogger.info("Connected to Redis successfully!");
+})
+.catch((err) => {
+  logger.error("Redis connection failed", { message: err.message, stack: err.stack });
+  // Consider handling the failure more gracefully here
+});
 
 //Flush all data during server restart.
 //Since we only use redis for updating user status, this works.
 const clearRedisData = async () => {
-  await redisClient.flushAll()
+  try{
+    await redisClient.flushAll()
+    infoLogger.info('Redis data cleared on restart as configured')
+  }catch(err){
+    logger.error('Redis Flush All Error', {message:err.message})
+  }
 }
 
-clearRedisData()
+if (process.env.ALLOW_REDIS_FLUSH_ON_RESTART === 'true') {
+  clearRedisData();
+}
 
 const getUserIdFromSocket = async (token) => {
   try {
@@ -74,13 +110,6 @@ const getUserIdFromSocket = async (token) => {
     logger.error('Token Decoding Error', {message:err.message, stack:err.stack})
   }
 };
-
-// const io = socketIo(server, {
-//   cors: {
-//     origin: '*://example.com',
-//     methods: ['GET', 'POST']
-//   }
-// });
 
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -333,6 +362,14 @@ export default (httpServer) => {
     //When a group channel leader changed the leader of the group channel.
     socket.on("group_channel_leader_change", (data)=>{
       socket.to(`user-${data.memberId}`).emit("new_group_leader", {channelNumber:data.channelNumber, newLeaderId:data.memberId})
+    })
+
+    socket.on("user-profile-settings-change", (data)=>{
+      data.channelNumberAndIds.forEach(channelNumberAndId=>{
+        io.to(`channel-${channelNumberAndId.channelId}`).emit('channel-member-update', 
+        {updatedUser:data.updatedUser,
+        channelNumber:channelNumberAndId.channelNumber})
+      })
     })
 
     socket.on('disconnect', async () => {

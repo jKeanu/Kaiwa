@@ -11,7 +11,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
     const [currSetting, setCurrSetting] = useState('userInfo')
     const [userSettErr, setUserSettErr] = useState({err:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
-    const {token, setUserData, setToken, setModalVisible, modalVisible} = useLeftCustomContext()
+    const {token, setUserData, setToken, setModalVisible, modalVisible, socket, channelNumberAndIds} = useLeftCustomContext()
     const profileImagePreview = useMemo(()=>{
         return userInfo.profileImage? URL.createObjectURL(userInfo.profileImage):null
     }, [userInfo.profileImage])
@@ -40,7 +40,10 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                         }
                     }
                 })
+                if(socket){
+                    socket.emit('user-profile-settings-change', {updatedUser:res.data.user, channelNumberAndIds})
                 }
+            }
             setIsLoading(false)
             setModal({active:false, type:''})
             setIsDisabled(false)

@@ -1052,6 +1052,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     </div>
                     <div className="message-input-container">
                         <ReactTextareaAutosize 
+                            name="message-text-area"
                             ref={textareaRef}
                             value={inputMessage} 
                             placeholder="Send a message..."

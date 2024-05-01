@@ -51,21 +51,22 @@ const resetPasswordLimiter = rateLimit({
     message: 'Too many reset password attempts, please try again later.'
 })
 
-router.post('/register', authController.signup)
-router.post('/login', authController.login)
+router.post('/register', registerLimiter, authController.signup)
+router.post('/login', loginLimiter, authController.login)
 
 //Password reset
-router.post('/forgotPassword', authController.forgotPassword)
-router.patch('/resetPassword/:token',authController.resetPassword)
+router.post('/forgotPassword', forgotPasswordLimiter, authController.forgotPassword)
+router.patch('/resetPassword/:token', resetPasswordLimiter,authController.resetPassword)
 
 router.use(authController.protect);
 
 router.patch('/updateMe',
+    userSettLimiter,
     userController.uploadProfileImage,
     userController.resizeUserPhoto,
     userController.updateUser);
     
-router.patch('/changepassword', authController.changePassword);
-router.get('/me', userController.getMe);
+router.patch('/changepassword', passwordChangeLimiter, authController.changePassword);
+router.get('/me', getMeLimiter, userController.getMe);
 
 export default router;
