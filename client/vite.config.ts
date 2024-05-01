@@ -6,7 +6,7 @@ import {terser} from 'rollup-plugin-terser'// Import terser like this
 const isProduction = process.env.NODE_ENV === 'production';
 
 export default defineConfig({
-  envPrefix: ['VITE_API_URL_DEV', 'VITE_API_URL_PROD', 'NODE_ENV'],
+  envPrefix: ['VITE_', 'NODE_ENV'],
   plugins: [
     react(),
     tsconfigPaths(),

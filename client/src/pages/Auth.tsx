@@ -8,7 +8,7 @@ import NotFound from './notFound';
 
 const AuthenticationPage = () => {
     const navigate = useNavigate()
-    
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
