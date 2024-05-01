@@ -38,13 +38,13 @@ const LoginPage:React.FC=()=> {
                 if(error.response?.status===401){
                     setErrorMessage(error.response.data.message)
                 }else if(error.response?.status === 429){
-                    setErrorMessage('Too many login attempts. Please try again later')
+                    setErrorMessage('Too many login attempts.')
                 }else{
-                    setErrorMessage('Something went wrong. Please try again later')
+                    setErrorMessage('Something went wrong.')
                 }
 
             }else {
-                setErrorMessage('An unknown error occurred. Please try again later.')
+                setErrorMessage('An unknown error occurred.')
             }
         }
         setLoading({isLoading:false, type:''})
@@ -58,6 +58,7 @@ const LoginPage:React.FC=()=> {
         setLoading({type:'forgotPassword', isLoading:true})
         if(!email){
             setForgotPassError('Input field is empty.')
+            setLoading({type:'', isLoading:false})
             return
         }
         try{
@@ -73,10 +74,10 @@ const LoginPage:React.FC=()=> {
                     setForgotPassError('Invalid email.')
                 }
                 else{
-                    setForgotPassError('Something went wrong. Please try again later')
+                    setForgotPassError('Something went wrong.')
                 }
             }else{
-                setForgotPassError('Something went wrong. Please try again later')
+                setForgotPassError('Something went wrong.')
             }
         }
         setLoading({type:'', isLoading:false})

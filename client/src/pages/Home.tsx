@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useMemo, useCallback, useReducer} from 'react'
-import {Routes, Route, useNavigate, useLocation} from 'react-router-dom'
+import {Routes, Route, useNavigate, useLocation, Navigate} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import {jwtDecode} from 'jwt-decode'
 import useSWR, {useSWRConfig} from "swr"
@@ -739,6 +739,7 @@ const HomePage:React.FC = () => {
                                 token={token}/>
                             </ChannelSectionContext.Provider>
                             }/>
+                        <Route path="*" element={<Navigate replace to="/@me"/>} />
                     </Routes>
                 </main>
                 :

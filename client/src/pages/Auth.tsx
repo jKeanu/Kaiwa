@@ -4,6 +4,7 @@ import {useNavigate} from 'react-router-dom';
 import LoginPage from '../components/auth/Login';
 import RegisterPage from '../components/auth/Register';
 import ResetPassword from '../components/auth/ResetPassword';
+import NotFound from './notFound';
 
 const AuthenticationPage = () => {
     const navigate = useNavigate()
@@ -22,6 +23,7 @@ const AuthenticationPage = () => {
                 <Route path='/login' element={<LoginPage />}/>
                 <Route path='register' element={<RegisterPage />} />
                 <Route path='/resetpassword/:resetPasswordToken' element={<ResetPassword />}/>
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </div>
     );

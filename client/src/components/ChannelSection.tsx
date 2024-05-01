@@ -27,6 +27,7 @@ import throttle from 'lodash.throttle'
 import GroupSettingsModal from "./modals/GroupSettings"
 import { useChannelCustomContext } from "../context"
 import MessageLimitModal from "./modals/MessageLimit"
+import { channel } from "diagnostics_channel"
 
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
@@ -128,7 +129,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             setCurrentChannelMembers(channelData.channel.members)
         }else if (channelError){
             if(axios.isAxiosError(channelError)){
-                if(channelError.response?.status===404 || channelError.response?.status===401){
+                if(channelError.response?.status===404 || channelError.response?.status===401 || channelError.response?.status===500){
                     navigate('/@me')
                 }
             }

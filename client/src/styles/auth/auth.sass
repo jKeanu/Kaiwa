@@ -5,6 +5,8 @@
     @media (min-width: $breakpoint-mobile + 1px)
         width: 100vw
         height: 100vh
+        @media (max-height: 600px)
+            height: 600px !important
     @media (max-width: $breakpoint-mobile + 0.99)
         height: fit-content
         width: fit-content
