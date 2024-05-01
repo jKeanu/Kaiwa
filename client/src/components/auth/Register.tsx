@@ -15,6 +15,7 @@ const RegisterPage:React.FC=()=>{
     })
     const [errorMessage, setErrorMessage] = useState<{type:string, message:string}>()
     const [containerVisible, setContainerVisible] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
 
 
@@ -27,12 +28,14 @@ const RegisterPage:React.FC=()=>{
     const handleRegister = async (e:React.FormEvent<HTMLFormElement>):Promise<void> => {
         e.preventDefault();
         setErrorMessage({type:'', message:''})
+        setIsLoading(true)
         try {
             const res:AxiosResponse<AuthStatus> = await registerUser(formData)
             if (res.data.status === "success") {
                 localStorage.setItem('token', res.data.token)
                 navigate('/@me')
             }
+            setIsLoading(false)
         } catch (error: unknown) { 
             if (axios.isAxiosError(error)) { // Type guard for AxiosError
                 // Now you can safely assume error is of type AxiosError
@@ -60,6 +63,7 @@ const RegisterPage:React.FC=()=>{
             } else {
                 setErrorMessage({type:'other', message:'An unknown error occurred. Please try again later.'})
             }
+            setIsLoading(false)
         }
     };
 
@@ -123,7 +127,9 @@ const RegisterPage:React.FC=()=>{
                         &&
                         <span className='input-error-message'>{errorMessage.message}</span>}
                     </div>
-                    <button type="submit">Register</button>
+                    <button type="submit" disabled={isLoading}>
+                        {isLoading?<div className="register-loading"></div>:'Register'}
+                    </button>
                 </form>
             </div>
             <span className='already-have-an-account-text'>
