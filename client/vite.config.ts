@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import terser from '@rollup/plugin-terser'// Import terser like this
+import {terser} from 'rollup-plugin-terser'// Import terser like this
 
 const isProduction = process.env.NODE_ENV === 'production';
 
