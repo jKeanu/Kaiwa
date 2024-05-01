@@ -27,8 +27,6 @@ import throttle from 'lodash.throttle'
 import GroupSettingsModal from "./modals/GroupSettings"
 import { useChannelCustomContext } from "../context"
 import MessageLimitModal from "./modals/MessageLimit"
-import { channel } from "diagnostics_channel"
-
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
         token,
