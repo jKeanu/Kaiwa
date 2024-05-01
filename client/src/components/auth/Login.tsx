@@ -16,7 +16,7 @@ const LoginPage:React.FC=()=> {
     const [forgotPassSuccess, setForgotPassSuccess] = useState<string>('')
     const [containerVisible, setContainerVisible] = useState(false)
     const navigate = useNavigate()
-
+    
     useEffect(()=>{
         setContainerVisible(true)
     },[])
