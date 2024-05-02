@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv'
+process.env.TEST_VAR = 'This is a test';
 dotenv.config({ path: './config.env' });
 import morgan from 'morgan';
 import helmet from 'helmet';
@@ -16,6 +17,7 @@ import userChannelRouter from './routes/userChannelRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+console.log('Test Variable:', process.env.TEST_VAR, '==============')
 
 const app = express();
 
