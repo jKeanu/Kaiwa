@@ -21,6 +21,8 @@ import userChannelRouter from './routes/userChannelRoutes.js';
 
 const app = express();
 
+app.set('trust proxy', 1)
+
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL_PROD : process.env.CLIENT_URL_DEV,
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
