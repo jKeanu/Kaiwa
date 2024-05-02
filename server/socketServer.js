@@ -55,6 +55,7 @@ const infoLogger = winston.createLogger({
   ]
 })
 
+console.log(isProduction, '---', process.env.AWS_ELASTICACHE_REDIS_ENDPOINT, '---', process.env.AWS_ELASTICACHE_REDIS_TOKEN)
 const redisClient = Redis.createClient({
   url:isProduction?process.env.AWS_ELASTICACHE_REDIS_ENDPOINT:'redis://localhost:6379',
   socket: {
