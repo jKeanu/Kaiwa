@@ -31,7 +31,9 @@ const LoginPage:React.FC=()=> {
             const res:AxiosResponse<AuthStatus> = await loginUser(email, password);
             if (res.data.status === "success") {
                 localStorage.setItem('token', res.data.token)
-                navigate('/@me')
+                setTimeout(()=>{
+                    navigate('/@me')
+                }, 1)
             }
         } catch (error: unknown) { 
             if (axios.isAxiosError(error)) { // Type guard for AxiosError
