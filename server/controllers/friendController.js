@@ -5,9 +5,6 @@ import AppError from '../utils/appError.js';
 import Channel from '../models/channelModel.js';
 import Chat from '../models/chatModel.js'
 import { MongoServerError } from 'mongodb'
-import dotenv from 'dotenv'
-dotenv.config({ path: '../config.env' });
-
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 

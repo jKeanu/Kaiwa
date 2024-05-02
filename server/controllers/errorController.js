@@ -1,7 +1,6 @@
 import AppError from '../utils/appError.js';
 import { logger } from '../socketServer.js';
-import dotenv from 'dotenv'
-dotenv.config({ path: '../config.env' });
+
 
 const handleCastErrorDB = err =>{
     //err.value is the value we passed in the /:id, while the err.path is where we are trying to match 

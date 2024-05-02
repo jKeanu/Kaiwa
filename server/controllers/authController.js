@@ -5,8 +5,6 @@ import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import { Email } from '../utils/email.js';
 import crypto from 'crypto'
-import dotenv from 'dotenv'
-dotenv.config({ path: '../config.env' });
 
 function signToken(id){
   return jwt.sign({ id }, process.env.JWT_SECRET, {

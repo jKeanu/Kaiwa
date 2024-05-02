@@ -2,8 +2,6 @@ import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import Channel from '../models/channelModel.js';
 import Chat from '../models/chatModel.js';
-import dotenv from 'dotenv'
-dotenv.config({ path: '../config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
 

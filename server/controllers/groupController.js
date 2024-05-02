@@ -9,8 +9,6 @@ import multer from 'multer';
 import { S3Client } from '@aws-sdk/client-s3';
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import sharp from 'sharp';
-import dotenv from 'dotenv'
-dotenv.config({ path: '../config.env' });
 
 
 const bucketName = process.env.BUCKET_NAME
