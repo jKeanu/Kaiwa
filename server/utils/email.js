@@ -3,6 +3,8 @@ import handlebars from 'handlebars'
 import { dirname } from 'path';
 import { fileURLToPath } from 'url'
 import fs from 'fs'
+import dotenv from 'dotenv'
+dotenv.config({ path: '../config.env' });
 
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

@@ -10,7 +10,6 @@ import mongoose from 'mongoose';
 import winston from 'winston';
 import WinstonCloudWatch from 'winston-cloudwatch'
 
-
 dotenv.config({ path: './config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME

@@ -3,7 +3,8 @@ import http from 'http';
 import socketServerSetup from './socketServer.js';
 import app from './app.js';
 import { logger } from './socketServer.js';
-
+import dotenv from 'dotenv'
+dotenv.config({ path: './config.env' });
 
 const server = http.createServer(app);
 // Set up the socket server
