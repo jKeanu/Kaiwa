@@ -57,7 +57,6 @@ const infoLogger = winston.createLogger({
 
 const redisClient = Redis.createClient({
   url:isProduction?process.env.AWS_ELASTICACHE_REDIS_ENDPOINT:'redis://localhost:6379',
-  password:isProduction?process.env.AWS_ELASTICACHE_REDIS_TOKEN:undefined,
   socket: {
     //add this with actual redist host
     //add this with actual redist post
@@ -66,7 +65,7 @@ const redisClient = Redis.createClient({
         logger.error("Too many Redis connection retries, stopping retries.")
         return false
       }else{
-        return 8000
+        return  10000
       }
     }
   }
