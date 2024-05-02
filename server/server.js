@@ -24,6 +24,7 @@ process.on('uncaughtException', (err) => {
 
 // Connect to the Database
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
+console.log(process.env.DATABASE_PASSWORD , '------', DB)
 mongoose.connect(DB, {}).then(() => console.log('DB connection successful')).catch((err) =>{
   logger.error('DB connection error', {name:err.name, message:err.message, stack:err.stack})
 });
