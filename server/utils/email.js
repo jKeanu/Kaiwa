@@ -37,7 +37,7 @@ export class Email{
     async send(subject){
         const source = fs.readFileSync(`${__dirname}/../templates/passwordReset.hbs`, 'utf8');
         const template = handlebars.compile(source);
-        const html = template({ url: this.url, displayName: this.displayName, subject });
+        const html = template({ url: this.url, displayName: this.displayName, subject, subDomain:process.env.SERVER_SUB_DOMAIN_PROD });
         const mailOptions = {
             from: this.from,
             to: this.to,
