@@ -4,7 +4,6 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export class Email{

@@ -32,7 +32,7 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
  
 
-app.use(express.static(path.join(__dirname, './public')));
+app.use(express.static(path.join(__dirname, 'public')));
 // Set Security HTTP headersc
 app.use(helmet({
   contentSecurityPolicy: {
