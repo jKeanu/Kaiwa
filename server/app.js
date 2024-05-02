@@ -1,7 +1,10 @@
 import express from 'express';
+import path from 'path';
 import dotenv from 'dotenv'
-process.env.TEST_VAR = 'This is a test';
-dotenv.config({ path: './config.env' });
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+dotenv.config({ path: path.join(__dirname, 'config.env') });
 import morgan from 'morgan';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
@@ -14,10 +17,7 @@ import groupRouter from './routes/groupRoutes.js';
 import userFriendRouter from './routes/userFriendRoutes.js';
 import userGroupRouter from './routes/userGroupRoutes.js';
 import userChannelRouter from './routes/userChannelRoutes.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-console.log('Test Variable:', process.env.TEST_VAR, '==============')
 
 const app = express();
 
@@ -29,8 +29,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
  
-const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const __dirname = path.dirname(__filename); // get the name of the directory
 
 app.use(express.static(path.join(__dirname, './public')));
 // Set Security HTTP headersc

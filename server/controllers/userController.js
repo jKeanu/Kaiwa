@@ -12,7 +12,6 @@ const accessKey = process.env.ACCESS_KEY
 const secretAccessKey = process.env.SECRET_ACCESS_KEY
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
 
-console.log('Test Variable:', process.env.TEST_VAR, '-----------------');
 const filterObj = (obj, ...allowedfields)=>{
     const newObj = {}
     //Object.keys(obj) this would return an array that contains the keys of the objects
