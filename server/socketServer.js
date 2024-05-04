@@ -119,10 +119,18 @@ export default (httpServer) => {
   console.log(clientUrl, '----')
   const io = new Server(httpServer, {
     cors: {
-      origin: clientUrl, //http://localhost:*
+      origin: function (origin, callback) {
+        console.log(origin, '============')
+        const allowedOrigins = ['https://kaiwachat.com', 'http://localhost:5173'];
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Origin not allowed by CORS'));
+        }
+      },
       methods: ['GET', 'POST'],
     },
-  });
+  })
 
   io.on('connection', async (socket) => {
     console.log('CONNECTED>>>>>>>')
