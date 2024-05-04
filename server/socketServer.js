@@ -82,6 +82,10 @@ const redisConfig = isProduction?{
 
 const redisClient = new Redis(redisConfig)
 
+redisClient.on('connecting', ()=>{
+  console.log('sigh')
+})
+
 redisClient.on('connect', () => {
   logger.info('Connected to Redis');
 });
