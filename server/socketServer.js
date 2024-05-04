@@ -60,26 +60,10 @@ const redisConfig = isProduction?{
   port: 25061,
   tls:{},
   connectTimeout: 10000,
-  host: process.env.REDIS_HOST,
-  retryStrategy: function(retries){
-    if(retries > 10){
-      logger.error("Too many Redis connection retries, stopping retries.");
-      return null
-    }
-    return 5000*retries; // Delay for the next reconnect attempt in milliseconds
-  }
-}:{
+  host: process.env.REDIS_HOST,}:{
   // Default configuration for development (local Redis server)
   host: 'localhost',
-  port: 6379,
-  retryStrategy: function(retries) {
-    if (retries > 10) {
-      logger.error("Too many local Redis connection retries, stopping retries.");
-      return null;
-    }
-    return 5000 * retries; // Delay for the next reconnect attempt in milliseconds
-  }
-}
+  port: 6379}
 
 const redisClient = new Redis(redisConfig)
 
