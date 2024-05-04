@@ -92,7 +92,6 @@ redisClient.on('connect', () => {
 
 redisClient.on('error', (err) => {
   logger.error('Redis error', err);
-  console.error(err, '--')
 })
 
 redisClient.on('error', (err) => {
@@ -136,10 +135,18 @@ const getUserIdFromSocket = async (token) => {
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 // Manage connections
 export default (httpServer) => {
-  const clientUrl = process.env.NODE_ENV === 'production'? process.env.CLIENT_URL_PROD :process.env.CLIENT_URL_DEV
+  // const clientUrl = process.env.NODE_ENV === 'production'? process.env.CLIENT_URL_PROD :process.env.CLIENT_URL_DEV
   const io = new Server(httpServer, {
     cors: {
-      origin: clientUrl, //http://localhost:*
+      origin: function (origin, callback) {
+        const allowedOrigins = ['https://kaiwachat.com', 'http://localhost:5173'];
+        console.log(origin, '----')
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Origin not allowed by CORS'));
+        }
+      },
       methods: ['GET', 'POST'],
     },
   });
