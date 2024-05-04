@@ -151,16 +151,15 @@ const HomePage:React.FC = () => {
             //we need to determine if the webpage is fully visible before connecting to the socket since,
             //webpages have preloading feature on where they detect what you type in url or hover in the link
             //it will preload certain resources.
-            if (token) {
-                const url = import.meta.env.MODE==='production'? 'https://api.kaiwachat.com' : import.meta.env.VITE_API_URL_DEV
-                console.log(import.meta.env.MODE, '----', url)
-                const socketConn = io('https://api.kaiwachat.com', { query: { token } });
+            if (token && isOnline) {
+                const url = import.meta.env.MODE==='production'? import.meta.env.VITE_API_URL_PROD : import.meta.env.VITE_API_URL_DEV
+                const socketConn = io(url, { query: { token } });
                 setSocket(socketConn);
                 return ()=>{
                     socketConn.disconnect()
                 }
             }     
-        }, [token])
+        }, [token, isOnline])
 
 
         useEffect(() => {
@@ -189,7 +188,6 @@ const HomePage:React.FC = () => {
                 revalidateOnReconnect: true
             }
           )
-
         useEffect(()=>{
             if(currUserData){
                 //Save the logged in user's data to a state
