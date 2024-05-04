@@ -8,7 +8,7 @@ import dotenv from'dotenv';
 import mongoose from 'mongoose';
 import winston from 'winston';
 import WinstonCloudWatch from 'winston-cloudwatch'
-import redis from 'redis'
+import { Redis } from 'ioredis';
 dotenv.config({ path: './config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
@@ -54,23 +54,29 @@ const infoLogger = winston.createLogger({
   ]
 })
 
-// const redisConfig = isProduction?{
-//   user: process.env.REDIS_USERNAME,
-//   password: process.env.REDIS_PASSWORD,
-//   port: 25061,
-//   tls:{},
-//   connectTimeout: 10000,
-//   host: process.env.REDIS_HOST,}:{
-//   // Default configuration for development (local Redis server)
-//   host: 'localhost',
-//   port: 6379}
-
-const redisClient = redis.createClient({
-  url: process.env.REDIS_HOST,
-  port: 25061,
-  password: process.env.REDIS_PASSWORD,
+const redisConfig = isProduction?{
   username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+  port: 25061,
+  tls:{},
+  connectTimeout: 10000,
+  host: process.env.REDIS_HOST,}:{
+  // Default configuration for development (local Redis server)
+  host: 'localhost',
+  port: 6379}
+  
+
+const redisClient = new Redis(redisConfig)
+
+redisClient.connect()
+  .then(() => {
+  infoLogger.info("Connected to Redis successfully!");
 })
+.catch((err) => {
+  logger.error("Redis connection failed", { message: err.message, stack: err.stack });
+  // Consider handling the failure more gracefully here
+});
+
 
 redisClient.on('connecting', ()=>{
   console.log('sigh')
@@ -86,15 +92,6 @@ redisClient.on('error', (err) => {
 
 redisClient.on('error', (err) => {
   logger.error('Redis Client Error', {message:err})
-});
-
-redisClient.connect()
-  .then(() => {
-  infoLogger.info("Connected to Redis successfully!");
-})
-.catch((err) => {
-  logger.error("Redis connection failed", { message: err.message, stack: err.stack });
-  // Consider handling the failure more gracefully here
 });
 
 //Flush all data during server restart.
