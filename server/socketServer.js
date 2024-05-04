@@ -66,7 +66,16 @@ const redisConfig = isProduction?{
   port: 6379}
   
 
-const redisClient = new Redis(redisConfig)
+
+const connectRedis = async()=>{
+  try{
+    const redisClient = new Redis(redisConfig)
+  }catch(err){
+    console.error(err)
+  }
+}
+
+await connectRedis()
 
 
 redisClient.on('connecting', ()=>{
