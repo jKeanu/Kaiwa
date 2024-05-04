@@ -116,6 +116,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 // Manage connections
 export default (httpServer) => {
   const clientUrl = process.env.NODE_ENV === 'production'? process.env.CLIENT_URL_PROD :process.env.CLIENT_URL_DEV
+  console.log(clientUrl, '----')
   const io = new Server(httpServer, {
     cors: {
       origin: clientUrl, //http://localhost:*
@@ -124,6 +125,7 @@ export default (httpServer) => {
   });
 
   io.on('connection', async (socket) => {
+    console.log('CONNECTED>>>>>>>')
     const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
     //err
     try{
