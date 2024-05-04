@@ -157,6 +157,7 @@ export default (httpServer) => {
     })
 
     socket.on('join_channel_room', (data) => {
+      console.log('ChannelROOM JOINED')
       socket.join(data.channelNumber);
     });
 
