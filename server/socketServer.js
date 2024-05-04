@@ -70,11 +70,6 @@ const redisConfig = isProduction?{
 
 const redisClient = new Redis(redisConfig)
 
-
-redisClient.on('connecting', ()=>{
-  console.log('sigh')
-})
-
 redisClient.on('connect', () => {
   infoLogger.info('Connected to Redis');
 });
@@ -115,12 +110,10 @@ const getUserIdFromSocket = async (token) => {
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 // Manage connections
 export default (httpServer) => {
-  const clientUrl = process.env.NODE_ENV === 'production'? process.env.CLIENT_URL_PROD :process.env.CLIENT_URL_DEV
-  console.log(clientUrl, '----')
   const io = new Server(httpServer, {
     cors: {
       origin: function (origin, callback) {
-        const allowedOrigins = ['https://kaiwachat.com', 'http://localhost:5173'];
+        const allowedOrigins = [process.env.CLIENT_URL_PROD, process.env.CLIENT_URL_DEV];
         if (!origin || allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
@@ -132,7 +125,6 @@ export default (httpServer) => {
   })
 
   io.on('connection', async (socket) => {
-    console.log('CONNECTED>>>>>>>')
     const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
     //err
     try{
