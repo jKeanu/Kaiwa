@@ -54,8 +54,7 @@ const infoLogger = winston.createLogger({
   ]
 })
 
-
-const redisClient = new Redis({
+const redisConfig = isProduction?{
   user: process.env.REDIS_USERNAME,
   password: process.env.REDIS_PASSWORD,
   port: 25061,
@@ -68,7 +67,20 @@ const redisClient = new Redis({
     }
     return 5000*retries; // Delay for the next reconnect attempt in milliseconds
   }
-})
+}:{
+  // Default configuration for development (local Redis server)
+  host: 'localhost',
+  port: 6379,
+  retryStrategy: function(retries) {
+    if (retries > 10) {
+      logger.error("Too many local Redis connection retries, stopping retries.");
+      return null;
+    }
+    return 5000 * retries; // Delay for the next reconnect attempt in milliseconds
+  }
+}
+
+const redisClient = new Redis(redisConfig)
 
 redisClient.on('connect', () => {
   logger.info('Connected to Redis');
