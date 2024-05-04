@@ -60,10 +60,18 @@ const redisConfig = isProduction?{
   port: 25061,
   tls:{},
   connectTimeout: 10000,
-  host: process.env.REDIS_HOST,}:{
+  host: process.env.REDIS_HOST,
+  retryStrategy: function(retries){
+    if(retries > 10){
+      logger.error("Too many Redis connection retries, stopping retries.");
+      return null
+    }
+    return 5000*retries; // Delay for the next reconnect attempt in milliseconds
+  }}:{
   // Default configuration for development (local Redis server)
   host: 'localhost',
-  port: 6379}
+  port: 6379
+}
   
 
 
@@ -157,7 +165,6 @@ export default (httpServer) => {
     })
 
     socket.on('join_channel_room', (data) => {
-      console.log('ChannelROOM JOINED')
       socket.join(data.channelNumber);
     });
 

@@ -166,7 +166,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
 
     useEffect(() => {
-        if (socket?.connected && channelNumber) {
+        if (socket && channelNumber) {
             // Join the room
             socket.emit('join_channel_room', {channelNumber});
             // Handle socket disconnection or leaving the room when the component unmounts or changes
