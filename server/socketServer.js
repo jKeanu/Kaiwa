@@ -68,16 +68,6 @@ const redisConfig = isProduction?{
 
 const redisClient = new Redis(redisConfig)
 
-redisClient.connect()
-  .then(() => {
-  infoLogger.info("Connected to Redis successfully!");
-})
-.catch((err) => {
-  logger.error("Redis connection failed", { message: err.message, stack: err.stack });
-  console.error(err)
-  // Consider handling the failure more gracefully here
-});
-
 
 redisClient.on('connecting', ()=>{
   console.log('sigh')
