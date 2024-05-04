@@ -74,6 +74,7 @@ redisClient.connect()
 })
 .catch((err) => {
   logger.error("Redis connection failed", { message: err.message, stack: err.stack });
+  console.error(err)
   // Consider handling the failure more gracefully here
 });
 
