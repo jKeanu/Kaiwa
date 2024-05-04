@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import Redis from 'redis';
 import { Server } from 'socket.io';
 import { promisify } from 'util';
 import User from './models/userModel.js';
@@ -9,7 +8,7 @@ import dotenv from'dotenv';
 import mongoose from 'mongoose';
 import winston from 'winston';
 import WinstonCloudWatch from 'winston-cloudwatch'
-
+import { Redis } from 'ioredis';
 dotenv.config({ path: './config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
@@ -55,23 +54,23 @@ const infoLogger = winston.createLogger({
   ]
 })
 
-console.log(isProduction, '---', process.env.AWS_ELASTICACHE_REDIS_ENDPOINT, '---', process.env.AWS_ELASTICACHE_REDIS_TOKEN)
-const redisClient = Redis.createClient({
-  url:isProduction?process.env.AWS_ELASTICACHE_REDIS_ENDPOINT:'redis://localhost:6379',
-  socket: {
-    //add this with actual redist host
-    //add this with actual redist post
-    reconnectStrategy: function(retries){
-      if(retries > 10){
-        logger.error("Too many Redis connection retries, stopping retries.")
-        return false
-      }else{
-        return  10000
-      }
-    }
-  }
+
+const redisClient = new Redis(process.env.REDIS_STRING)
+
+
+redisClient.on('connect', () => {
+  logger.info('Connected to Redis');
 });
 
+
+redisClient.on('connecting', ()=>{
+  console.log('sigh')
+})
+
+redisClient.on('error', (err) => {
+  logger.error('Redis error', err);
+  console.error(err, '--')
+})
 
 redisClient.on('error', (err) => {
   logger.error('Redis Client Error', {message:err})
@@ -97,8 +96,8 @@ const clearRedisData = async () => {
   }
 }
 
-if (process.env.ALLOW_REDIS_FLUSH_ON_RESTART === 'true') {
-  clearRedisData();
+if (process.env.ALLOW_REDIS_FLUSH_ON_RESTART === 'true' && redisClient) {
+  await clearRedisData();
 }
 
 const getUserIdFromSocket = async (token) => {

@@ -33,7 +33,7 @@ const LoginPage:React.FC=()=> {
                 localStorage.setItem('token', res.data.token)
                 setTimeout(()=>{
                     navigate('/@me')
-                }, 1)
+                }, 100)
             }
         } catch (error: unknown) { 
             if (axios.isAxiosError(error)) { // Type guard for AxiosError

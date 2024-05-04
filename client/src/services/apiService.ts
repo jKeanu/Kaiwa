@@ -20,7 +20,6 @@ export const getCurrentChannel = async(token:string, channelNumber:string|undefi
     return axios.get(`${API_URL}/api/v1/channels/${channelNumber}`, config)
 }
 
-//123
 export const inviteFriendtoGroup = async(token:string, newTime:number, channelId:string, userId:string):Promise<AxiosResponse<{status:string}>>=>{
     const config ={
         headers:{
