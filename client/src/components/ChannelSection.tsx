@@ -468,7 +468,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     function handleKeyDown(event:React.KeyboardEvent<HTMLTextAreaElement>):void{
     // Check if the Enter key was pressed (key code 13)
-      if (event.key === 'Enter' && !event.shiftKey && inputMessage) {
+      if (event.key === 'Enter' && !event.shiftKey && inputMessage && socket?.connected) {
         event.preventDefault();
         // Call the sendMessage function or any other action
         sendMessage();
