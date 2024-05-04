@@ -148,12 +148,11 @@ const HomePage:React.FC = () => {
 
     
         useEffect(() => {
-            //we need to determine if the webpage is fully visible before connecting to the socket since,
-            //webpages have preloading feature on where they detect what you type in url or hover in the link
-            //it will preload certain resources.
+            console.log(token,'-=-' , isOnline)
             if (token && isOnline) {
                 const url = import.meta.env.MODE==='production'? import.meta.env.VITE_API_URL_PROD : import.meta.env.VITE_API_URL_DEV
-                const socketConn = io(url, { query: { token } });
+                console.log(url, '---', import.meta.env.MODE==='production')
+                const socketConn = io(import.meta.env.VITE_API_URL_PROD, { query: { token } });
                 setSocket(socketConn);
                 return ()=>{
                     socketConn.disconnect()
