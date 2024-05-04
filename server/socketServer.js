@@ -91,7 +91,7 @@ redisClient.on('error', (err) => {
 //Since we only use redis for updating user status, this works.
 const clearRedisData = async () => {
   try{
-    await redisClient.flushAll()
+    await redisClient.flushall()
     infoLogger.info('Redis data cleared on restart as configured')
   }catch(err){
     logger.error('Redis Flush All Error', {message:err.message})
@@ -120,7 +120,6 @@ export default (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
       origin: function (origin, callback) {
-        console.log(origin, '============')
         const allowedOrigins = ['https://kaiwachat.com', 'http://localhost:5173'];
         if (!origin || allowedOrigins.includes(origin)) {
           callback(null, true);
