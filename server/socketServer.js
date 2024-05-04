@@ -59,6 +59,7 @@ const redisConfig = isProduction?{
   password: process.env.REDIS_PASSWORD,
   port: 25061,
   tls:{},
+  connectTimeout: 10000,
   host: process.env.REDIS_HOST,
   retryStrategy: function(retries){
     if(retries > 10){
@@ -135,18 +136,10 @@ const getUserIdFromSocket = async (token) => {
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 // Manage connections
 export default (httpServer) => {
-  // const clientUrl = process.env.NODE_ENV === 'production'? process.env.CLIENT_URL_PROD :process.env.CLIENT_URL_DEV
+  const clientUrl = process.env.NODE_ENV === 'production'? process.env.CLIENT_URL_PROD :process.env.CLIENT_URL_DEV
   const io = new Server(httpServer, {
     cors: {
-      origin: function (origin, callback) {
-        const allowedOrigins = ['https://kaiwachat.com', 'http://localhost:5173'];
-        console.log(origin, '----')
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error('Origin not allowed by CORS'));
-        }
-      },
+      origin: clientUrl, //http://localhost:*
       methods: ['GET', 'POST'],
     },
   });
