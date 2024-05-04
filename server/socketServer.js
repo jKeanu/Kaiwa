@@ -8,7 +8,7 @@ import dotenv from'dotenv';
 import mongoose from 'mongoose';
 import winston from 'winston';
 import WinstonCloudWatch from 'winston-cloudwatch'
-import { Redis } from 'ioredis';
+import redis from 'redis'
 dotenv.config({ path: './config.env' });
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
@@ -54,25 +54,30 @@ const infoLogger = winston.createLogger({
   ]
 })
 
-const redisConfig = isProduction?{
-  user: process.env.REDIS_USERNAME,
-  password: process.env.REDIS_PASSWORD,
-  port: 25061,
-  tls:{},
-  connectTimeout: 10000,
-  host: process.env.REDIS_HOST,}:{
-  // Default configuration for development (local Redis server)
-  host: 'localhost',
-  port: 6379}
+// const redisConfig = isProduction?{
+//   user: process.env.REDIS_USERNAME,
+//   password: process.env.REDIS_PASSWORD,
+//   port: 25061,
+//   tls:{},
+//   connectTimeout: 10000,
+//   host: process.env.REDIS_HOST,}:{
+//   // Default configuration for development (local Redis server)
+//   host: 'localhost',
+//   port: 6379}
 
-const redisClient = new Redis(redisConfig)
+const redisClient = redis.createClient({
+  url: process.env.REDIS_HOST,
+  port: 25061,
+  password: process.env.REDIS_PASSWORD,
+  username: process.env.REDIS_USERNAME,
+})
 
 redisClient.on('connecting', ()=>{
   console.log('sigh')
 })
 
 redisClient.on('connect', () => {
-  logger.info('Connected to Redis');
+  infoLogger.info('Connected to Redis');
 });
 
 redisClient.on('error', (err) => {
