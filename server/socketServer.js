@@ -67,15 +67,8 @@ const redisConfig = isProduction?{
   
 
 
-const connectRedis = async()=>{
-  try{
-    const redisClient = new Redis(redisConfig)
-  }catch(err){
-    console.error(err)
-  }
-}
 
-await connectRedis()
+const redisClient = new Redis(redisConfig)
 
 
 redisClient.on('connecting', ()=>{
