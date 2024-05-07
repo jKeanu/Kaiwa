@@ -159,6 +159,12 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
         setCurrSetting('userPassword')
         setUserSettErr({err:false, message:''})
     }
+
+    const handleContactUs = (e:React.MouseEvent<HTMLButtonElement>):void=>{
+        e.preventDefault()
+        setCurrSetting('contactUs')
+        setUserSettErr({err:false, message:''})
+    }
     
     useEffect(()=>{
         setModalVisible(true)
@@ -186,82 +192,94 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                 style={{borderBottom:`${currSetting==='userPassword'?'1px solid #b9b9b9':''}`}}>
                     Change Password
                 </button>
+                <button onClick={handleContactUs} className="contact-us-button">
+                    Contact Us
+                </button>
             </div>
             <div className="profile-settings">
-                <form className={`user-info-form ${currSetting==='userPassword'?'inactive':''} user-settings-form`}
-                onSubmit={handleUserInfoSubmit}>
-                    <div className="user-photo-input-container">
-                        <label htmlFor="user-setting-photo">
-                            <img src={`${profileImagePreview?profileImagePreview:currUserData.photo==='default.jpeg'?'/img/default.jpeg':currUserData.photoUrl}`} 
-                            className="user-setting-photo"/>
-                            <div className="photo-input-hover">Change</div>
-                        </label>
-                        <input type="file" name="profileImage" id="user-setting-photo" onChange={handleFileChange} className="user-setting-photo-input"/>
-                    </div>
-                    <div className="user-info-input-containter">
-                        <label className="user-setting-input-label" htmlFor="user-setting-email">
-                            Email
-                        </label>
-                        <input className="user-email-input user-info-input" id="user-setting-email" disabled={true} 
-                        name="email" placeholder={`${currUserData.email}`}/>
-                        <label className="user-setting-input-label" htmlFor="user-setting-displayName">
-                            Display Name
-                        </label>
-                        <input className="user-display-name-input user-info-input" id="user-setting-displayName" 
-                        value={userInfo.displayName} name="displayName" onChange={handleUserInfoChange}
-                        placeholder={`${currUserData.displayName}`}/>
-                        <label className="user-setting-input-label" htmlFor="user-setting-friendTag">
-                            Friend Tag
-                        </label>
-                        <input className="user-friend-tag-input user-info-input" id="user-setting-friendTag" maxLength={6}
-                        value={userInfo.friendTag} name="friendTag" onChange={handleUserInfoChange}
-                        placeholder={`${currUserData.friendTag}`}/>
-                    </div>
-                    <div className="user-info-button-container user-settings-button-container">
-                        <button className="user-info-submit" type="submit" disabled={isLoading}>
-                            {isLoading?
-                                <div className="user-setting-loading"></div>
-                            :'Submit'}
-                        </button>
-                    </div>
-                    {userSettErr.err&&
-                    <div className="user-sett-error">
-                        {userSettErr.message}
-                    </div>}
-                </form>
-                <form className={`user-password-form ${currSetting==='userPassword'?'active':''} user-settings-form`} onSubmit={handleUserPasswordSubmit}>
-                    <div className="user-password-sett-notice">
-                        After a successful password change, you will be redirected to the login page.
-                    </div>
-                    <div className="user-password-input-container">
-                        <label className="user-setting-input-label" htmlFor="user-setting-currentPassword">
-                            Current Password
-                        </label>
-                        <input type="password" className="user-password-input user-current-password-input" onChange={handleUserPasswordChange}
-                        name="currentPassword" id="user-setting-currentPassword" value={userPassword.currentPassword} required={true}/>
-                        <label className="user-setting-input-label" htmlFor="user-setting-password">
-                            New Passsword
-                        </label>
-                        <input type="password" className="user-password-input user-password-input" onChange={handleUserPasswordChange}
-                        name="password" id="user-setting-password" value={userPassword.password} required={true}/>
-                        <label className="user-setting-input-label" htmlFor="user-setting-passwordConfirm">
-                            Confirm Passsword
-                        </label>
-                        <input type="password" className="user-password-input user-password-confirm-input" onChange={handleUserPasswordChange}
-                        name="passwordConfirm" id="user-setting-passwordConfirm" value={userPassword.passwordConfirm} required={true}/>
-                    </div>
-                    <div className="user-password-button-container user-settings-button-container" >
-                        <button className="user-password-submit user-setting-submit" type="submit" disabled={isLoading}>
-                            {isLoading?
-                                <div className="user-setting-loading"></div>
-                            :'Change Password'}
-                        </button>
-                    </div>
-                    {userSettErr.err&&
-                    <div className="user-sett-error" >
-                        {userSettErr.message}
-                    </div>}
-                </form>
+                {
+                currSetting!=="contactUs"?
+                    <>
+                    <form className={`user-info-form ${currSetting==='userPassword'?'inactive':''} user-settings-form`}
+                    onSubmit={handleUserInfoSubmit}>
+                        <div className="user-photo-input-container">
+                            <label htmlFor="user-setting-photo">
+                                <img src={`${profileImagePreview?profileImagePreview:currUserData.photo==='default.jpeg'?'/img/default.jpeg':currUserData.photoUrl}`} 
+                                className="user-setting-photo"/>
+                                <div className="photo-input-hover">Change</div>
+                            </label>
+                            <input type="file" name="profileImage" id="user-setting-photo" onChange={handleFileChange} className="user-setting-photo-input"/>
+                        </div>
+                        <div className="user-info-input-containter">
+                            <label className="user-setting-input-label" htmlFor="user-setting-email">
+                                Email
+                            </label>
+                            <input className="user-email-input user-info-input" id="user-setting-email" disabled={true} 
+                            name="email" placeholder={`${currUserData.email}`}/>
+                            <label className="user-setting-input-label" htmlFor="user-setting-displayName">
+                                Display Name
+                            </label>
+                            <input className="user-display-name-input user-info-input" id="user-setting-displayName" 
+                            value={userInfo.displayName} name="displayName" onChange={handleUserInfoChange}
+                            placeholder={`${currUserData.displayName}`}/>
+                            <label className="user-setting-input-label" htmlFor="user-setting-friendTag">
+                                Friend Tag
+                            </label>
+                            <input className="user-friend-tag-input user-info-input" id="user-setting-friendTag" maxLength={6}
+                            value={userInfo.friendTag} name="friendTag" onChange={handleUserInfoChange}
+                            placeholder={`${currUserData.friendTag}`}/>
+                        </div>
+                        <div className="user-info-button-container user-settings-button-container">
+                            <button className="user-info-submit" type="submit" disabled={isLoading}>
+                                {isLoading?
+                                    <div className="user-setting-loading"></div>
+                                :'Submit'}
+                            </button>
+                        </div>
+                        {userSettErr.err&&
+                        <div className="user-sett-error">
+                            {userSettErr.message}
+                        </div>}
+                    </form>
+                    <form className={`user-password-form ${currSetting==='userPassword'?'active':''} user-settings-form`} onSubmit={handleUserPasswordSubmit}>
+                        <div className="user-password-sett-notice">
+                            After a successful password change, you will be redirected to the login page.
+                        </div>
+                        <div className="user-password-input-container">
+                            <label className="user-setting-input-label" htmlFor="user-setting-currentPassword">
+                                Current Password
+                            </label>
+                            <input type="password" className="user-password-input user-current-password-input" onChange={handleUserPasswordChange}
+                            name="currentPassword" id="user-setting-currentPassword" value={userPassword.currentPassword} required={true}/>
+                            <label className="user-setting-input-label" htmlFor="user-setting-password">
+                                New Passsword
+                            </label>
+                            <input type="password" className="user-password-input user-password-input" onChange={handleUserPasswordChange}
+                            name="password" id="user-setting-password" value={userPassword.password} required={true}/>
+                            <label className="user-setting-input-label" htmlFor="user-setting-passwordConfirm">
+                                Confirm Passsword
+                            </label>
+                            <input type="password" className="user-password-input user-password-confirm-input" onChange={handleUserPasswordChange}
+                            name="passwordConfirm" id="user-setting-passwordConfirm" value={userPassword.passwordConfirm} required={true}/>
+                        </div>
+                        <div className="user-password-button-container user-settings-button-container" >
+                            <button className="user-password-submit user-setting-submit" type="submit" disabled={isLoading}>
+                                {isLoading?
+                                    <div className="user-setting-loading"></div>
+                                :'Change Password'}
+                            </button>
+                        </div>
+                        {userSettErr.err&&
+                        <div className="user-sett-error" >
+                            {userSettErr.message}
+                        </div>}
+                    </form>
+                </>:
+                <div className="contact-us-container">
+                    <span>Email us at:</span>
+                    <span>contact@kaiwachat.com</span>
+                </div>
+                }
             </div>
         </div>
     )
