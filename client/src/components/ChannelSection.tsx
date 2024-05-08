@@ -80,7 +80,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const {cache, mutate} = useSWRConfig()
     const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
     const channelCacheKey = `api/v1/channels/${channelNumber}`
-    const messagesLimit = 12
+    const messagesLimit = 16
 
     const membersId:string[] = useMemo(()=>{
         return [...currentChannelMembers].map(member=>member._id)
@@ -137,7 +137,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const { data: messagesData, error: messagesError} = useSWR<ChannelMessagesStatus>(
         //if there's already a data in the cache, we no longer need to fetch 
         messageCacheKey, (endpoint:string) =>
-        messageFetcher(endpoint, 12, 0, token),
+        messageFetcher(endpoint, 16, 0, token),
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
@@ -712,9 +712,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     //if there's a difference, it means there is messages data in the cache that we can 
                     //get without fetching 
                     if(lenDifference>0){
-                        //Since every scroll up, we render additional 15 messages(messagesLimit),
+                        //Since every scroll up, we render additional 16 messages(messagesLimit),
                         //if the difference between the rendered messages and messages in the cache's length is
-                        //less than 15, we can fetch the remaining messages to make up for the additional 15 messages
+                        //less than 16, we can fetch the remaining messages to make up for the additional 15 messages
                         if(lenDifference<messagesLimit){
                             try{
                                 const newMessagesData = await messageFetcher(
