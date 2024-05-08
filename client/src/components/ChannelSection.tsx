@@ -188,6 +188,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
 
 
+    
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
 
@@ -249,7 +250,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             return cleanup
         }
     }, [socket, channelNumber, currentChannel]);
-
 
     useEffect(()=>{
         if(textareaRef.current){
@@ -407,7 +407,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(messageBoxRef.current){
             messageBoxRef.current.scrollTop=0
         }
-        
     }
     
 
@@ -920,7 +919,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             <button className="channel-to-member-button" onClick={handleChannelToMembers}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
                                     stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
-                                    className="channel-to-group-image">
+                                    className="channel-to-group-image nav-button">
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
                                         </path>
                                         <circle cx="9" cy="7" r="4">
