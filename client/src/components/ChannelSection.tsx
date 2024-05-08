@@ -698,6 +698,17 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
     }, 300)
 
+    useEffect(() => {
+        const chatContainer = messageBoxRef.current;
+        if (chatContainer && msgFetchLoading) {
+            const currentScrollPosition = chatContainer.scrollTop;
+            chatContainer.scrollTop = currentScrollPosition + 1; // scroll down slightly
+            setTimeout(() => {
+                chatContainer.scrollTop = currentScrollPosition; // and back up
+            }, 50);
+        }
+    }, [msgFetchLoading])
+
     useEffect(()=>{
         const fetchMoreMessages = ():void =>{
             if(messagesSkip > 0){
@@ -706,15 +717,9 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     if(!prevMessageData){
                         return
                     }
-                    //Determine the difference between the current rendered messages' length and the 
-                    //messages data in the cache
                     const lenDifference = prevMessageData.messages.length - messageReceived.length
-                    //if there's a difference, it means there is messages data in the cache that we can 
-                    //get without fetching 
                     if(lenDifference>0){
-                        //Since every scroll up, we render additional 16 messages(messagesLimit),
-                        //if the difference between the rendered messages and messages in the cache's length is
-                        //less than 16, we can fetch the remaining messages to make up for the additional 15 messages
+
                         if(lenDifference<messagesLimit){
                             try{
                                 const newMessagesData = await messageFetcher(
