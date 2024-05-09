@@ -727,10 +727,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                     setAllMessagesFetched(true)
                                 }
                                 setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
-                                setMsgFetchLoading(false)
                                 if(messageBoxRef.current){
-                                    messageBoxRef.current.offsetHeight
+                                    messageBoxRef.current.scrollTop = messageBoxRef.current.scrollTop + 25
                                 }
+                                setMsgFetchLoading(false)
                                 return {status:prevMessageData.status,
                                         messages:[...prevMessageData.messages, ...newMessagesData.messages]}
                             }catch(err){
@@ -743,7 +743,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 return [...[...prevMessageData.messages].slice(0, prevMessages.length+messagesLimit)]
                             })
                             if(messageBoxRef.current){
-                                messageBoxRef.current.offsetHeight
+                                messageBoxRef.current.scrollTop = messageBoxRef.current.scrollTop + 25
                             }
                             setMsgFetchLoading(false)
                             return {...prevMessageData}
@@ -765,10 +765,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     //to both 
                         const allMessages = [...prevMessageData.messages, ...newMessagesData.messages]
                         setMessageReceived(allMessages)
-                        setMsgFetchLoading(false)
                         if(messageBoxRef.current){
-                            messageBoxRef.current.offsetHeight
+                            messageBoxRef.current.scrollTop = messageBoxRef.current.scrollTop + 25
                         }
+                        setMsgFetchLoading(false)
                         return {status:prevMessageData.status, messages:allMessages}
                     }catch(err){
                         setMessagesSkip(prevSkip=>prevSkip-messagesLimit)
