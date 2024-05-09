@@ -1004,7 +1004,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 </nav>
                 <section className="message-section">
                     <div className="message-box" ref={messageBoxRef} onScroll={handleScroll}>
-                    {messageReceived.length>0&&messageReceived[0].sender._id===_id&&
+                        {messageReceived.length>0&&messageReceived[0].sender._id===_id&&
                         <div className="sent-indicator-container">
                             <span className={`sent-indicator ${(messageSentStatus)?'sent-visible':''}`}>
                                 {
@@ -1048,6 +1048,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             )):
                             <div></div>
                         }
+                    {
+                        msgFetchLoading&&
+                    <div className="fetch-message-loading-container">
+                        <div className="fetch-message-loading">
+                        </div>
+                    </div>
+                    }
                     </div>
                     <div className="message-input-container">
                         <ReactTextareaAutosize 

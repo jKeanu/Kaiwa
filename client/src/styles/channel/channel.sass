@@ -1,3 +1,39 @@
+@keyframes l20-1
+    0%
+        clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%)
+
+    12.5%
+        clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%)
+
+    25%
+        clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%)
+
+    50%
+        clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+
+    62.5%
+        clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+
+    75%
+        clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%)
+
+    100%
+        clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%)
+
+@keyframes l20-2
+    0%
+        transform: scaleY(1) rotate(0deg)
+
+    49.99%
+        transform: scaleY(1) rotate(135deg)
+
+    50%
+        transform: scaleY(-1) rotate(0deg)
+
+    100%
+        transform: scaleY(-1) rotate(-135deg)
+    
+    
 =channel-mobile
     @media (max-width: $breakpoint-tablet + 0.99)
         position: absolute
@@ -64,7 +100,6 @@
                         align-items: center
                     button
                         padding: 0
-
             .message-section
                 height: 100vh
                 height: 100dvh
@@ -908,6 +943,18 @@
                 display: flex
                 flex-direction: column-reverse
                 margin-top: 2.5rem
+                .fetch-message-loading-container
+                    display: flex
+                    justify-content: center
+                    align-items: center
+                    .fetch-message-loading
+                        width: 35px
+                        aspect-ratio: 1
+                        border-radius: 50%
+                        margin: 0.5rem 0
+                        border: 6px solid #3b4b5fc7
+                        animation: l20-1 0.8s infinite linear alternate,l20-2 1.6s infinite linear
+                        -webkit-animation: l20-1 0.8s infinite linear alternate,l20-2 1.6s infinite linear
                 .sent-indicator-container
                     text-align: end
                     min-width: 1.5rem
@@ -919,8 +966,7 @@
                         margin-right: 2.5rem
                         &.sent-visible
                             display: inline
-                            
-
+                   
                 .user-message-info-container
                     display: flex
                     justify-content: flex-start
