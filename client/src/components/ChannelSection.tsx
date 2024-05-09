@@ -698,14 +698,14 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
     }, 300)
 
-    useEffect(() => {
+    useEffect(() => {   
         const chatContainer = messageBoxRef.current;
         if (chatContainer && msgFetchLoading) {
             const currentScrollPosition = chatContainer.scrollTop;
-            chatContainer.scrollTop = currentScrollPosition + 1; // scroll down slightly
+            chatContainer.scrollTop = currentScrollPosition + 5; // scroll down slightly
             setTimeout(() => {
                 chatContainer.scrollTop = currentScrollPosition; // and back up
-            }, 50);
+            }, 100);
         }
     }, [msgFetchLoading])
 
