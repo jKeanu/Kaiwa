@@ -53,7 +53,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
     const [notSentMessages, setNotSentMessages] = useState<string[]>([])
-    const [prevScrollPosition, setPrevScrollPosition] = useState<number>()
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
