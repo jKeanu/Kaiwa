@@ -53,6 +53,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
     const [notSentMessages, setNotSentMessages] = useState<string[]>([])
+    const [prevScrollPosition, setPrevScrollPosition] = useState<number>()
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
@@ -162,6 +163,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
         }
     }, [messagesData, messagesError, messageReceived])
+
 
 
 
@@ -727,9 +729,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                     setAllMessagesFetched(true)
                                 }
                                 setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
-                                if(messageBoxRef.current){
-                                    messageBoxRef.current.scrollTop = messageBoxRef.current.scrollTop + 25
-                                }
                                 setMsgFetchLoading(false)
                                 return {status:prevMessageData.status,
                                         messages:[...prevMessageData.messages, ...newMessagesData.messages]}
@@ -742,9 +741,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             setMessageReceived(prevMessages=>{
                                 return [...[...prevMessageData.messages].slice(0, prevMessages.length+messagesLimit)]
                             })
-                            if(messageBoxRef.current){
-                                messageBoxRef.current.scrollTop = messageBoxRef.current.scrollTop + 25
-                            }
                             setMsgFetchLoading(false)
                             return {...prevMessageData}
                         }
@@ -765,9 +761,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     //to both 
                         const allMessages = [...prevMessageData.messages, ...newMessagesData.messages]
                         setMessageReceived(allMessages)
-                        if(messageBoxRef.current){
-                            messageBoxRef.current.scrollTop = messageBoxRef.current.scrollTop + 25
-                        }
                         setMsgFetchLoading(false)
                         return {status:prevMessageData.status, messages:allMessages}
                     }catch(err){
