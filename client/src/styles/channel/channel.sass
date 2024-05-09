@@ -69,6 +69,8 @@
                 height: 100vh
                 height: 100dvh
                 .message-box
+                    -webkit-overflow-scrolling: touch
+                    overflow-anchor: none
                     padding: 0 0.5rem 0.5rem 0.5rem
                     @include scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
                     .user-message-info-container
