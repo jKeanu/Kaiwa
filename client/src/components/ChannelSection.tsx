@@ -692,12 +692,12 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 const gap = Math.floor(Math.abs(container.scrollHeight - ((container.scrollTop*-1) + container.clientHeight)))
                 const isTop = (container.scrollTop*-1) + container.clientHeight === container.scrollHeight ||
                 (container.scrollTop*-1) + container.clientHeight === container.scrollHeight -1 || 
-                gap === 0 || gap === 1
+                gap <=100
                 if((isTop && !allMessagesFetched && !msgFetchLoading)){
                     setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
                 }
             }
-    }, 300)
+    }, 1000)
 
     useEffect(()=>{
         const fetchMoreMessages = ():void =>{

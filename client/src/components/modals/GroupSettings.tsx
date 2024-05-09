@@ -37,7 +37,7 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
         setModalDisabled(true)
         try{
             if(groupFormData.channelName===channelName&&!groupFormData.groupProfileImage){
-                setGroupSettErr({err:true, message:'There is no changes in the current group information.'})
+                setGroupSettErr({err:true, message:'There are no changes.'})
                 setIsLoading(false)
                 setModalDisabled(false)
                 return 

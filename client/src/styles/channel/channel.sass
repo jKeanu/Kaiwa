@@ -104,6 +104,7 @@
                 height: 100vh
                 height: 100dvh
                 .message-box
+                    overscroll-behavior: contain
                     transition: all 0.3s ease-out
                     -webkit-overflow-scrolling: touch !important
                     overflow-anchor: none
@@ -263,13 +264,11 @@
                             height: 1.8rem
                 .group-settings-form
                     height: 100%
-                    display: flex
-                    flex-direction: column
                     position: relative
                     width: 100%
                     .group-sett-error
                         position: absolute
-                        top: 0%
+                        top: -2%
                         color: $error-message
                         font-size: 0.7rem
                         font-family: 'Open Sans', sans-serif
