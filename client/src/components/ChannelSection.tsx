@@ -171,6 +171,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             // Join the room
             socket.emit('join_channel_room', {channelNumber});
             // Handle socket disconnection or leaving the room when the component unmounts or changes
+            socket.on('connect', () => {
+                // Re-join the room automatically on reconnect
+                socket.emit('join_channel_room', { channelNumber });
+            });
             return () => {
                 socket.emit('leave_channel_room', channelNumber);
             }
@@ -402,9 +406,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             return [...updatedMessages, inputMessage]
         })
         setInputMessage('')
-        if(messageBoxRef.current){
-            messageBoxRef.current.scrollTop=0
-        }
     }
     
 
