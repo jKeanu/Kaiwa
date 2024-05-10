@@ -148,7 +148,7 @@ const HomePage:React.FC = () => {
 
     
         useEffect(() => {
-            if (token && isOnline) {
+            if (token) {
                 const url = import.meta.env.MODE==='production'? import.meta.env.VITE_API_URL_PROD : import.meta.env.VITE_API_URL_DEV
                 const socketConn = io(url, { query: { token }, reconnectionAttempts: 5, reconnectionDelay: 3000 });
                 setSocket(socketConn);
@@ -156,7 +156,7 @@ const HomePage:React.FC = () => {
                     socketConn.disconnect()
                 }
             }     
-        }, [token, isOnline])
+        }, [token])
 
 
         useEffect(() => {
@@ -188,7 +188,6 @@ const HomePage:React.FC = () => {
         useEffect(()=>{
             if(currUserData){
                 //Save the logged in user's data to a state
-                setIsOnline(true)
                 setUserData(currUserData.user)
                 const groupChannels:Channel[] = [...currUserData.user.groups??[]]
                 const friendReqData:FriendReq[] = currUserData.user?.friends?.filter(friend=>friend.status === 'Pending')??[]
