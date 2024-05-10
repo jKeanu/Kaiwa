@@ -235,9 +235,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     }
                     // Update the messages array in the channel data
                   }, false); // false tells the SWR to not re-fetch the data from the server after updating the cache
-                if(messageBoxRef.current){
-                    if(messageBoxRef.current.scrollTop*-1<=800) messageBoxRef.current.scrollTop=0
-                }
                 setMessageSentStatus(false)
             };
             // Adding the listener

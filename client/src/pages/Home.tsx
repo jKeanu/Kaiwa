@@ -150,7 +150,7 @@ const HomePage:React.FC = () => {
         useEffect(() => {
             if (token && isOnline) {
                 const url = import.meta.env.MODE==='production'? import.meta.env.VITE_API_URL_PROD : import.meta.env.VITE_API_URL_DEV
-                const socketConn = io(url, { query: { token } });
+                const socketConn = io(url, { query: { token }, reconnectionAttempts: 5, reconnectionDelay: 3000 });
                 setSocket(socketConn);
                 return ()=>{
                     socketConn.disconnect()
