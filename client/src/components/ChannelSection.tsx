@@ -53,7 +53,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
     const [notSentMessages, setNotSentMessages] = useState<string[]>([])
-    const [prevScrollHeight, setPrevScrollHeight] = useState<number>(0)
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
@@ -120,7 +119,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setMsgFetchLoading(false)
         setAllMessagesFetched(false)
         setNotSentMessages([])
-        setPrevScrollHeight(0)
     }, [channelNumber])
 
     useEffect(() => {
