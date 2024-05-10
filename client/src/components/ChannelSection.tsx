@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo} from 'react'
+import React, { useState, useEffect, useRef, useMemo, useCallback} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -684,21 +684,18 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setIsMemberVisible(true)
     }
 
-    const handleScroll = throttle(()=>{
-            const container = messageBoxRef.current 
-            if(container && !msgFetchLoading && !allMessagesFetched){
-                // container.clientHeight represents the height of the visible portion of the container, 
-                // which is the part of the container that is currently displayed on the screen
-                const gap = Math.floor(Math.abs(container.scrollHeight - ((container.scrollTop*-1) + container.clientHeight)))
-                const isTop = gap <= container.scrollHeight/2 || (container.scrollTop*-1) + container.clientHeight === container.scrollHeight ||
-                (container.scrollTop*-1) + container.clientHeight === container.scrollHeight - 1 
-                if((isTop)){
-                    setTimeout(()=>{
-                        setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
-                    }, 300)
-                }
+    const handleScroll = useCallback(throttle(() => {
+        const container = messageBoxRef.current;
+        if (container && !msgFetchLoading && !allMessagesFetched) {
+            const gap = Math.abs(container.scrollHeight - (Math.abs(container.scrollTop) + container.clientHeight));
+            const isTop = gap <= container.clientHeight/2 || Math.abs(container.scrollTop) + container.clientHeight >= container.scrollHeight;
+
+            if (isTop) {
+                // Perform the action when scrolled to the top
+                setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
             }
-    }, 800)
+        }
+    }, 300), [])
 
 
     useEffect(()=>{
@@ -1051,13 +1048,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             )):
                             <div></div>
                         }
-                    {
-                        msgFetchLoading&&
-                    <div className="fetch-message-loading-container">
+                    <div className="top-message-gap">
                         <div className="fetch-message-loading">
+                        { msgFetchLoading&&
+                        <div className="fetch-message-loading">
+                            </div>}
                         </div>
                     </div>
-                    }
                     </div>
                     <div className="message-input-container">
                         <ReactTextareaAutosize 
