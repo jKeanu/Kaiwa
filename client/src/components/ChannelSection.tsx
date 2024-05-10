@@ -53,6 +53,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const [allMessagesFetched, setAllMessagesFetched] = useState(false)
     const [msgFetchLoading, setMsgFetchLoading] = useState(false)
     const [notSentMessages, setNotSentMessages] = useState<string[]>([])
+    const [prevScrollHeight, setPrevScrollHeight] = useState<number>(0)
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
@@ -119,6 +120,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setMsgFetchLoading(false)
         setAllMessagesFetched(false)
         setNotSentMessages([])
+        setPrevScrollHeight(0)
     }, [channelNumber])
 
     useEffect(() => {
@@ -686,22 +688,24 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     const handleScroll = throttle(()=>{
             const container = messageBoxRef.current 
-            if(container){
+            if(container && !msgFetchLoading && !allMessagesFetched){
                 // container.clientHeight represents the height of the visible portion of the container, 
                 // which is the part of the container that is currently displayed on the screen
                 const gap = Math.floor(Math.abs(container.scrollHeight - ((container.scrollTop*-1) + container.clientHeight)))
-                const isTop = (container.scrollTop*-1) + container.clientHeight === container.scrollHeight ||
-                (container.scrollTop*-1) + container.clientHeight === container.scrollHeight -1 || 
-                gap <=100
-                if((isTop && !allMessagesFetched && !msgFetchLoading)){
-                    setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
+                const isTop = gap <= container.scrollHeight/2 || (container.scrollTop*-1) + container.clientHeight === container.scrollHeight ||
+                (container.scrollTop*-1) + container.clientHeight === container.scrollHeight - 1 
+                if((isTop)){
+                    setTimeout(()=>{
+                        setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
+                    }, 300)
                 }
             }
-    }, 1000)
+    }, 800)
+
 
     useEffect(()=>{
         const fetchMoreMessages = ():void =>{
-            if(messagesSkip > 0){
+            if(messagesSkip > 0 && messageBoxRef.current){
                 setMsgFetchLoading(true)
                 mutate(messageCacheKey, async (prevMessageData:ChannelMessagesStatus|undefined)=>{
                     if(!prevMessageData){
@@ -729,6 +733,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 }
                                 setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
                                 setMsgFetchLoading(false)
+                                
                                 return {status:prevMessageData.status,
                                         messages:[...prevMessageData.messages, ...newMessagesData.messages]}
                             }catch(err){
@@ -769,7 +774,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 }, false)
             }
         }
-        if(!msgFetchLoading){
+        if(!msgFetchLoading && !allMessagesFetched){
             fetchMoreMessages()
         }
     }, [messagesSkip])
