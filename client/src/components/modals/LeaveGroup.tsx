@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { LeaveGroup } from "../../types/generalTypes";
+import { ActionType, LeaveGroup } from "../../types/generalTypes";
 import { leaveGroup } from "../../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
     const [isLoading, setIsLoading]  = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     
-    const {setModalVisible, modalVisible} = useChannelCustomContext()
+    const {setModalVisible, modalVisible, channelsDispatch} = useChannelCustomContext()
 
     const handleLeaveGroup=async(e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
         e.preventDefault()
@@ -23,6 +23,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
                 navigate('/@me')
                 setIsLoading(false)
                 setModalDisabled(false)
+                channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId}})
                 if(socket){
                     socket.emit('leave_group', {channelId, channelNumber})
                 }
