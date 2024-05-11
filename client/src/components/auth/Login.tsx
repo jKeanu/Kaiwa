@@ -15,7 +15,6 @@ const LoginPage:React.FC=()=> {
     const [loading, setLoading] = useState<{isLoading:boolean, type:string}>({isLoading:false, type:''})
     const [forgotPassSuccess, setForgotPassSuccess] = useState<string>('')
     const [containerVisible, setContainerVisible] = useState(false)
-    const navigate = useNavigate()
     
     useEffect(()=>{
         setContainerVisible(true)
@@ -31,9 +30,7 @@ const LoginPage:React.FC=()=> {
             const res:AxiosResponse<AuthStatus> = await loginUser(email, password);
             if (res.data.status === "success") {
                 localStorage.setItem('token', res.data.token)
-                setTimeout(()=>{
-                    navigate('/@me')
-                }, 100)
+                window.location.href = '/@me'
             }
         } catch (error: unknown) { 
             if (axios.isAxiosError(error)) { // Type guard for AxiosError

@@ -286,7 +286,7 @@ const HomePage:React.FC = () => {
                 if (isExpired) {
                     setToken('')
                     localStorage.removeItem('token')
-                    navigate('/login')
+                    window.location.href = '/login'
                 }
             }
         }, [token, navigate]);

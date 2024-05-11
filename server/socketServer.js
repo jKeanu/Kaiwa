@@ -110,7 +110,7 @@ const getUserIdFromSocket = async (token) => {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
     return decoded.id
   } catch (error) {
-    logger.error('Token Decoding Error', {message:err.message, stack:err.stack})
+    logger.error('Token Decoding Error', {message:error.message, stack:error.stack})
   }
 };
 
