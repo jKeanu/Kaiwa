@@ -23,6 +23,14 @@ const app = express();
 
 app.set('trust proxy', 1)
 
+
+// Development logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL_PROD : process.env.CLIENT_URL_DEV,
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -31,8 +39,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
  
-
-app.use(express.static(path.join(__dirname, 'public')));
 // Set Security HTTP headersc
 app.use(helmet({
   contentSecurityPolicy: {
@@ -55,11 +61,6 @@ app.use(helmet({
   permittedCrossDomainPolicies: { permittedPolicies: 'none' },
   xssFilter: true
 }));
-
-// Development logging
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
