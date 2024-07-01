@@ -3,24 +3,16 @@ import { AuthStatus, UserDataStatus, RegisterForm, ChannelDataStatus, AcceptFrie
 
 const API_URL = import.meta.env.MODE === 'production'? import.meta.env.VITE_API_URL_PROD : import.meta.env.VITE_API_URL_DEV;
 
-export const registerUser = async (formData:RegisterForm):Promise<AxiosResponse<AuthStatus>> => {
+export const registerUser = (formData:RegisterForm):Promise<AxiosResponse<AuthStatus>> => {
     return axios.post(`${API_URL}/api/v1/users/register`, formData);
 };
 
-export const loginUser = async (email:string, password:string):Promise<AxiosResponse<AuthStatus>> => {
+export const loginUser = (email:string, password:string):Promise<AxiosResponse<AuthStatus>> => {
     return axios.post(`${API_URL}/api/v1/users/login`, { email, password });
 };
 
-export const getCurrentChannel = async(token:string, channelNumber:string|undefined):Promise<AxiosResponse<ChannelDataStatus>>=>{
-    const config ={
-        headers:{
-            'Authorization': `Bearer ${token}`
-        }
-    };
-    return axios.get(`${API_URL}/api/v1/channels/${channelNumber}`, config)
-}
 
-export const inviteFriendtoGroup = async(token:string, newTime:number, channelId:string, userId:string):Promise<AxiosResponse<{status:string}>>=>{
+export const inviteFriendtoGroup = (token:string, newTime:number, channelId:string, userId:string):Promise<AxiosResponse<{status:string}>>=>{
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`
@@ -30,7 +22,7 @@ export const inviteFriendtoGroup = async(token:string, newTime:number, channelId
 }
 
 //Group
-export const createGroup = async(token:string, members:string[], channelName:string):Promise<AxiosResponse<CreateGroupStatus>>=>{
+export const createGroup = (token:string, members:string[], channelName:string):Promise<AxiosResponse<CreateGroupStatus>>=>{
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`
@@ -39,7 +31,7 @@ export const createGroup = async(token:string, members:string[], channelName:str
     return axios.post(`${API_URL}/api/v1/groups`, {members, channelName}, config)
 }
 
-export const deleteGroup = async(token:string, channelId:string):Promise<AxiosResponse<void>>=>{
+export const deleteGroup = (token:string, channelId:string):Promise<AxiosResponse<void>>=>{
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`
@@ -48,7 +40,7 @@ export const deleteGroup = async(token:string, channelId:string):Promise<AxiosRe
     return axios.delete(`${API_URL}/api/v1/groups/${channelId}`, config)
 }
 
-export const leaveGroup = async(token:string, channelId:string):Promise<AxiosResponse<void>>=>{
+export const leaveGroup = (token:string, channelId:string):Promise<AxiosResponse<void>>=>{
     const config = {
         headers:{
             'Authorization': `Bearer ${token}`
@@ -58,7 +50,7 @@ export const leaveGroup = async(token:string, channelId:string):Promise<AxiosRes
 }
 
 //123
-export const changeGroupLeader = async(token:string, channelId:string, userId:string):Promise<AxiosResponse<{status:string}>>=>{
+export const changeGroupLeader = (token:string, channelId:string, userId:string):Promise<AxiosResponse<{status:string}>>=>{
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`
@@ -67,7 +59,7 @@ export const changeGroupLeader = async(token:string, channelId:string, userId:st
     return axios.patch(`${API_URL}/api/v1/groups/${channelId}/changeleader`, {userId}, config)
 }
 
-export const changeGroupSettings = async(token:string, groupId:string,groupInfo:FormData):Promise<AxiosResponse<UpdateGroupStatus>>=>{
+export const changeGroupSettings = (token:string, groupId:string,groupInfo:FormData):Promise<AxiosResponse<UpdateGroupStatus>>=>{
     const config={
         headers:{
             'Authorization': `Bearer ${token}`
@@ -76,7 +68,7 @@ export const changeGroupSettings = async(token:string, groupId:string,groupInfo:
     return axios.patch(`${API_URL}/api/v1/groups/${groupId}/update`, groupInfo, config)
 }
 
-export const addFriend = async(token:string, displayName:string, friendTag:string):Promise<AxiosResponse<AddFriendStatus>>=>{
+export const addFriend = (token:string, displayName:string, friendTag:string):Promise<AxiosResponse<AddFriendStatus>>=>{
     const config={
         headers:{
             'Authorization': `Bearer ${token}`
@@ -85,7 +77,7 @@ export const addFriend = async(token:string, displayName:string, friendTag:strin
     return axios.post(`${API_URL}/api/v1/me/friends`, {displayName, friendTag}, config)
 }
 
-export const acceptFriend = async(token:string, pendingUserId:string):Promise<AxiosResponse<AcceptFriendStatus>>=>{
+export const acceptFriend = (token:string, pendingUserId:string):Promise<AxiosResponse<AcceptFriendStatus>>=>{
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`
@@ -94,7 +86,7 @@ export const acceptFriend = async(token:string, pendingUserId:string):Promise<Ax
     return axios.patch(`${API_URL}/api/v1/me/friends/${pendingUserId}/accept`, '', config)}
 
 
-export const declineFriend = async(token:string, pendingUserId:string):Promise<AxiosResponse<void>>=>{
+export const declineFriend = (token:string, pendingUserId:string):Promise<AxiosResponse<void>>=>{
     const config = {
         headers:{
             'Authorization': `Bearer ${token}`
@@ -103,22 +95,23 @@ export const declineFriend = async(token:string, pendingUserId:string):Promise<A
     return axios.delete(`${API_URL}/api/v1/me/friends/${pendingUserId}/decline`, config)
 }
 
-export const removeFriend = async(token:string, friendId:string):Promise<AxiosResponse<void>>=>{
+export const removeFriend = (token:string, friendId:string):Promise<AxiosResponse<void>>=>{
     const config = {
         headers:{
             'Authorization': `Bearer ${token}`
         }
-    } 
+    }
     return axios.delete(`${API_URL}/api/v1/me/friends/${friendId}/unfriend`, config)
 }
 
-export const channelFetcher = async (endpoint: string, token:string) => {
+export const channelFetcher = async (endpoint: string, token:string):Promise<ChannelDataStatus> => {
     const config ={
         headers:{
             'Authorization': `Bearer ${token}`
         }
     }
-    return axios.get(`${API_URL}/${endpoint}`, config).then(res => res.data);
+    const response = await axios.get(`${API_URL}/${endpoint}`, config)
+    return response.data;
 }
 
 
@@ -128,10 +121,8 @@ export const messageFetcher = async (endpoint: string, limit: number, skip: numb
             'Authorization': `Bearer ${token}`
         }
     }
-    return axios.get(`${API_URL}/${endpoint}?limit=${limit}&skip=${skip}`, config)
-            .then(response => {
-                return response.data
-            });
+    const response = await axios.get(`${API_URL}/${endpoint}?limit=${limit}&skip=${skip}`, config)
+    return response.data
 }
 
 export const getCurrUserFetcher = async(endpoint:string, token:string):Promise<UserDataStatus> =>{
@@ -140,7 +131,8 @@ export const getCurrUserFetcher = async(endpoint:string, token:string):Promise<U
             'Authorization': `Bearer ${token}`
         }
     }
-    return axios.get(`${API_URL}/${endpoint}`, config).then(response => response.data)
+    const response:AxiosResponse<UserDataStatus> = await axios.get(`${API_URL}/${endpoint}`, config)
+    return response.data
 }
 
 export const resetPassword = async(passwordToken:string, data:{passwordConfirm:string, password:string}):Promise<AxiosResponse<{status:string, token:string}>>=>{

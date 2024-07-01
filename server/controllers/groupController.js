@@ -132,6 +132,8 @@ export const resizeGroupPhoto = catchAsync(async(req, res, next)=>{
         }
         const command = new PutObjectCommand(params)
         await s3.send(command)
+        // runValidators: true only applies validators only to fields that are explicitly 
+        // included in the update operation, not to all fields of the document.
         await Channel.findByIdAndUpdate(req.params.groupId, {photo:req.file.filename}, {new:true, runValidators:true})
         next()
     }else{
