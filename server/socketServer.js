@@ -4,12 +4,14 @@ import { promisify } from 'util';
 import User from './models/userModel.js';
 import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
-import dotenv from'dotenv';
 import mongoose from 'mongoose';
 import winston from 'winston';
 import WinstonCloudWatch from 'winston-cloudwatch'
 import { Redis } from 'ioredis';
-dotenv.config({ path: './config.env' });
+import 'dotenv/config.js' //Since socket server is not directly connect to app.js (where we import dotenv) they are not
+//in the same scope, meaning socketserver won't be able to access the environment variables
+//dotenv => app.js => server.js while socketServer.js => server.js
+
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
 const isProduction = process.env.NODE_ENV === 'production'
@@ -247,16 +249,14 @@ export default (httpServer) => {
       const session = await mongoose.startSession()
       session.startTransaction()
       try{
-        const user = await User.findById(data.inviteUser).select('displayName friendTag _id photo status').session(session)
-        const userObject = user.toObject()
+        const userObject = await User.findById(data.inviteUser).select('displayName friendTag _id photo status').session(session).lean()
         userObject.photoUrl = `${cloudfrontDomainName}/${userObject.photo}`
-        const currChannel = await Channel.findById(data.channelId)
-          .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage seen').session(session)
+        const currChannelObject = await Channel.findById(data.channelId)
+          .select('photo channelNumber _id channelName channelType lastMessage id formattedLastMessage seen').session(session).lean()
         await session.commitTransaction()
-        const currChannelObject = currChannel.toObject()
         currChannelObject.photoUrl = `${cloudfrontDomainName}/${currChannelObject.photo}`
         io.to(`channel-${data.channelId}`).emit(`channel_member_update`, 
-        {user:userObject, channelNumber:currChannel.channelNumber, newTime:data.newTime, type:'Joined'})
+        {user:userObject, channelNumber:currChannelObject.channelNumber, newTime:data.newTime, type:'Joined'})
         socket.to(`user-${userObject._id}`).emit('invited_to_group', currChannelObject)
       }catch(err){
         logger.error('User Invite Success Live Update Error', {message:err.message, stack:err.stack})

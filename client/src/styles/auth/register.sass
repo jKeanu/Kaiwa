@@ -3,9 +3,8 @@
         display: flex
         align-items: center
         flex-direction: column
-        padding-top: 2rem
         background: rgb(4,12,20)
-        padding-top: 5rem
+        padding-top: 8rem
         background: linear-gradient(169deg, rgba(4,12,20,1) 0%, rgba(31,40,52,1) 100%, rgba(255,240,0,1) 100%, rgba(25,26,29,1) 100%)
         height: $register-container-h
         height: 100dvh
@@ -13,9 +12,14 @@
         @media (max-height: 700px)
             height: 700px !important
     @else
+        display: flex
+        justify-content: center
+        align-items: center
+        flex-direction: column
         background-color: #ffffff07
-        height: $register-container-h
+        height: fit-content
         width: $register-container-w
+        padding: 2rem 0
         border-radius: 0.2rem
         box-shadow: 0 8px 10px 5px rgb(0, 0, 0, 0.25)
         position: absolute
@@ -28,14 +32,13 @@
         top: 50%
         opacity: 1
     .register-header
-        margin: 0
-        font-size: calc( 2rem * $header-size-mult )
-        font-family: 'Bebas Neue', sans-serif
-        font-weight: 400
-        color: white
+        font-size: calc( 1.8rem * $header-size-mult )
+        font-family: 'Raleway', sans-serif
+        font-weight: 800
+        color: $white-text
         text-align: center
-        padding-top: 1.5rem
-        margin-bottom: 1rem
+        margin: 0
+        margin-bottom: 0.5rem
     .register-form-container
         display: flex
         justify-content: center
@@ -48,14 +51,13 @@
                 @include input($w: $input-width)
             button
                 background-color: #37404d
-                color: white
+                color: #ffffffcd
                 width: $button-width
-                height: 2.2rem
-                border-radius: 1.1rem
+                height: 2rem
                 border-style: none
                 transition: background-color 0.15s ease-in-out
-                margin-top: 1.5rem
-                font-family: 'Bellefair', serif
+                margin-top: 1rem
+                font-family: 'Raleway', sans-serif
                 cursor: pointer
                 display: flex
                 justify-content: center
@@ -68,8 +70,9 @@
                     @include loading(0, 30px)
     .already-have-an-account-text
         color: white
-        font-size: 0.7rem
+        font-size: 0.6rem
         font-family: 'Raleway', sans-serif
+        font-weight: 200
         margin-top: 0.35rem
         display: block
         text-align: center
@@ -82,20 +85,20 @@
 
 
 =register-page-mobile
-    @media (max-width: $breakpoint-mobile + 0.99)
+    @media (max-width: $breakpoint-mobile)
         @include register-page($input-width: 17rem, $register-container-w: 100vw, $register-container-h: 100vh, $button-width: 10rem, $header-size-mult: 0.7)
 
 =register-page-tablet
-    @media (min-width: $breakpoint-mobile + 1px) and (max-width: $breakpoint-tablet + 0.99)    
-        @include register-page($input-width: 16rem, $register-container-w: 22rem, $register-container-h: 30rem, $button-width: 14rem, $header-size-mult: 0.8)
+    @media (min-width: $breakpoint-mobile + 1px) and (max-width: $breakpoint-tablet)    
+        @include register-page($input-width: 16rem, $register-container-w: 22rem, $register-container-h: 0, $button-width: 10rem, $header-size-mult: 0.8)
 
 =register-page-laptop
-    @media (min-width: $breakpoint-tablet+ 1px) and (max-width: $breakpoint-laptop + 0.99)
-        @include register-page($input-width: 16rem, $register-container-w: 22rem, $register-container-h: 30rem, $button-width: 14rem, $header-size-mult: 0.9)
+    @media (min-width: $breakpoint-tablet+ 1px) and (max-width: $breakpoint-laptop)
+        @include register-page($input-width: 16rem, $register-container-w: 22rem, $register-container-h: 0, $button-width: 10rem, $header-size-mult: 0.9)
 
 =register-page-desktop
     @media (min-width: $breakpoint-laptop + 1px )
-        @include register-page($input-width: 21rem, $register-container-w: 25rem, $register-container-h: 30rem, $button-width: 13rem, $header-size-mult: 1)
+        @include register-page($input-width: 21rem, $register-container-w: 25rem, $register-container-h: 0, $button-width: 10rem, $header-size-mult: 1)
         
     
 .register-container

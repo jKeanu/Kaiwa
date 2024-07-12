@@ -6,17 +6,16 @@ import Chat from '../models/chatModel.js';
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
 
 export const getUserChannel = catchAsync(async(req, res, next)=>{
-    const currentChannel = await Channel.findOne({channelNumber:req.params.channelNumber})
-        .populate({path:'members', select:'photo displayName friendTag status'})
-    if (!currentChannel) {
+    const channelObject = await Channel.findOne({channelNumber:req.params.channelNumber})
+        .populate({path:'members', select:'photo displayName friendTag status'}).lean()
+    if (!channelObject) {
         return next(new AppError("Channel not found.", 404));
     }
     //Since we populated the members it became an array of objects, so we need some to check each objects
-    if (!currentChannel.members.some(member => member._id.toString() === req.user._id.toString())){
+    if (!channelObject.members.some(member => member._id.toString() === req.user._id.toString())){
         return next(new AppError("You are are not permitted to commit this action.", 401));
     }
-    const channelObject = currentChannel.toObject()
-    channelObject.photoUrl = `${cloudfrontDomainName}/${currentChannel.photo}`
+    channelObject.photoUrl = `${cloudfrontDomainName}/${channelObject.photo}`
     for (const member of channelObject.members){
         member.photoUrl = `${cloudfrontDomainName}/${member.photo}`
     }

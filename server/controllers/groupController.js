@@ -167,14 +167,14 @@ export const updateGroupDetails = catchAsync( async(req, res, next)=>{
     session.startTransaction();
     try{
         const filteredBody = filterObj(req.body, 'channelName')
-        const updateGroup = await Channel.findByIdAndUpdate(req.params.groupId, filteredBody, {new:true, session:session, runValidators: true})
+        const updateGroupObject = await Channel.findByIdAndUpdate(req.params.groupId, filteredBody, {new:true, session:session, runValidators: true})
             .select('photo channelName groupLeader')
-        if(!updateGroup.groupLeader.equals(req.user._id)){
+            .lean()
+        if(!updateGroupObject.groupLeader.equals(req.user._id)){
             await session.abortTransaction()
             return next(new AppError("You are not permitted to perform this action.", 401))   
         }
-        const updateGroupObject = updateGroup.toObject()
-        updateGroupObject.photoUrl = `${cloudfrontDomainName}/${updateGroup.photo}`
+        updateGroupObject.photoUrl = `${cloudfrontDomainName}/${updateGroupObject.photo}`
         updateGroupObject.groupLeader = undefined
         await session.commitTransaction()
         res.status(200).json({

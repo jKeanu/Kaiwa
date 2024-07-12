@@ -95,16 +95,17 @@ export const resizeUserPhoto = catchAsync(async (req, res, next) => {
     };
 });
 
+
 export const updateUser = catchAsync(async(req, res, next)=>{
     if (req.body.password || req.body.passwordConfirm){
         return next(new AppError('This route is not for password updates.', 400))
     }
     const filteredBody = filterObj(req.body, 'displayName', 'friendTag')
     //We can run validators since the passwordConfirm validator only works on create or save.
-    const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
+    const updatedUserObject = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
         .select('photo friendTag displayName')
-    const updatedUserObject = updatedUser.toObject()
-    updatedUserObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${updatedUser.photo}`
+        .lean()
+    updatedUserObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${updatedUserObject.photo}`
     res.status(200).json({
         status:'success',
         user: updatedUserObject
@@ -114,12 +115,13 @@ export const updateUser = catchAsync(async(req, res, next)=>{
 export const getMe = catchAsync(async(req, res, next)=>{
     //Since we only need to populate the group and friend channel when getting
     //the current logged information, we can just populate all of them here.
-    const currentUser = await User.findById(req.user._id).select('-__v')
+    const currentUserObject = await User.findById(req.user._id).select('-__v')
         .populate({path:'friends.friend', select:'displayName friendTag photo status'})
         .populate({path:'friends.channel', select:'channelNumber lastMessage formattedLastMessage channelType seen'})
         .populate({path:'groups', select:'channelNumber lastMessage channelName photo formattedLastMessage channelType seen'})
+        .lean()
 
-    const currentUserObject = currentUser.toObject()
+
     currentUserObject.photoUrl = `${cloudfrontDomainName}/${currentUserObject.photo}`
 
     //We need to get the signed url of each images of our friend in s3

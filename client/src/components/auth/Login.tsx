@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthStatus } from '../../types/generalTypes';
 import { AxiosResponse } from 'axios';
+import {useNavigate} from 'react-router-dom'
 import { forgotPassword, loginUser } from '../../services/apiService';
 
 
@@ -14,6 +15,7 @@ const LoginPage:React.FC=()=> {
     const [loading, setLoading] = useState<{isLoading:boolean, type:string}>({isLoading:false, type:''})
     const [forgotPassSuccess, setForgotPassSuccess] = useState<string>('')
     const [containerVisible, setContainerVisible] = useState(false)
+    const navigate = useNavigate()
     
     useEffect(()=>{
         setContainerVisible(true)
@@ -29,7 +31,7 @@ const LoginPage:React.FC=()=> {
             const res:AxiosResponse<AuthStatus> = await loginUser(email, password);
             if (res.data.status === "success") {
                 localStorage.setItem('token', res.data.token)
-                window.location.href = '/@me'
+                navigate('/@me')
             }
         } catch (error: unknown) { 
             if (axios.isAxiosError(error)) { // Type guard for AxiosError
@@ -83,7 +85,7 @@ const LoginPage:React.FC=()=> {
 
     return (
         <div className={`login-container ${containerVisible?'visible':''}`}>
-            <h1 className='login-header'>Log In</h1>
+            <h1 className='login-header'>Log in</h1>
             <div className='login-form-container'>
                 <form className='login-form' onSubmit={handleLogin}>
                     <div className="input-container">

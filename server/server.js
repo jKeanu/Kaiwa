@@ -3,12 +3,6 @@ import http from 'http';
 import socketServerSetup from './socketServer.js';
 import app from './app.js';
 import { logger } from './socketServer.js';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import dotenv from 'dotenv'
-const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const __dirname = path.dirname(__filename); // get the name of the directory
-dotenv.config({ path: path.join(__dirname, 'config.env') });
 
 const server = http.createServer(app);
 // Set up the socket server

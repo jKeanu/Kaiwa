@@ -37,6 +37,8 @@ const handleJWTExpiredError = () =>
   new AppError('Your token has expired! Please log in again.', 401);
 
 const sendErrorDev=(err, req, res) => {
+    logger.error('Uncaught error', {message:err.message, stack:err.stack})
+    console.log('ERROR: ', err)
     res.status(err.statusCode).json({
         status: err.status,
         err: err,
@@ -53,8 +55,8 @@ const sendErrorProd=(err, req, res)=>{
             message: err.message
         })
     }
-    logger.error('Uncaught error', {message:err.message, stack:err.stack})
     //This line would execute if there was an unhandled error that we have not caught.
+    logger.error('Uncaught error', {message:err.message, stack:err.stack})
     return res.status(500).json({
         status:'error',
         message:'Something went very wrong'

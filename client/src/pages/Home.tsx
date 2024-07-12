@@ -658,7 +658,7 @@ const HomePage:React.FC = () => {
             e.preventDefault()
             setToken('')
             localStorage.removeItem('token')
-            window.location.href = '/login'
+            navigate('/login')
         };
 
 

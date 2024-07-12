@@ -152,12 +152,12 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
                     'friends.$.channel':friendChannel[0]._id
                 }},
                 {session, new:true})
-            const newChannel = await Channel.findById(friendChannel[0]._id)
+            const newChannelObject = await Channel.findById(friendChannel[0]._id)
                 .select('-__v')
                 .populate({path:'members', select:'photo displayName friendTag status'})
                 .session(session)
-            const newChannelObject = newChannel.toObject()
-            newChannelObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newChannel.photo}`
+                .lean()
+            newChannelObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${newChannelObject.photo}`
             for(const member of newChannelObject.members){
                 member.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${member.photo}`
             }
