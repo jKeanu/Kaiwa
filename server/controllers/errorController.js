@@ -25,6 +25,7 @@ const handleValidationErrorDB = err => {
     if(Object.keys(err.errors).includes("members.1")){
         return new AppError("Invalid Input", 400)
     }
+    //During validation error, the validation errors are placed in err.errors
     const errors = Object.values(err.errors).map(el => el.message);
     const message = `Invalid input. ${errors.join('. ')}`;
     return new AppError(message, 400);

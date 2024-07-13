@@ -138,7 +138,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                     <div className="group-name-container">  
                         <label className="group-name-label" htmlFor="group-name-input" >Channel Name</label>
                         <input id="group-name-input" maxLength={12} className="group-name-input" value={groupName} 
-                        onChange={(e)=>setGroupName(e.currentTarget.value)} placeholder="Name Your Group"/>
+                        onChange={(e)=>setGroupName(e.currentTarget.value)} placeholder="Enter your group name..."/>
                         {(createGroupErr.err&&createGroupErr.type==='groupName')&&
                         <div className="group-name-error">{createGroupErr.message}</div>}
                     </div>

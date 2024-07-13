@@ -825,7 +825,7 @@
                     .create-group-search-mob
                         display: none
                     &.group-name-section
-                        height: 11rem
+                        height: 10rem
                     &.member-select-section
                         height: 35rem
                         @media (max-height: 700px)
@@ -834,9 +834,8 @@
                     .create-group-modal-name-container
                         width: 100%
                         position: absolute
-                        top: 45%
                         right: 0%
-                        transform: translateY(-50%)
+                        bottom: 0%
                         transition: all 0.15s ease-in-out
                         &.name-container-after
                             right: 100%
@@ -850,7 +849,7 @@
                             .group-name-input
                                 width: 15rem
                                 border: none
-                                font-size: 1.2rem
+                                font-size: 1rem
                                 font-family: 'Raleway', sans-serif
                                 background-color: #ffffff09
                                 padding: 0.2rem 0 0.2rem 0.8rem
@@ -867,24 +866,21 @@
                             margin-top: 1rem
                             .group-name-confirm
                                 margin-left: auto
-                                background-color: #1c2a46
+                                background-color: #2c3447
                                 border: none
                                 height: 2rem
-                                border-radius: 1rem
                                 padding: 0rem 0.7rem
-                                display: flex
-                                align-items: center
-                                justify-content: center
+                                font-family: 'Raleway', sans-serif
                                 cursor: pointer
                                 transition: background-color 0.15s ease
                                 &:hover
-                                    background-color: #2e4470
+                                    background-color: #485267
                     //Member select
                     .create-group-modal-invite-container
                         width: 100%
                         position: absolute
                         left: 100%
-                        top: 0%
+                        bottom: 0%
                         transition: left 0.15s ease-in-out
                         &.invite-container-active
                             left: 0%
@@ -911,34 +907,31 @@
                                 justify-content: space-between
                                 margin-top: 1rem
                                 .create-group-button
-                                    display: flex
-                                    align-items: center
-                                    background-color: #1c2a46
-                                    justify-content: center
+                                    background-color: #2c3447
                                     border: none
                                     height: 2rem
-                                    width: 5rem
-                                    border-radius: 1rem
                                     padding: 0rem 0.7rem
+                                    font-family: 'Raleway', sans-serif
                                     cursor: pointer
                                     transition: background-color 0.15s ease
                                     &:hover
-                                        background-color: #2e4470
+                                        background-color: #485267
                                     span
                                         color: $white-text
                                     .create-group-loading
                                         @include loading(0, 30px) 
                                 .create-group-back-button
-                                    background-color: #1c2a46
+                                    background-color: #2c3447
+                                    border: none
                                     height: 2rem
-                                    width: 5rem
-                                    border-radius: 1rem
+                                    padding: 0rem 0.7rem
+                                    font-family: 'Raleway', sans-serif
                                     cursor: pointer
                                     transition: background-color 0.15s ease
-                                    border: none
-                                    padding: 0rem 0.7rem
                                     &:hover
-                                        background-color: #2e4470
+                                        background-color: #485267
+                                    span
+                                        color: $white-text
                             .create-group-err
                                 bottom: 100%
                                 position: absolute
@@ -946,10 +939,10 @@
                                 font-size: 0.7rem
                                 font-family: 'Open Sans', sans-serif
                             .create-group-modal-friend-list
+                                border-top: 1px solid #ffffff39
                                 height: 27rem
                                 overflow-y: scroll
                                 @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
-                                box-shadow: inset 0px 10px 10px 1px #00000078
                                 position: relative
                                 .friend-checkbox-container
                                     display: flex
@@ -1251,16 +1244,16 @@
                     .create-group-search-mob
                         display: none
                     &.group-name-section
-                        height: 11rem
+                        height: 10rem
                     &.member-select-section
                         height: 35rem
                     //Channel name
                     .create-group-modal-name-container
                         width: 100%
                         position: absolute
-                        top: 45%
+                        height: fit-content
+                        bottom: 0%
                         right: 0%
-                        transform: translateY(-50%)
                         transition: all 0.15s ease-in-out
                         &.name-container-after
                             right: 100%
@@ -1274,7 +1267,7 @@
                             .group-name-input
                                 width: 15rem
                                 border: none
-                                font-size: 1.1rem
+                                font-size: 1rem
                                 font-family: 'Raleway', sans-serif
                                 background-color: #ffffff09
                                 padding: 0.2rem 0 0.2rem 0.8rem
@@ -1291,24 +1284,21 @@
                             margin-top: 0.5rem
                             .group-name-confirm
                                 margin-left: auto
-                                background-color: #1c2a46
+                                background-color: #2c3447
                                 border: none
                                 height: 2rem
-                                border-radius: 1rem
                                 padding: 0rem 0.7rem
-                                display: flex
-                                align-items: center
-                                justify-content: center
+                                font-family: 'Raleway', sans-serif
                                 cursor: pointer
                                 transition: background-color 0.15s ease
                                 &:hover
-                                    background-color: #2e4470
+                                    background-color: #485267
                     //Member select
                     .create-group-modal-invite-container
                         width: 100%
                         position: absolute
                         left: 100%
-                        top: 0%
+                        bottom: 0%
                         transition: left 0.15s ease-in-out
                         &.invite-container-active
                             left: 0%
@@ -1335,34 +1325,29 @@
                                 justify-content: space-between
                                 margin-top: 1rem
                                 .create-group-button
-                                    display: flex
-                                    align-items: center
-                                    background-color: #1c2a46
-                                    justify-content: center
+                                    background-color: #2c3447
                                     border: none
                                     height: 2rem
-                                    width: 5rem
-                                    border-radius: 1rem
                                     padding: 0rem 0.7rem
+                                    font-family: 'Raleway', sans-serif
                                     cursor: pointer
                                     transition: background-color 0.15s ease
                                     &:hover
-                                        background-color: #2e4470
+                                        background-color: #485267
                                     span
                                         color: $white-text
                                     .create-group-loading
                                         @include loading(0, 30px) 
                                 .create-group-back-button
-                                    background-color: #1c2a46
+                                    background-color: #2c3447
+                                    border: none
                                     height: 2rem
-                                    width: 5rem
-                                    border-radius: 1rem
+                                    padding: 0rem 0.7rem
+                                    font-family: 'Raleway', sans-serif
                                     cursor: pointer
                                     transition: background-color 0.15s ease
-                                    border: none
-                                    padding: 0rem 0.7rem
                                     &:hover
-                                        background-color: #2e4470
+                                        background-color: #485267
                             .create-group-err
                                 bottom: 100%
                                 position: absolute
@@ -1370,10 +1355,10 @@
                                 font-size: 0.7rem
                                 font-family: 'Open Sans', sans-serif
                             .create-group-modal-friend-list
+                                border-top: 1px solid #ffffff39
                                 height: 27rem
                                 overflow-y: scroll
                                 @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
-                                box-shadow: inset 0px 10px 10px 1px #00000078
                                 position: relative
                                 .friend-checkbox-container
                                     display: flex
