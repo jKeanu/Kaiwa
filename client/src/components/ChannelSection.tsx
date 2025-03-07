@@ -1103,7 +1103,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                         </div>
                                         {findMemberId(member._id)?
                                         <>
-                                            <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link">Send Message</Link>
+                                            <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link" 
+                                            aria-label={`Message friend ${member.displayName}`}>
+                                                Send Message
+                                            </Link>
                                             <button onClick={(e)=>handleMemberSelect(e, findMemberId(member._id)?.channelNumber, member._id, member.displayName, 'unfriend')} className="member-unfriend-button">
                                                 Remove Friend
                                             </button>

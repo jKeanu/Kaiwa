@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import {terser} from 'rollup-plugin-terser'// Import terser like this
+import terser from '@rollup/plugin-terser';
 import path from 'path';
 
 
@@ -13,14 +13,14 @@ export default defineConfig(({mode})=>{
     //regular JavaScript code that browsers can understand.
     react()
   ],
-  // configuration option that controls how modules are resolved when Vite 
-  // tries to find and load them during bundling or development.
-  // determines how to look for and resolve dependencies
+  //configuration option that controls how modules are resolved when Vite 
+  //tries to find and load them during bundling or development.
+  //determines how to look for and resolve dependencies
   resolve: {
     //define custom shortcuts for importing files, making your imports cleaner and shorter.
     alias: {
       //'@': path.resolve(__dirname, 'src') creates a shortcut so that when you import something, 
-      //you can use @ to represent the src directory import MyComponent from '@/components/MyComponent';
+      //you can use @ to represent the src directory import MyComponent from '@/components/MyComponent'
       '@': path.resolve(__dirname, 'src'), // Shorter import paths
     },
   },
@@ -28,6 +28,7 @@ export default defineConfig(({mode})=>{
     //This setting tells Vite to minify your code using the terser tool. 
     //Minifying means removing extra spaces, comments, and shortening variable names 
     //to make the code smaller and faster to load.
+    target: 'esnext',
     minify: isProduction ? 'terser' : false,
     sourcemap: !isProduction,
     terserOptions: isProduction ? {
@@ -38,7 +39,10 @@ export default defineConfig(({mode})=>{
     } : {},
     //Rollup is a tool used to bundle JavaScript files
     //configuration option that lets you control how Rollup works behind the scenes when 
-    //it bundles your application
+    //it bundles your application.
+    //after Rollup bundles the files, Terser minifies them to reduce size.
+    //rollupOptions modifies how the bundling happens, but the bundling itself 
+    //is already happening because Vite uses Rollup internally.
     rollupOptions: {
       output: {
         //Libraries like react and lodash don't change often, so once they're bundled into a 

@@ -119,7 +119,7 @@ const LoginPage:React.FC=()=> {
                 </form>
             </div>
             <span className='need-an-account-text'>
-                Need an account? <Link className='register-link' to='/register'>Register</Link>
+                Need an account? <Link className='register-link' to='/register' aria-label="Register account">Register</Link>
             </span>
         </div>
     );

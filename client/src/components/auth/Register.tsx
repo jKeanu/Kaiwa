@@ -133,7 +133,7 @@ const RegisterPage:React.FC=()=>{
                 </form>
             </div>
             <span className='already-have-an-account-text'>
-                Already have an account? <Link className='log-in-link' to="/login">Log In</Link>
+                Already have an account? <Link className='log-in-link' to="/login" aria-label="Return to login">Log In</Link>
             </span>
         </div>
     );

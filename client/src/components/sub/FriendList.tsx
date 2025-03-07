@@ -145,7 +145,8 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
             <ul className="friend-list" ref={friendListRef}>
                 {filteredFriends.map(friend=>(
                     <li key={friend.channel.channelNumber} className="friend-link-container friend-container">
-                        <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`}>
+                        <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`} 
+                        aria-label={`Message friend ${friend.friend.displayName}`}>
                             <div className="friend-information">
                                 <div className="friend-photo-status-container">
                                     <img className='friend-photo' alt={`friend ${friend.friend.displayName} profile photo`}
@@ -202,7 +203,8 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                         <div className={`friend-more-pop-up-container ${popUpActive?"pop-up-active":""}`}
                         style={{right:`${-popupPosition.clickX+40}px`, top:`${popupPosition.y+popupPosition.clickY+5}px`,
                         transform: `translateY(${-popupPosition.y}px)`}}>
-                            <Link to={`channels/${friend.channel.channelNumber}`} className="friend-pop-up-link">
+                            <Link to={`channels/${friend.channel.channelNumber}`} className="friend-pop-up-link"
+                            aria-label={`message friend ${friend.friend.displayName}`}>
                                 Send Message
                             </Link>
                             <button className="remove-friend-button" 
