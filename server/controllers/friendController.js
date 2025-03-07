@@ -162,7 +162,7 @@ export const acceptFriend = catchAsync(async (req, res, next)=>{
                 member.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${member.photo}`
             }
             //We just need the general
-            await acceptUser.save({session, validateBeforeSave:true})
+            await acceptUser.save({session, validateBeforeSave:false})
             await session.commitTransaction()
             res.status(200).json({
                 status:"success",

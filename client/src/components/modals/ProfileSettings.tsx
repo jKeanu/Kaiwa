@@ -102,10 +102,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                     }
                 }else if(err.response?.status===429){
                     setUserSettErr({err:true, message: 'Too many password change attempts, please try again later.'})
-                }else if(err.response?.status===401){
-                    setUserSettErr({err:true, message: err.response.data.message})
-                }
-                else{
+                }else{
                     setUserSettErr({err:true, message: 'There was an error changing the group settings.'})
                 }
             }else{
@@ -205,7 +202,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                         <div className="user-photo-input-container">
                             <label htmlFor="user-setting-photo">
                                 <img src={`${profileImagePreview?profileImagePreview:currUserData.photo==='default.jpeg'?'/img/default.jpeg':currUserData.photoUrl}`} 
-                                className="user-setting-photo"/>
+                                className="user-setting-photo" alt={`${currUserData.displayName} profile photo`}/>
                                 <div className="photo-input-hover">Change</div>
                             </label>
                             <input type="file" name="profileImage" id="user-setting-photo" onChange={handleFileChange} className="user-setting-photo-input"/>

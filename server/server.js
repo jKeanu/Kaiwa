@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import http from 'http';
-import socketServerSetup from './socketServer.js';
 import app from './app.js';
+import socketServerSetup from './socketServer.js';
 import { logger } from './socketServer.js';
 
 const server = http.createServer(app);

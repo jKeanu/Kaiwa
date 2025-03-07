@@ -250,11 +250,11 @@ export const getGroupMembers = catchAsync(async (req, res, next)=>{
 export const inviteMember = catchAsync(async (req, res, next)=>{
     let retries = 3; // Maximum number of retries
     let delayTime = 1000; // Delay time in milliseconds
-    const attemptOperation = async ()=>{
+    const attemptOperation = async ()=>{                  
         const session = await mongoose.startSession();
         session.startTransaction();
         try{
-            const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"})
+            const groupChannel = await Channel.findOne({_id:req.params.groupId, channelType:"Group"}).session(session)
             if(!groupChannel){
                 return next(new AppError("Group channel with that ID does not exists", 404))
             }

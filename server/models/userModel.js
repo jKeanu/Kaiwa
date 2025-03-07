@@ -43,7 +43,8 @@ const userSchema = new mongoose.Schema({
         unique:true,
         required: [true, 'Please provide your email'],
         lowercase: true,
-        validate: [validator.isEmail, 'Please provide a valid email']
+        validate: [validator.isEmail, 'Please provide a valid email'],
+        maxlength:[50, 'Email must contain no more than 50 characters'],
     },
     photo:{
         type:String,
@@ -57,7 +58,7 @@ const userSchema = new mongoose.Schema({
     },
     passwordConfirm:{
         type:String,
-        require:true,
+        required:true,
         validate:{
             validator: function(val){
                 return val === this.password

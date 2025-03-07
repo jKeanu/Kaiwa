@@ -13,6 +13,7 @@ export class Email{
         this.url = url;
         this.from = `Kaiwa <${process.env.EMAIL_FROM}>`
     }
+    
     newTransport(){
         if(process.env.NODE_ENV === 'production'){
             // sendgrid

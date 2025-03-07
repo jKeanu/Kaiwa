@@ -35,10 +35,10 @@ export const login = catchAsync(async (req, res, next)=>{
 })
 
 export const signup = catchAsync(async (req, res, next)=>{
-    const newUser = await User.create(req.body)
     if(req.body.displayName.length>12){
-      return next(new AppError("Display Name can only be 12 characters or less"))
+      return next(new AppError("Display Name can only be 12 characters or less", 400))
     }
+    const newUser = await User.create(req.body)
     createSendToken(newUser, 201, req, res)
 })
 
@@ -101,7 +101,7 @@ export const forgotPassword = catchAsync(async (req,res,next)=>{
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({validateBeforeSave: false});
-      return next(new AppError('There was an error sending the email. Try again later!'), 500)
+      return next(new AppError('There was an error sending the email. Try again later!', 500))
   }
 })
 

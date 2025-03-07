@@ -17,11 +17,9 @@ import userFriendRouter from './routes/userFriendRoutes.js';
 import userGroupRouter from './routes/userGroupRoutes.js';
 import userChannelRouter from './routes/userChannelRoutes.js';
 
-
 const app = express();
 
 app.set('trust proxy', 1)
-
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {

@@ -22,9 +22,11 @@ const handleDuplicateFieldsDB = err => {
 
 
 const handleValidationErrorDB = err => {
-    if(Object.keys(err.errors).includes("members.1")){
-        return new AppError("Invalid Input", 400)
-    }
+    //This executes if there is a modified id on the members when creating a group. 1 indicates that it is in index 1
+    //This should be in cast error but for some reason when this error occurs it goes into validation error
+    // if(Object.keys(err.errors).includes("members.1")){
+    //     return new AppError("Invalid Input", 400)
+    // }
     //During validation error, the validation errors are placed in err.errors
     const errors = Object.values(err.errors).map(el => el.message);
     const message = `Invalid input. ${errors.join('. ')}`;

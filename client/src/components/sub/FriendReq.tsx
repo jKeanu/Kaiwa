@@ -105,7 +105,8 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                 {pendingRequests.map((request, index)=>(
                     <li className="pending-user-container" key={index}>
                         <div className="pending-user-information" >
-                            <img src={`${request.friend.photo==='default.jpeg'?'/img/default.jpeg':request.friend.photoUrl}`}/>
+                            <img src={`${request.friend.photo==='default.jpeg'?'/img/default.jpeg':request.friend.photoUrl}`}
+                            alt={`friend request user ${request.friend.displayName} profile photo`}/>
                             <span>{request.friend.displayName}</span>
                         </div>
                         <div className="pending-request-button-container">

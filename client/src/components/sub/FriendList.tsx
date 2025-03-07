@@ -148,7 +148,7 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                         <Link className='friend-link' to={`channels/${friend.channel.channelNumber}`}>
                             <div className="friend-information">
                                 <div className="friend-photo-status-container">
-                                    <img className='friend-photo' 
+                                    <img className='friend-photo' alt={`friend ${friend.friend.displayName} profile photo`}
                                     src={`${friend.friend.photo==='default.jpeg'?'/img/default.jpeg':friend.friend.photoUrl}`}/>
                                     <div className='friend-status'
                                     style={{backgroundColor:friend.friend.status==='Online'?'green':'#959595'}}></div>
@@ -165,7 +165,7 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                         <button className="friend-info-container-button" onClick={(e)=>handlePopUpClick(e, friend.friend._id)}>
                             <div className="friend-information">
                                 <div className="friend-photo-status-container">
-                                    <img className='friend-photo' 
+                                    <img className='friend-photo' alt={`friend ${friend.friend.displayName} profile photo`}
                                     src={`${friend.friend.photo==='default.jpeg'?'/img/default.jpeg':friend.friend.photoUrl}`}/>
                                     <div className='friend-status'
                                     style={{backgroundColor:friend.friend.status==='Online'?'green':'#959595'}}></div>

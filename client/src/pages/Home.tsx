@@ -645,8 +645,7 @@ const HomePage:React.FC = () => {
         }, []);
 
         useEffect(()=>{
-            let timer:ReturnType<typeof setTimeout>
-            timer = setTimeout(()=>{
+            const timer = setTimeout(()=>{
                 setMessageLimit(0)
             }, 10000)
             return ()=>{

@@ -82,7 +82,8 @@ const InviteUserModal:React.FC<InviteFriend>=({
                 <ul className="invite-friend-list-containter">
                     {isFriendInGroup.map((friend, index)=>(
                         <li key={index} className="invite-friend-info">
-                            <img src={`${friend.photo==='default.jpeg'?'/img/default.jpeg':friend.photoUrl}`}/>
+                            <img src={`${friend.photo==='default.jpeg'?'/img/default.jpeg':friend.photoUrl}`}
+                            alt={`friend ${friend.displayName} profile photo`}/>
                             <div className="friend-invite-display-name">{friend.displayName}</div>
                             <button className={`${error.users.includes(`${friend._id}`)?
                             "friend-invite-button-err"

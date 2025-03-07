@@ -21,7 +21,7 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
     const [groupSettErr, setGroupSettErr] = useState({err:false, message:''})
     
     const profileImagePreview = useMemo(()=>{
-        return groupFormData.groupProfileImage? URL.createObjectURL(groupFormData.groupProfileImage):null
+        return groupFormData.groupProfileImage?URL.createObjectURL(groupFormData.groupProfileImage):null
     }, [groupFormData.groupProfileImage])
 
     const {setModalVisible, modalVisible} = useChannelCustomContext()
@@ -126,7 +126,7 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                 <div className="group-photo-input-containter">
                     <label className="group-photo-input-label" htmlFor="group-setting-photo">
                         <img src={`${profileImagePreview?profileImagePreview:groupPhoto==='default.jpeg'?'/img/default.jpeg':groupPhotoUrl}`} 
-                            className="group-setting-img" />
+                            className="group-setting-img" alt={channelName + " group profile photo"}/>
                         <div className="photo-input-hover">Change</div>
                     </label>
                     <input type="file" name="profileImage"

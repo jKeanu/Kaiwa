@@ -8,10 +8,6 @@ import mongoose from 'mongoose';
 import winston from 'winston';
 import WinstonCloudWatch from 'winston-cloudwatch'
 import { Redis } from 'ioredis';
-import 'dotenv/config.js' //Since socket server is not directly connect to app.js (where we import dotenv) they are not
-//in the same scope, meaning socketserver won't be able to access the environment variables
-//dotenv => app.js => server.js while socketServer.js => server.js
-
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
 const isProduction = process.env.NODE_ENV === 'production'
@@ -83,10 +79,6 @@ const redisClient = new Redis(redisConfig)
 redisClient.on('connect', () => {
   infoLogger.info('Connected to Redis');
 });
-
-redisClient.on('error', (err) => {
-  logger.error('Redis error', err);
-})
 
 redisClient.on('error', (err) => {
   logger.error('Redis Client Error', {message:err})

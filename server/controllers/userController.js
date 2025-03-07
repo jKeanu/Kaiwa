@@ -92,8 +92,8 @@ export const resizeUserPhoto = catchAsync(async (req, res, next) => {
         await s3.send(deleteCommand)
         await User.findByIdAndUpdate(req.user.id, {photo:req.file.filename}, {new:true, runValidators:true})
         next()
-    };
-});
+    }
+})
 
 
 export const updateUser = catchAsync(async(req, res, next)=>{

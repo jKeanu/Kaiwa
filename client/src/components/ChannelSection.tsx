@@ -882,14 +882,16 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             <div className="channel-nav-info-container">
                                 <img className="channel-nav-photo"
                                 src={`${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[0].photoUrl
-                                :currentChannel.members[1].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[1].photoUrl}`}/>
+                                :currentChannel.members[1].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[1].photoUrl}`}
+                                alt={currentChannel.channelName+" mini profile photo"}/>
                                 <h2 className="channel-nav-header">
                                     {currentChannel.members[0]._id!==_id?currentChannel.members[0].displayName:currentChannel.members[1].displayName}
                                 </h2>
                             </div>
                             :
                             <div className="channel-nav-info-container">
-                                <img className="channel-nav-photo" src={`${currentChannel.photo==='default.jpeg'?'/img/default.jpeg':currentChannel.photoUrl}`}/>
+                                <img className="channel-nav-photo" src={`${currentChannel.photo==='default.jpeg'?'/img/default.jpeg':currentChannel.photoUrl}`}
+                                alt={currentChannel.channelName+" mini profile photo"}/>
                                 <h2 className="channel-nav-header">{currentChannel.channelName}</h2>
                             </div>
                         }
@@ -898,14 +900,16 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             <div className="channel-nav-info-mob-container">
                                 <img className="channel-nav-photo"
                                 src={`${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[0].photoUrl
-                                :currentChannel.members[1].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[1].photoUrl}`}/>
+                                :currentChannel.members[1].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[1].photoUrl}`}
+                                alt={currentChannel.channelName+" mobile profile photo"}/>
                                 <h2 className="channel-nav-header">
                                     {currentChannel.members[0]._id!==_id?currentChannel.members[0].displayName:currentChannel.members[1].displayName}
                                 </h2>
                             </div>
                             :
                             <button className="channel-nav-info-button" onClick={(e)=>handleNavButtonClick(e, 'groupSettings')}>
-                                <img className="channel-nav-photo" src={`${currentChannel.photo==='default.jpeg'?'/img/default.jpeg':currentChannel.photoUrl}`}/>
+                                <img className="channel-nav-photo" src={`${currentChannel.photo==='default.jpeg'?'/img/default.jpeg':currentChannel.photoUrl}`}
+                                alt={currentChannel.channelName + " profile photo button"}/>
                                 <h2 className="channel-nav-header">{currentChannel.channelName}</h2>
                             </button>
                         }
@@ -1013,7 +1017,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                     className={message.sender._id===_id?"my-message-info-container user-message-info-container"
                                     :"user-message-info-container"} 
                                     key={index}>
-                                    <img className='sender-photo' 
+                                    <img className='sender-photo' alt={message.sender.displayName + " mini profile photo"}
                                     src={`${message.sender.photo==='default.jpeg'?'/img/default.jpeg':message.sender.photoUrl}`}/>
                                     <div className="message-info">
                                         <div className="message-date-displayname">
@@ -1071,7 +1075,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                 <li className='member-container member-popup' key={`member-${i}`}>
                                     <button className="member-popup-button" onClick={(e)=>handlePopUp(e, member._id)}>
                                         <div className="member-profile-status">
-                                            <img className='member-profile-photo' 
+                                            <img className='member-profile-photo' alt={member.displayName + " mini profile photo"}
                                             src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`}/>
                                             <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
                                         </div>
@@ -1090,7 +1094,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                                     <div style={{'bottom':`${isPopUpBelow?'100%':'none'}`, 'top':`${isPopUpBelow?'none':'100%'}`}}
                                     className={`member-popup-container ${activePopup?'member-popup-active':''}`}>
                                         <div className="popup-member-info-container">
-                                            <img src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`} />
+                                            <img src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`} 
+                                            alt={member.displayName + " mini profile photo"}/>
                                             <div className="popup-member-info">
                                                 <span className="popup-member-name">{member.displayName}</span>
                                                 <span className="popup-member-friend-tag">#{member.friendTag}</span>
@@ -1134,7 +1139,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             {sortedMembers.map((member, i)=>(
                                 <li key={`member-${i}`} className="member-container friend-member-container">
                                     <div className="member-profile-status">
-                                        <img className='member-profile-photo' src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`}/>
+                                        <img className='member-profile-photo' alt={member.displayName + " mini profile photo"}
+                                        src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`}/>
                                         <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}>
                                         </div>
                                     </div>

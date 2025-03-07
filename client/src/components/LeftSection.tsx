@@ -74,7 +74,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
         <div className='upper-left-section-container'>
             <div className='left-section-button-container left-section-button-container-mob'>
                 <Link to={'/@me'} className='home-button'>
-                    <img src='/Kaiwa_icon.svg' className='home-img'/>
+                    <img src='/Kaiwa_icon.svg' className='home-img' alt='Kaiwa icon'/>
                 </Link>
                 <div className='messages-text'>Messages</div>
                 <div className='create-group-modal-button-container'>
@@ -98,7 +98,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
                         </div>
                     </button>
                 </div>
-                <button className="open-friend-section-button" onClick={handleOpenFriend}>
+                <button className="open-friend-section-button" onClick={handleOpenFriend} aria-label='Open friend section'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#b9b9b9" 
                     stroke="#b9b9b9" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-user">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -128,7 +128,8 @@ const LeftSection:React.FC<LeftSectionProps>=({
                     <li className='channel-link-container' key={channel.channelNumber}>
                         <NavLink className='channel-link' to={`channels/${channel.channelNumber}`} 
                         onClick={clearSearchQuery}>
-                            <img className='channel-photo'src={`${channel.photo==='default.jpeg'?'/img/default.jpeg':channel.photoUrl}`} alt=''/>
+                            <img className='channel-photo'src={`${channel.photo==='default.jpeg'?'/img/default.jpeg':channel.photoUrl}`} 
+                            alt={channel.channelName + "channel profile photo"}/>
                             <div className='channel-link-text-container'>
                                 <span className='channel-name'>{channel.channelName}</span>
                                 <span className='channel-link-last-message-text'>
@@ -157,14 +158,14 @@ const LeftSection:React.FC<LeftSectionProps>=({
             </div>
             }
             <button className='user-info-button' onClick={()=>setModal({active:true, type:'userSetting'})}>
-                <img className='user-info-photo' alt='' src={`${photo==='default.jpeg'?'/img/default.jpeg':photoUrl}`}/>
+                <img className='user-info-photo' alt={displayName + " profile photo"} src={`${photo==='default.jpeg'?'/img/default.jpeg':photoUrl}`}/>
                 <div className='user-info-text'>
                     <span className='display-name-info'>{displayName}</span>
                     <span className='friend-tag-info'>#{friendTag}</span>
                 </div>
             </button>
             <div className='logout-container'>
-                <button className='logout-button-laptop' onClick={handleLogout}>
+                <button className='logout-button-laptop' onClick={handleLogout} aria-label="user log out">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c93a3a" strokeWidth="1"
                     strokeLinecap="round" strokeLinejoin="round" className="logout-img">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

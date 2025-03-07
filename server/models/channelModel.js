@@ -21,7 +21,7 @@ const channelSchema = new mongoose.Schema({
             type: mongoose.Schema.ObjectId,
             ref:'User'
         }],
-        required:[true, "A channel must have a member"],
+        required: [true, "A channel must have a member"],
         validate: {
             validator: function(v) {
                 return v.length >= 2;
@@ -34,13 +34,13 @@ const channelSchema = new mongoose.Schema({
         required:[true, 'A channel must have a type: Group or Friend'],
         enum:['Group', 'Friend']
     },
-    channelNumber:{
+    channelNumber: {
         type:Number,
         required:[true, "A channel must have a channel number"],
         unique:true,
         default:() => Math.floor(Math.random() * 99999999999999) + 1
     },
-    photo:{
+    photo: {
         type:String,
         required:function(){
             return this.channelType==='Group'
