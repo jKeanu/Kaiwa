@@ -74,7 +74,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
         <div className='upper-left-section-container'>
             <div className='left-section-button-container left-section-button-container-mob'>
                 <Link to={'/@me'} className='home-button' aria-label="Navigate to home section">
-                    <img src='/Kaiwa_icon.svg' className='home-img' alt='Kaiwa icon'/>
+                    <img src='/img/Kaiwa_icon.svg' className='home-img' alt='Kaiwa icon'/>
                 </Link>
                 <div className='messages-text'>Messages</div>
                 <div className='create-group-modal-button-container'>
