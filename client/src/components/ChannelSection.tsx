@@ -114,11 +114,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
 
     useEffect(()=>{
-        setMessagesSkip(0)
-        setMessageReceived([])
-        setMsgFetchLoading(false)
-        setAllMessagesFetched(false)
-        setNotSentMessages([])
+        return ()=>{
+            setMessagesSkip(0)
+            setMessageReceived([])
+            setMsgFetchLoading(false)
+            setAllMessagesFetched(false)
+            setNotSentMessages([])
+        }
     }, [channelNumber])
 
     useEffect(() => {
@@ -289,15 +291,15 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     useEffect(()=>{
         if(messageReceived.length>0&&messageReceived[0].sender._id===_id){
-            setTimeout(()=>{
+            const sentTimeoutId = setTimeout(()=>{
                 setMessageSentStatus(true)
             }, 500)
             return ()=>{
-                setMessageSentStatus(false)   
+                clearTimeout(sentTimeoutId)
             }
         }
     },
-    [messageReceived])
+    [messageReceived, _id])
 
 
     const sendMessage = ():void =>{
@@ -307,15 +309,10 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         if(!currentChannel){
             return navigate('/@me')
         }
-        if(messageLimit>5){
+        if(messageLimit>5 || notSentMessages.length>5){
             setModalWindow({isOpen:true, window:'messageLimit'})
             textareaRef.current?.blur()
             return
-        }
-        if(notSentMessages.length>5){
-            setModalWindow({isOpen:true, window:'messageLimit'})
-            textareaRef.current?.blur()
-            return 
         }
         setMessageLimit(prevLimit=>prevLimit+1)
         setMessageSentStatus(false)
@@ -1064,6 +1061,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             onChange={(event)=>setInputMessage(event.target.value)} 
                             className="message-input"
                             maxLength={120}
+                            autoFocus
                         />
                     </div>
                 </section>

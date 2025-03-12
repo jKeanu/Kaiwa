@@ -90,6 +90,7 @@ const LoginPage:React.FC=()=> {
                 <form className='login-form' onSubmit={handleLogin}>
                     <div className="input-container">
                         <input type="email" className='input-field' id='email' placeholder=" "
+                        autoComplete='off'
                         value={email} onChange={e => setEmail(e.target.value)} required
                         style={{borderBottomColor:`${(errorMessage||forgotPassError)&&'#c93a3a'}`}}/>
                         <label htmlFor="email" className="input-label">Email</label>
@@ -103,6 +104,7 @@ const LoginPage:React.FC=()=> {
                     </div>
                     <div className="input-container login-password-input-container">
                         <input type="password" className='input-field' id='password' placeholder=" "
+                        autoComplete='off'
                         value={password} onChange={e => setPassword(e.target.value)} required
                         style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
                         <label htmlFor="password" className="input-label" >Password</label>

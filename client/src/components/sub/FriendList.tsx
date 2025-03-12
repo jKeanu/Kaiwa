@@ -189,7 +189,8 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                                 </div>
                             </div>
                         </button>
-                        <button className="friend-more-button" onClick={(e)=>handlePopUpClick(e, friend.friend._id)}>
+                        <button className="friend-more-button" onClick={(e)=>handlePopUpClick(e, friend.friend._id)}
+                        aria-label={`${friend.friend.displayName} more`}>
                             <div className="friend-more-img-container">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
                                 stroke="#b9b9b9" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" 
