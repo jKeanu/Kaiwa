@@ -308,7 +308,7 @@ const HomePage:React.FC = () => {
                     socket.emit('leave_channel_live_updates', channelIds)
                 }
             }
-        }, [channels, socket])
+        }, [channels, socket, channelIds])
 
         //New Friend channel
         useEffect(()=>{
@@ -335,7 +335,7 @@ const HomePage:React.FC = () => {
                 }
                 return cleanup
             }
-        }, [socket, sentReqs])
+        }, [socket, sentReqs, handleNewFriendChannel])
 
         //When someone declined your friend request
         useEffect(()=>{

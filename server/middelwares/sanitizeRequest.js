@@ -1,7 +1,7 @@
 import xss from 'xss';
 
 // Helper function to recursively sanitize data
-const sanitizeObject = (obj: any) => {
+const sanitizeObject = (obj) => {
 	for (const key in obj) {
     	if (obj.hasOwnProperty(key)) {
       		const value = obj[key];

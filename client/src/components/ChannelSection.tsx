@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo, useCallback} from 'react'
+import React, { useState, useEffect, useRef, useMemo} from 'react'
 import {
         ChannelDataStatus,
         ChannelMessage,
@@ -151,21 +151,24 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     useEffect(()=>{
         if(messagesData){
             if(messageReceived.length===0&&messagesData.messages.length>0){
-                setMessageReceived([...messagesData.messages].slice(0, messagesLimit+messagesSkip))
+                setMessageReceived([...messagesData.messages].slice(0, 15))
                 if(messagesData.notSentMessages){
                     setNotSentMessages(messagesData.notSentMessages)
                 }
             }
-        }else if(messagesError){
+        }
+    }, [messagesData, messageReceived])
+
+
+    useEffect(()=>{
+        if(messagesError){
             if(axios.isAxiosError(messagesError)){
                 if(messagesError.response?.status===404 || messagesError.response?.status===401){
                     navigate('/@me')
                 }
             }
         }
-    }, [messagesData, messagesError, messageReceived])
-
-
+    }, [messagesError])
 
 
     useEffect(() => {
@@ -249,18 +252,12 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
             return cleanup
         }
-    }, [socket, channelNumber, currentChannel]);
+    }, [socket, channelNumber, currentChannel, channelCacheKey]);
 
     useEffect(()=>{
         if(textareaRef.current){
             textareaRef.current.focus()
         }
-        return ():void => {
-            // Cleanup function to handle component unmount
-            if (textareaRef) {
-              textareaRef.current?.blur();
-            }
-          };
     }, [channelNumber])
 
     const messageBoxRef = useRef<HTMLDivElement>(null);
@@ -424,7 +421,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
             return cleanup
         }
-    }, [socket])
+    }, [socket, messageCacheKey])
 
     const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
         e.preventDefault()
@@ -675,18 +672,25 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setIsMemberVisible(true)
     }
 
-    const handleScroll = useCallback(throttle(() => {
+    const handleScroll = throttle(() => {
         const container = messageBoxRef.current;
-        if (container && !msgFetchLoading && !allMessagesFetched) {
+        if (container && !msgFetchLoading && !allMessagesFetched && messagesData) {
             const gap = Math.abs(container.scrollHeight - (Math.abs(container.scrollTop) + container.clientHeight));
             const isTop = gap <= container.clientHeight/2 || Math.abs(container.scrollTop) + container.clientHeight >= container.scrollHeight;
-
             if (isTop) {
-                // Perform the action when scrolled to the top
-                setMessagesSkip(prevMessagesSkip => prevMessagesSkip+messagesLimit)
+                if(messagesData.messages.length - messageReceived.length > 0){
+                    setMessageReceived(prevMessages=>{
+                        const updateMessage = [...prevMessages]
+                        updateMessage.push(...messagesData.messages.slice(prevMessages.length, prevMessages.length+15))
+                        return updateMessage
+                    })
+                }else{
+                    // Perform the action when scrolled to the top
+                    setMessagesSkip(messageReceived.length)
+                }
             }
         }
-    }, 300), [])
+    }, 300)
 
 
     useEffect(()=>{
@@ -695,75 +699,29 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 setMsgFetchLoading(true)
                 mutate(messageCacheKey, async (prevMessageData:ChannelMessagesStatus|undefined)=>{
                     if(!prevMessageData){
-                        return
-                    }
-                    //Determine the difference between the current rendered messages' length and the 
-                    //messages data in the cache
-                    const lenDifference = prevMessageData.messages.length - messageReceived.length
-                    //if there's a difference, it means there is messages data in the cache that we can 
-                    //get without fetching 
-                    if(lenDifference>0){
-                        //Since every scroll up, we render additional 16 messages(messagesLimit),
-                        //if the difference between the rendered messages and messages in the cache's length is
-                        //less than 16, we can fetch the remaining messages to make up for the additional 15 messages
-                        if(lenDifference<messagesLimit){
-                            try{
-                                const newMessagesData = await messageFetcher(
-                                    messageCacheKey,
-                                    messagesLimit-lenDifference,
-                                    messagesSkip+lenDifference,
-                                    token
-                                )
-                                if(newMessagesData.messages.length < messagesLimit-lenDifference){
-                                    setAllMessagesFetched(true)
-                                }
-                                setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
-                                setMsgFetchLoading(false)
-                                
-                                return {status:prevMessageData.status,
-                                        messages:[...prevMessageData.messages, ...newMessagesData.messages]}
-                            }catch(err){
-                                setMessagesSkip(prevSkip=>prevSkip-messagesLimit)
-                                return {status:prevMessageData.status, messages:[...prevMessageData.messages]}
-                            }
-                        //if its higher than 15, we can just get additional 15 messages from the cache
-                        }else{
-                            setMessageReceived(prevMessages=>{
-                                return [...[...prevMessageData.messages].slice(0, prevMessages.length+messagesLimit)]
-                            })
-                            setMsgFetchLoading(false)
-                            return {...prevMessageData}
-                        }
+                        return undefined
                     }
                     try{
-                    //This executes when the length of the rendered messages is equal to the length of the messages
-                    //in the cache, if so, we can fetch another messages data.
                         const newMessagesData = await messageFetcher(
                             messageCacheKey,
                             messagesLimit,
                             messagesSkip,
-                            token
-                        )
-                        if(newMessagesData.messages.length<messagesLimit){
+                            token)
+                        if(newMessagesData.messages.length < messagesLimit){
                             setAllMessagesFetched(true)
-                        }
-                    //Since the cached data and the rendered data is identical we can just add allMessages
-                    //to both 
-                        const allMessages = [...prevMessageData.messages, ...newMessagesData.messages]
-                        setMessageReceived(allMessages)
+                        }       
+                        setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
                         setMsgFetchLoading(false)
-                        return {status:prevMessageData.status, messages:allMessages}
+                        return {status:prevMessageData.status,
+                            messages:[...prevMessageData.messages, ...newMessagesData.messages]}
                     }catch(err){
-                        setMessagesSkip(prevSkip=>prevSkip-messagesLimit)
                         return {status:prevMessageData.status, messages:[...prevMessageData.messages]}
                     }
                 }, false)
             }
         }
-        if(!msgFetchLoading && !allMessagesFetched){
-            fetchMoreMessages()
-        }
-    }, [messagesSkip])
+        fetchMoreMessages()
+    }, [messagesSkip, messageCacheKey])
 
 
     useEffect(()=>{
@@ -781,7 +739,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 })
             }
         }
-    }, [socket, currentChannel, _id])
+    }, [socket, currentChannel, channelCacheKey])
 
     return (
         <>
