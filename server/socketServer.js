@@ -53,12 +53,9 @@ const infoLogger = winston.createLogger({
 })
 
 const redisConfig = isProduction?{
-  username: process.env.REDIS_USERNAME,
-  password: process.env.REDIS_PASSWORD,
-  port: 25061,
-  tls:{},
-  connectTimeout: 10000,
   host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT,
+  password: process.env.REDIS_PASSWORD,
   retryStrategy: function(retries){
     if(retries > 10){
       logger.error("Too many Redis connection retries, stopping retries.");
