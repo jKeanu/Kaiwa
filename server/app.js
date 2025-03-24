@@ -48,16 +48,15 @@ app.use(helmet({
       frameAncestors: ["'self'"],
       imgSrc: ["'self'", 'data:'],
       objectSrc: ["'none'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'"], //Does not allow inline scripts
       scriptSrcAttr: ["'none'"],
-      styleSrc: ["'self'", 'https:'],
+      styleSrc: ["'self'", 'https:'], //Does not allow inline styles
       requireTrustedTypesFor: ['script', 'style'],
     },
   },
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  referrerPolicy: { policy: 'no-referrer' },
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
-  permittedCrossDomainPolicies: { permittedPolicies: 'none' },
-  xssFilter: true
+  permittedCrossDomainPolicies: { permittedPolicies: 'none' }
 }));
 
 app.use(express.json({ limit: '10kb' }));
