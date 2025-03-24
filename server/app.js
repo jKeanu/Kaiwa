@@ -7,7 +7,6 @@ import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
 import compression from 'compression';
 import cors from 'cors';
 import globalHandleError from './controllers/errorController.js';
@@ -69,8 +68,6 @@ app.use(sanitizeRequest)
 // Data sanitization against NoSQL query
 app.use(mongoSanitize());
 
-// Data sanitization against XSS
-app.use(xss());
 app.use(compression());
 
 app.use('/api/v1/users', userRouter);
