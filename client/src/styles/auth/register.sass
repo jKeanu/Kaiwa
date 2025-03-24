@@ -3,9 +3,7 @@
         display: flex
         align-items: center
         flex-direction: column
-        background: rgb(4,12,20)
         padding-top: 8rem
-        background: linear-gradient(169deg, rgba(4,12,20,1) 0%, rgba(31,40,52,1) 100%, rgba(255,240,0,1) 100%, rgba(25,26,29,1) 100%)
         height: $register-container-h
         height: 100dvh
         width: $register-container-w
@@ -16,7 +14,6 @@
         justify-content: center
         align-items: center
         flex-direction: column
-        background-color: #ffffff07
         height: fit-content
         width: $register-container-w
         padding: 2rem 0
@@ -50,6 +47,7 @@
             .input-container
                 @include input($w: $input-width)
             button
+                border-radius: 4px
                 background-color: #37404d
                 color: #ffffffcd
                 width: $button-width
@@ -65,7 +63,7 @@
                 &:active
                     background-color: rgb(51, 59, 69)
                 &:hover
-                    background-color: $secondary-bg
+                    background-color: transparent
                 .register-loading
                     @include loading(0, 30px)
     .already-have-an-account-text
@@ -102,6 +100,7 @@
         
     
 .register-container
+    background-color: #1f2834a8
     +register-page-mobile
     +register-page-tablet
     +register-page-laptop

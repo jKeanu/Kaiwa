@@ -25,6 +25,9 @@ const AuthenticationPage = () => {
                 <Route path='/resetpassword/:resetPasswordToken' element={<ResetPassword />}/>
                 <Route path="*" element={<NotFound />} />
             </Routes>
+            <div className="auth-copy">
+                © 2025 Kaiwa
+            </div>
         </div>
     );
 };

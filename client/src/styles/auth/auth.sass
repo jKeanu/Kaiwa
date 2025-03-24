@@ -1,7 +1,9 @@
 .auth-page-container
     position: relative
-    background: rgb(4,12,20)
-    background: linear-gradient(169deg, rgba(4,12,20,1) 0%, rgba(31,40,52,1) 100%, rgba(255,240,0,1) 100%, rgba(25,26,29,1) 100%)
+    background-image: url('/img/auth-background.png')
+    background-repeat: no-repeat
+    background-size: cover
+    background-position: top
     @media (min-width: $breakpoint-mobile + 1px)
         width: 100vw
         height: 100vh
@@ -11,3 +13,14 @@
         height: 100vh
         height: 100dvh
         width: fit-content
+    .auth-copy
+        font-family: sans-serif
+        align-content: center
+        width: 100%
+        display: block
+        text-align: center
+        position: absolute
+        bottom: 0
+        height: 35px
+        font-size: 18px
+        color: #f1f1f1

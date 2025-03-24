@@ -151,7 +151,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     useEffect(()=>{
         if(messagesData){
             if(messageReceived.length===0&&messagesData.messages.length>0){
-                setMessageReceived([...messagesData.messages].slice(0, 15))
+                setMessageReceived([...messagesData.messages].slice(0, 16))
                 if(messagesData.notSentMessages){
                     setNotSentMessages(messagesData.notSentMessages)
                 }
