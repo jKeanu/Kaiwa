@@ -1,6 +1,6 @@
-#![kaiwa_logo](https://github.com/user-attachments/assets/3e826842-124f-4a36-8c41-6083e5d185a6) Kaiwa
+![kaiwa_readme](https://github.com/user-attachments/assets/59acb2a0-3a0b-4535-9ca7-f41f25040107)
 
-A feature rich real-time chat app with authentication, live messaging, friend systems, and profile customization. Built with MongoDB, Express, React, and Node.js.
+A real-time chat app where users can message friends privately or in groups, customize their profiles, and securely reset passwords via email. The platform supports live notifications, friend management, and profile picture uploads, delivering a seamless messaging experience. Everything updates instantly, mirroring the feel of modern social platforms.
 
 ## 🚀 Quick Start
 ### Prerequisites
