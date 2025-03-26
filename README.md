@@ -3,6 +3,7 @@
 </div>
 
 # Kaiwa - Real-Time Chat Application
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A real-time chat app where users can message friends privately or in groups, customize their profiles, and securely reset passwords via email. The platform supports live notifications, friend management, and profile picture uploads, delivering a seamless messaging experience mirroring modern chat applications.
 
