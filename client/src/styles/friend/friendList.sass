@@ -162,30 +162,32 @@
                 .friend-more-pop-up-container
                     position: absolute
                     display: flex
+                    border-radius: 8px
                     flex-direction: column
                     justify-content: center
                     align-items: flex-start
-                    background-color: #141a22b7
-                    padding: 0.2rem
+                    background-color: #2a2f36
                     z-index: 1
                     width: 6.4rem
+                    overflow: hidden
+                    font-family: 'Raleway', sans-serif
                     .friend-pop-up-link
+                        padding: 6px 0
+                        text-align: center
                         color: $white-text
                         text-decoration: none
                         width: 100%
-                        font-family: 'Open Sans', sans-serif
-                        font-size: 0.7rem
-                        padding: 0.2rem 0.5rem
+                        font-size: 0.8rem
                         &:hover
-                            background-color: #2e3b4db7
+                            background-color: #3a4b62
                     .remove-friend-button
-                        padding: 0.2rem 0.5rem
+                        padding: 6px 0
+                        text-align: center
                         width: 100%
                         color: $error-message
                         background-color: transparent
                         border: none
-                        font-family: 'Open Sans', sans-serif
-                        font-size: 0.7rem
+                        font-size: 0.8rem
                         cursor: pointer
                         &:hover
                             color: $white-text
@@ -200,7 +202,6 @@
     +friend-list-mobile
     +friend-list-desktop
     .friend-list-top-section
-        box-shadow: 0px 3px 1px rgba(0, 0, 0, 0.5)
         .friend-list-search-input
             width: 100%
             border: none
@@ -255,15 +256,15 @@
             .friend-more-button
                 margin-right: 0.5rem
                 border: none
-                height: 2rem
-                width: 2rem
+                height: 1.75rem
+                width: 1.75rem
                 border-radius: 1rem
                 background-color: grey
                 position: absolute
                 right: 0%
                 top: 50%
                 transform: translateY(-50%)
-                background-color: #1a2634
+                background-color: #25303e
                 transition: all 0.15s ease
                 cursor: pointer
                 &:hover

@@ -417,7 +417,7 @@
                             justify-content: center
                             span
                                 color: #6f7bc0
-                                font-family: 'Open Sans'
+                                font-family: system-ui
                                 font-weight: 500
                             .create-group-loading
                                 @include loading(0, 20px)
@@ -427,8 +427,8 @@
                     height: 100%
                     display: flex
                     flex-direction: column
+                    padding-bottom: 4rem
                     .create-group-modal-name-container
-                        background-color: #0202025a
                         padding: 0.35rem
                         height: 5rem
                         position: relative
@@ -455,7 +455,7 @@
                                 font-size: 0.9rem
                                 font-family: 'Raleway', sans-serif
                                 background-color: #64646423
-                                padding: 0.2rem 0 0.2rem 0.3rem
+                                padding: 0.4rem 0.8rem 0.4rem 0.8rem
                                 margin-top: 0.5rem
                                 border-radius: 0.4rem
                                 &::placeholder
@@ -477,7 +477,7 @@
                                 font-size: 0.8rem
                                 font-family: 'Open Sans', sans-serif
                     .create-group-modal-invite-container
-                        height: 100%
+                        flex: 1
                         overflow-y: scroll
                         @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
                         .create-group-search
@@ -490,7 +490,7 @@
                                 display: none
                             .create-group-modal-friend-list
                                 position: relative
-                                padding: 1rem 0 2.5rem 0
+                                padding-top: 1rem
                                 .friend-checkbox-container
                                     display: flex
                                     padding: 0rem 0.7rem 0.8rem 0.7rem
@@ -847,6 +847,7 @@
                                 font-family: 'Raleway', sans-serif
                                 font-weight: bold
                             .group-name-input
+                                border-radius: 4px
                                 width: 15rem
                                 border: none
                                 font-size: 1rem
@@ -865,6 +866,7 @@
                             justify-content: space-between
                             margin-top: 1rem
                             .group-name-confirm
+                                border-radius: 4px
                                 margin-left: auto
                                 background-color: #2c3447
                                 border: none
@@ -907,6 +909,7 @@
                                 justify-content: space-between
                                 margin-top: 1rem
                                 .create-group-button
+                                    border-radius: 4px
                                     background-color: #2c3447
                                     border: none
                                     height: 2rem
@@ -921,6 +924,7 @@
                                     .create-group-loading
                                         @include loading(0, 30px) 
                                 .create-group-back-button
+                                    border-radius: 4px
                                     background-color: #2c3447
                                     border: none
                                     height: 2rem
@@ -1272,6 +1276,7 @@
                                 background-color: #ffffff09
                                 padding: 0.2rem 0 0.2rem 0.8rem
                                 margin-top: 0.5rem
+                                border-radius: 4px
                             .group-name-error
                                 color: $error-message
                                 font-size: 0.7rem
@@ -1283,6 +1288,7 @@
                             justify-content: space-between
                             margin-top: 0.5rem
                             .group-name-confirm
+                                border-radius: 4px
                                 margin-left: auto
                                 background-color: #2c3447
                                 border: none
@@ -1325,6 +1331,7 @@
                                 justify-content: space-between
                                 margin-top: 1rem
                                 .create-group-button
+                                    border-radius: 4px
                                     background-color: #2c3447
                                     border: none
                                     height: 2rem
@@ -1339,6 +1346,7 @@
                                     .create-group-loading
                                         @include loading(0, 30px) 
                                 .create-group-back-button
+                                    border-radius: 4px
                                     background-color: #2c3447
                                     border: none
                                     height: 2rem
@@ -1554,9 +1562,9 @@
                         padding: 0.5rem
                         transition: background-color 0.25s ease-in-out
                         &:hover
-                            background-color: rgb(52, 76, 100)
+                            background-color: rgb(48, 64, 79)
                         &.active
-                            background-color: rgb(52, 76, 100)
+                            background-color: rgb(48, 64, 79)
                         .not-seen-indicator
                             width: 0.45rem
                             height: 0.45rem

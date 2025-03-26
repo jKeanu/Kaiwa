@@ -106,7 +106,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                     </button>
                     <h2 className="create-group-mob-header">Create Group</h2>      
                     <button className="create-group-button" onClick={handleCreateGroup} disabled={loading} 
-                    style={{justifyContent:`${loading?"center":"space-between"}`}}>
+                        style={{justifyContent:`${loading?"center":"space-between"}`}}>
                         {loading?
                         <div className="create-group-loading"></div>
                         :

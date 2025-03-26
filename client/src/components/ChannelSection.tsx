@@ -456,11 +456,14 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     function handleKeyDown(event:React.KeyboardEvent<HTMLTextAreaElement>):void{
     // Check if the Enter key was pressed (key code 13)
-      if (event.key === 'Enter' && !event.shiftKey && inputMessage && socket?.connected) {
-        event.preventDefault();
-        // Call the sendMessage function or any other action
-        sendMessage();
-      }
+        if (event.key === 'Enter' && !event.shiftKey && inputMessage && socket?.connected) {
+            event.preventDefault();
+            // Call the sendMessage function or any other action
+            sendMessage();
+        }
+        else if(event.key === 'Enter' && !inputMessage){
+            event.preventDefault() 
+        }       
     }
     //Popup 
     const handlePopUp = (e:React.MouseEvent<HTMLButtonElement>, memberId:string):void=>{
@@ -1018,7 +1021,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                             onKeyDown={handleKeyDown}
                             onChange={(event)=>setInputMessage(event.target.value)} 
                             className="message-input"
-                            maxLength={120}
+                            maxLength={320}
                             autoFocus
                         />
                     </div>
