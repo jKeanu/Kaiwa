@@ -40,4 +40,4 @@ cd Kaiwa
 cd client && npm install && npm run dev
 
 # Backend (in new terminal)
-cd ../server && npm install && npm run dev
+cd server && npm install && npm run dev
