@@ -20,7 +20,7 @@ A real-time chat app where users can message friends privately or in groups, cus
 ## 💻 Tech Stack  
 - **Frontend**: React, TypeScript, Vite  
 - **Backend**: Node.js, Express, REST API, Socket.io  
-- **Styling**: Tailwind CSS  
+- **Styling**: SASS
 - **Database**: MongoDB  
 - **Cloud**:  
   - **AWS**: S3, CloudFront, CloudWatch, Route 53  
