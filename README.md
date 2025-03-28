@@ -1,6 +1,4 @@
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/59acb2a0-3a0b-4535-9ca7-f41f25040107"/>
-</div>
+![kaiwa_readme_image](https://github.com/user-attachments/assets/bed9ee45-b3db-410f-8574-55214b9ac991)
 
 # Kaiwa - Real-Time Chat Application
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -17,7 +15,17 @@ A real-time chat app where users can message friends privately or in groups, cus
 - **🗨️ Group & Private Chats** – Create rooms or DM users.  
 - **🖼️ Profile Management** – Update names, passwords, and **profile pictures** (AWS S3 + CloudFront).  
 - **🔑 Password Reset** – Token sent via email for security.  
-- **🟢 Online Status** – See who’s active in real-time.  
+- **🟢 Online Status** – See who’s active in real-time.
+
+## 💻 Tech Stack  
+- **Frontend**: React, TypeScript, Vite  
+- **Backend**: Node.js, Express, REST API, Socket.io  
+- **Styling**: Tailwind CSS  
+- **Database**: MongoDB  
+- **Cloud**:  
+  - **AWS**: S3, CloudFront, CloudWatch, Route 53  
+  - **Google Cloud**: Memorystore (Redis), Compute Engine  
+- **Tools**: Mailjet, Postman  
 
 ## 🚀 Quick Start
 ### Prerequisites
