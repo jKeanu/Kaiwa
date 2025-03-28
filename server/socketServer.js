@@ -5,73 +5,11 @@ import User from './models/userModel.js';
 import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
 import mongoose from 'mongoose';
-import winston from 'winston';
-import WinstonCloudWatch from 'winston-cloudwatch'
-import { Redis } from 'ioredis';
+import { logger, infoLogger } from './utils/cloudwatchConfig.js';
+import redisClient from './utils/redisClient.js';
+
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME
-const isProduction = process.env.NODE_ENV === 'production'
-
-const awsCredentials ={
-  credentials:{
-    accessKeyId: process.env.ACCESS_KEY,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY
-  },
-  region: process.env.AWS_REGION
-}
-
-export const logger = winston.createLogger({
-  level: 'error',
-  format: winston.format.json(),
-  transports: [
-    isProduction?
-    new WinstonCloudWatch({
-      awsOptions:awsCredentials,
-      logGroupName: process.env.CLOUDWATCH_ERROR_LOG_GROUP_NAME,
-      logStreamName: process.env.CLOUDWATCH_ERROR_LOG_STREAM,
-      awsRegion: process.env.CLOUDWATCH_REGION 
-    }
-    ):
-    new winston.transports.File({ filename: 'error.log'})
-  ]
-})
-
-const infoLogger = winston.createLogger({
-  level:'info',
-  format: winston.format.json(),
-  transports: [
-    isProduction?
-    new WinstonCloudWatch({
-      awsOptions:awsCredentials,
-      logGroupName: process.env.CLOUDWATCH_INFO_LOG_GROUP_NAME,
-      logStreamName: process.env.CLOUDWATCH_INFO_LOG_STREAM,
-      awsRegion: process.env.CLOUDWATCH_REGION 
-    }
-    ):
-    new winston.transports.File({ filename: 'info.log'})
-  ]
-})
-
-const redisConfig = isProduction?{
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT,
-  password: process.env.REDIS_PASSWORD,
-  retryStrategy: function(retries){
-    if(retries > 10){
-      logger.error("Too many Redis connection retries, stopping retries.");
-      return null
-    }
-    return 5000*retries; // Delay for the next reconnect attempt in milliseconds
-  }}:{
-  // Default configuration for development (local Redis server)
-  host: 'localhost',
-  port: 6379
-}
-  
-
-
-
-const redisClient = new Redis(redisConfig)
 
 redisClient.on('connect', () => {
   infoLogger.info('Connected to Redis');

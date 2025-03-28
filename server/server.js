@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import http from 'http';
 import app from './app.js';
 import socketServerSetup from './socketServer.js';
-import { logger } from './socketServer.js';
+import { logger } from './utils/cloudwatchConfig.js';
 
 const server = http.createServer(app);
 // Set up the socket server

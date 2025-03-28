@@ -1,5 +1,5 @@
 import AppError from '../utils/appError.js';
-import { logger } from '../socketServer.js';
+import { logger } from '../utils/cloudwatchConfig.js';
 
 
 const handleCastErrorDB = err =>{
