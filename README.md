@@ -1,4 +1,4 @@
-![kaiwa_readme_image](https://github.com/user-attachments/assets/bed9ee45-b3db-410f-8574-55214b9ac991)
+[![kaiwa_readme_image](https://github.com/user-attachments/assets/8ce75b45-94c6-426d-aa28-e1c069a0235c)](https://kaiwachat.com)
 
 # Kaiwa - Real-Time Chat Application
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
