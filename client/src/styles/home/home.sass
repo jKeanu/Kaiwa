@@ -1,30 +1,33 @@
+@use '../variable' as variables
+@use '../mixin' as mixins  
+
 =home-page-mobile
-  @media (max-width: $breakpoint-tablet)
+  @media (max-width: variables.$breakpoint-tablet)
     position: relative
     width: 100vw
     height: 100vh
     height: 100dvh
     .modal-window-container
-      @include modal-container
+      @include mixins.modal-container
       .notice-modal-container
-        @include modal-mobile
+        @include mixins.modal-mobile
         .notice-modal-button-container
-           @include modal-button-container
+           @include mixins.modal-button-container
 
 =home-page-desktop
-  @media (min-width: $breakpoint-tablet + 1px )
+  @media (min-width: variables.$breakpoint-tablet + 1px )
     display: flex
     width: 100vw
     height: 100vh
     overflow-x: hidden
     .modal-window-container
-      @include modal-container
+      @include mixins.modal-container
       .notice-modal-container
-        @include modal($border-radius: 0.25rem)
+        @include mixins.modal($border-radius: 0.25rem)
         .notice-modal-button-container
-          @include modal-button-container
+          @include mixins.modal-button-container
 
 .homepage
+  overflow: hidden
   +home-page-mobile
   +home-page-desktop
-  overflow: hidden

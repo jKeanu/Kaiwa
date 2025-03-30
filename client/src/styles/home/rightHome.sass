@@ -1,5 +1,7 @@
+@use '../variable' as variables
+    
 =right-home-mobile
-    @media (max-width: $breakpoint-tablet)
+    @media (max-width: variables.$breakpoint-tablet)
         position: absolute
         left: 100%
         top: 0
@@ -17,7 +19,7 @@
 
     
 =right-home-desktop
-    @media (min-width: $breakpoint-tablet + 1)
+    @media (min-width: variables.$breakpoint-tablet + 1)
         width: 100vw
         height: 100vh
         padding: 0 1rem 

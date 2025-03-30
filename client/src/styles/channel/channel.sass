@@ -1,3 +1,6 @@
+@use '../variable' as variables
+@use '../mixin' as mixins
+    
 @keyframes l20-1
     0%
         clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%)
@@ -35,7 +38,7 @@
     
     
 =channel-mobile
-    @media (max-width: $breakpoint-tablet)
+    @media (max-width: variables.$breakpoint-tablet)
         position: absolute
         top: 0
         left: 100%
@@ -109,7 +112,7 @@
                     -webkit-overflow-scrolling: touch !important
                     overflow-anchor: none
                     padding: 0 0.5rem 0.5rem 0.5rem
-                    @include scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
+                    @include mixins.scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
                     .user-message-info-container
                         .message-info
                             .message-content-container
@@ -129,10 +132,10 @@
                 height: 100% 
                 width: 100% !important
                 padding: 3rem 0.15rem 0.5rem 0
-                @include scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
+                @include mixins.scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
                 overflow-y: scroll
                 transition: left 0.15s ease-in-out
-                background-color: $primary-bg !important
+                background-color: variables.$primary-bg !important
                 &.mob-member-visible
                     left: 0%
                 .member-list
@@ -142,7 +145,7 @@
                     margin: 1rem 2rem 0.5rem 2rem
                     border-radius: 1rem
                     padding: 0.5rem 0
-                    background-color: $primary-bg
+                    background-color: variables.$primary-bg
                     .member-container
                         .member-popup-button
                             width: 100%
@@ -167,7 +170,7 @@
                                     width: 0.8rem
                                     height: 0.8rem
                                     border-radius: 0.4rem
-                                    border: 0.2rem solid $primary-bg
+                                    border: 0.2rem solid variables.$primary-bg
                             .member-name
                                 font-size: 0.9rem
                                 font-family: 'Roboto', sans-serif
@@ -179,11 +182,11 @@
                                 box-shadow: inset 1px 1px 10px 3px #0000004c
                                 height: 0
                                 display: flex
-                                background-color: $primary-bg
+                                background-color: variables.$primary-bg
                                 flex-direction: column
                                 transition: all 0.15s ease-in-out
                                 overflow-y: scroll
-                                @include scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
+                                @include mixins.scroll($scroll-color: rgb(68, 83, 106), $w: 0.2rem)
                                 margin: auto
                                 &.member-popup-active
                                     height: 4.1rem
@@ -209,13 +212,13 @@
                                 .member-accept-friend-request
                                     color: #31be1c
                                 .member-decline-friend-request
-                                    color: $error-message
+                                    color: variables.$error-message
         .modal-window-container
-            @include modal-container
+            @include mixins.modal-container
             .channel-modal
-                @include modal-mobile
+                @include mixins.modal-mobile
                 .channel-modal-button-container
-                    @include modal-button-container
+                    @include mixins.modal-button-container
                 .message-limit-modal-button-container
                     margin-top: 1.5rem
                     display: flex
@@ -270,7 +273,7 @@
                     .group-sett-error
                         position: absolute
                         top: -2%
-                        color: $error-message
+                        color: variables.$error-message
                         font-size: 0.7rem
                         font-family: 'Open Sans', sans-serif
                     .group-photo-input-containter
@@ -344,7 +347,7 @@
                             align-items: center
                             justify-content: center
                             .user-setting-loading
-                                @include loading(0, 1.5rem)
+                                @include mixins.loading(0, 1.5rem)
             .invite-modal-container
                 height: 100vh
                 height: 100dvh
@@ -367,15 +370,15 @@
                         bottom: 100%
                         font-size: 0.7rem
                         font-family: 'Open Sans', sans-serif
-                        color: $error-message
-                        @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.2rem)
+                        color: variables.$error-message
+                        @include mixins.scroll($scroll-color: rgb(81, 84, 110), $w: 0.2rem)
                     .invite-friend-list-containter
                         padding: 0.5rem 1rem
                         display: flex
                         flex-direction: column
                         height: 100%
                         overflow-y: scroll
-                        @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
+                        @include mixins.scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
                         .invite-friend-info
                             display: flex
                             justify-content: start
@@ -407,7 +410,7 @@
                             align-items: center
                             justify-content: center
                             .invite-user-loading
-                                @include loading(0, 30px)
+                                @include mixins.loading(0, 30px)
                         .friend-invite-button
                             border-radius: 8px
                             margin-left: auto
@@ -425,11 +428,11 @@
                             align-items: center
                             justify-content: center
                             .invite-user-loading
-                                @include loading(0, 30px)
+                                @include mixins.loading(0, 30px)
 
 
 =channel-desktop
-    @media (min-width: $breakpoint-tablet + 1)
+    @media (min-width: variables.$breakpoint-tablet + 1)
         .channel-container
             display: flex
             flex: 1
@@ -451,11 +454,11 @@
             .message-section
                 padding-right: 0rem 2rem
                 .message-box
-                    @media (min-width: $breakpoint-tablet + 1) and (max-width: $breakpoint-laptop)
+                    @media (min-width: variables.$breakpoint-tablet + 1) and (max-width: variables.$breakpoint-laptop)
                         padding: 0 0.5rem 0rem 0.5rem
-                    @media (min-width: $breakpoint-laptop + 1)
+                    @media (min-width: variables.$breakpoint-laptop + 1)
                         padding: 0 2rem 0rem 2rem 
-                    @include scroll($scroll-color:rgb(81, 84, 110), $w: 0.4rem)
+                    @include mixins.scroll($scroll-color:rgb(81, 84, 110), $w: 0.4rem)
                     &::-webkit-scrollbar-track
                         background-color: rgb(46, 53, 68)
                     .user-message-info-container
@@ -464,9 +467,9 @@
                                 width: 22rem
                 
             .channel-members-section
-                @media (min-width: $breakpoint-tablet + 1) and (max-width: $breakpoint-laptop)
+                @media (min-width: variables.$breakpoint-tablet + 1) and (max-width: variables.$breakpoint-laptop)
                     width: 9rem
-                @media (min-width: $breakpoint-laptop + 1)
+                @media (min-width: variables.$breakpoint-laptop + 1)
                     width: 13rem
                 padding: 2rem 0.15rem 0.5rem 0
                 flex-shrink: 0
@@ -477,7 +480,7 @@
                     overflow-x: visible
                     margin:0
                     margin-top: 0.5rem
-                    @include scroll($scroll-color: transparent, $w: 0.3rem)
+                    @include mixins.scroll($scroll-color: transparent, $w: 0.3rem)
                     &:hover
                         &::-webkit-scrollbar-thumb
                             background-color: rgb(68, 83, 106)
@@ -567,21 +570,20 @@
                                         background-color: #14d31eca
                                         color: white
                                 .member-decline-friend-request
-                                    color: $error-message
+                                    color: variables.$error-message
                                     &:hover
-                                        background-color: $error-message
+                                        background-color: variables.$error-message
                                         color: white
                                 .member-add-friend
                                     &:hover
                                         background-color: #2e3b4db7
                                 .member-unfriend-button
-                                    color: $error-message
+                                    color: variables.$error-message
                                     &:hover
-                                        background-color: $error-message
+                                        background-color: variables.$error-message
                                         color: white
                                 .member-message-link
                                     text-align: center
-                                    color: $white-text
                                     text-decoration: none
                                     width: 100%
                                     font-family: 'Open Sans', sans-serif
@@ -609,11 +611,11 @@
                                     width: 0.8rem
                                     height: 0.8rem
                                     border-radius: 0.4rem
-                                    border: 0.2rem solid $primary-bg
+                                    border: 0.2rem solid variables.$primary-bg
         .modal-window-container
-            @include modal-container
+            @include mixins.modal-container
             .group-settings-modal-container
-                @include modal($border-radius: 0.25rem)
+                @include mixins.modal($border-radius: 0.25rem)
                 padding: 1rem
                 height: 13.5rem
                 padding-bottom: 1.5rem
@@ -630,7 +632,7 @@
                     .group-sett-error
                         position: absolute
                         top: 100%
-                        color: $error-message
+                        color: variables.$error-message
                         font-size: 0.7rem
                         font-family: 'Open Sans', sans-serif
                     .group-photo-input-containter
@@ -680,7 +682,7 @@
                             width: 100%
                             border: none
                             border-radius: 0.1rem
-                            background-color: $modal-bg
+                            background-color: variables.$modal-bg
                             font-size: 1rem
                             font-family: system-ui
                             font-weight: 300
@@ -708,11 +710,11 @@
                             &:hover
                                 background-color: #384d69
                             .group-setting-loading
-                                @include loading(0, 1.5rem)
+                                @include mixins.loading(0, 1.5rem)
             .channel-modal
-                @include modal($border-radius: 0.25rem)
+                @include mixins.modal($border-radius: 0.25rem)
                 .channel-modal-button-container
-                    @include modal-button-container
+                    @include mixins.modal-button-container
                 .message-limit-modal-button-container
                     margin-top: 1.5rem
                     display: flex
@@ -738,7 +740,7 @@
                             cursor: pointer 
 
             .invite-modal-container
-                @include modal($border-radius: 0.25rem)
+                @include mixins.modal($border-radius: 0.25rem)
                 @media (max-height: 500px)
                     height: 350px !important
                     .invite-modal-friend-list
@@ -753,14 +755,14 @@
                         bottom: 100%
                         font-size: 0.7rem
                         font-family: 'Open Sans', sans-serif
-                        color: $error-message
+                        color: variables.$error-message
                     .invite-friend-list-containter
                         padding: 0.5rem 1rem
                         display: flex
                         flex-direction: column
                         height: 100%
                         overflow: auto
-                        @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.2rem)
+                        @include mixins.scroll($scroll-color: rgb(81, 84, 110), $w: 0.2rem)
                         .invite-friend-info
                             display: flex
                             justify-content: start
@@ -794,7 +796,7 @@
                             &:hover
                                 background-color: rgb(180, 50, 50) 
                             .invite-user-loading
-                                @include loading(0, 30px)
+                                @include mixins.loading(0, 30px)
                         .friend-invite-button
                             border-radius: 8px
                             margin-left: auto
@@ -814,7 +816,7 @@
                             &:hover
                                 background-color: rgb(31, 128, 41)
                             .invite-user-loading
-                                @include loading(0, 30px)
+                                @include mixins.loading(0, 30px)
         
 .channel-section
     width: 100%
@@ -829,7 +831,7 @@
         .channel-nav
             min-height: 2.5rem
             width: 100%
-            background-color: $primary-bg
+            background-color: variables.$primary-bg
             height: max-content
             padding: 0.25rem 0.5rem
             display: flex
@@ -908,7 +910,7 @@
                         width: 100%
                         height: 100%
                     &:hover > svg
-                        fill: $white-text
+                        fill: variables.$white-text
                     &:hover > .channel-nav-button-tooltip
                         opacity: 1
                         pointer-events: auto
@@ -1051,7 +1053,7 @@
                 padding: 0.5rem 7rem 1rem 7rem
                 textarea
                     width: 100%
-                    background-color: $primary-bg
+                    background-color: variables.$primary-bg
                     border: none
                     padding: 0.4rem 1rem
                     border-radius: 0.3rem
@@ -1089,7 +1091,7 @@
                                 width: 0.8rem
                                 height: 0.8rem
                                 border-radius: 0.4rem
-                                border: 0.2rem solid $primary-bg
+                                border: 0.2rem solid variables.$primary-bg
                         .member-name
                             font-size: 1.1rem
                             font-family: 'Roboto', sans-serif

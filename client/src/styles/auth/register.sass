@@ -1,3 +1,6 @@
+@use '../variable' as variables
+@use "../mixin" as mixin   
+
 @mixin register-page($input-width, $register-container-w, $register-container-h, $button-width, $header-size-mult)
     @if $register-container-w == 100vw and $register-container-h == 100vh
         display: flex
@@ -32,7 +35,6 @@
         font-size: calc( 1.8rem * $header-size-mult )
         font-family: 'Raleway', sans-serif
         font-weight: 800
-        color: $white-text
         text-align: center
         margin: 0
         margin-bottom: 0.5rem
@@ -45,7 +47,7 @@
             flex-direction: column
             align-items: center
             .input-container
-                @include input($w: $input-width)
+                @include mixin.input($w: $input-width)
             button
                 border-radius: 4px
                 background-color: #37404d
@@ -65,7 +67,7 @@
                 &:hover
                     background-color: transparent
                 .register-loading
-                    @include loading(0, 30px)
+                    @include mixin.loading(0, 30px)
     .already-have-an-account-text
         color: white
         font-size: 0.6rem
@@ -83,19 +85,19 @@
 
 
 =register-page-mobile
-    @media (max-width: $breakpoint-mobile)
+    @media (max-width: variables.$breakpoint-mobile)
         @include register-page($input-width: 17rem, $register-container-w: 100vw, $register-container-h: 100vh, $button-width: 10rem, $header-size-mult: 0.7)
 
 =register-page-tablet
-    @media (min-width: $breakpoint-mobile + 1px) and (max-width: $breakpoint-tablet)    
+    @media (min-width: variables.$breakpoint-mobile + 1px) and (max-width: variables.$breakpoint-tablet)    
         @include register-page($input-width: 16rem, $register-container-w: 22rem, $register-container-h: 0, $button-width: 10rem, $header-size-mult: 0.8)
 
 =register-page-laptop
-    @media (min-width: $breakpoint-tablet+ 1px) and (max-width: $breakpoint-laptop)
+    @media (min-width: variables.$breakpoint-tablet+ 1px) and (max-width: variables.$breakpoint-laptop)
         @include register-page($input-width: 16rem, $register-container-w: 22rem, $register-container-h: 0, $button-width: 10rem, $header-size-mult: 0.9)
 
 =register-page-desktop
-    @media (min-width: $breakpoint-laptop + 1px )
+    @media (min-width: variables.$breakpoint-laptop + 1px )
         @include register-page($input-width: 21rem, $register-container-w: 25rem, $register-container-h: 0, $button-width: 10rem, $header-size-mult: 1)
         
     

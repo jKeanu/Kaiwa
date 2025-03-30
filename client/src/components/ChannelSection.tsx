@@ -134,7 +134,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 }
             }
         }
-    }, [channelData, channelError])
+    }, [channelData, channelError, navigate])
 
     const { data: messagesData, error: messagesError} = useSWR<ChannelMessagesStatus>(
         //if there's already a data in the cache, we no longer need to fetch 
@@ -168,7 +168,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 }
             }
         }
-    }, [messagesError])
+    }, [messagesError, navigate])
 
 
     useEffect(() => {
@@ -252,7 +252,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
             return cleanup
         }
-    }, [socket, channelNumber, currentChannel, channelCacheKey]);
+    }, [socket, channelNumber, currentChannel, channelCacheKey, _id, messageCacheKey, mutate]);
 
     useEffect(()=>{
         if(textareaRef.current){
@@ -421,7 +421,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
             return cleanup
         }
-    }, [socket, messageCacheKey])
+    }, [socket, messageCacheKey, mutate])
 
     const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
         e.preventDefault()
@@ -581,7 +581,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                      requestDetails:res.data.pendingRequestDetails})
                 }
             }
-        }catch(err){
+        }catch(_err){
             setMemberError('An error occurred while sending a friend request.')
         }
     }
@@ -630,7 +630,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         })
                     }
                 }
-            }catch(err){
+            }catch(_err){
                 setMemberError('An error occurred while accepting the friend request.')
             }
         }
@@ -652,7 +652,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     socket.emit("declined_pending_friend_request", {declinedUser: memberId, userId:_id})
                 }
             }
-        }catch(err){
+        }catch(_err){
             setMemberError('An error occurred while declining the friend request.')
         }
     }
@@ -717,14 +717,14 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         setMsgFetchLoading(false)
                         return {status:prevMessageData.status,
                             messages:[...prevMessageData.messages, ...newMessagesData.messages]}
-                    }catch(err){
+                    }catch(_err){
                         return {status:prevMessageData.status, messages:[...prevMessageData.messages]}
                     }
                 }, false)
             }
         }
         fetchMoreMessages()
-    }, [messagesSkip, messageCacheKey])
+    }, [messagesSkip, messageCacheKey, mutate, token])
 
 
     useEffect(()=>{
@@ -742,7 +742,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                 })
             }
         }
-    }, [socket, currentChannel, channelCacheKey])
+    }, [socket, currentChannel, channelCacheKey, _id, channelsDispatch, mutate])
 
     return (
         <>

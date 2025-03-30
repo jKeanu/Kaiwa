@@ -56,7 +56,7 @@ router.post('/login', loginLimiter, authController.login)
 
 //Password reset
 router.post('/forgotPassword', forgotPasswordLimiter, authController.forgotPassword)
-router.patch('/resetPassword/:token', resetPasswordLimiter,authController.resetPassword)
+router.patch('/resetPassword/:token', resetPasswordLimiter, authController.resetPassword)
 
 router.use(authController.protect);
 

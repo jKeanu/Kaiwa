@@ -1,5 +1,5 @@
 import AppError from '../utils/appError.js';
-import { logger } from '../utils/cloudwatchConfig.js';
+import { errLogger } from '../utils/cloudwatchConfig.js';
 
 
 const handleCastErrorDB = err =>{
@@ -40,7 +40,7 @@ const handleJWTExpiredError = () =>
   new AppError('Your token has expired! Please log in again.', 401);
 
 const sendErrorDev=(err, req, res) => {
-    logger.error('Uncaught error', {message:err.message, stack:err.stack})
+    errLogger.error('Uncaught error', {message:err.message, stack:err.stack})
     console.log('ERROR: ', err)
     res.status(err.statusCode).json({
         status: err.status,
@@ -59,7 +59,7 @@ const sendErrorProd=(err, req, res)=>{
         })
     }
     //This line would execute if there was an unhandled error that we have not caught.
-    logger.error('Uncaught error', {message:err.message, stack:err.stack})
+    errLogger.error('Uncaught error', {message:err.message, stack:err.stack})
     return res.status(500).json({
         status:'error',
         message:'Something went very wrong'
@@ -68,25 +68,28 @@ const sendErrorProd=(err, req, res)=>{
 
 
 export default function globalHandleError(err, req, res, next){
-    err.statusCode = err.statusCode || 500;
-    err.status = err.status || 'error';
+    let currErr = err
+    currErr.statusCode = currErr.statusCode || 500;
+    currErr.status = currErr.status || 'error';
     if (process.env.NODE_ENV === 'development'){
-        sendErrorDev(err, req, res)
+        sendErrorDev(currErr, req, res)
     }else if(process.env.NODE_ENV === 'production'){
-        let error = {...err};
-        //Since not all properties of the 'Error' object are enumerable (message and name included)
-        //we need to manually set the error.message and error.name
-        error.message = err.message
-        error.name = err.name
-        if (error.name === 'CastError') error = handleCastErrorDB(error);
+        // Since not all properties of the 'Error' object are enumerable (message and name included)
+        // we need to manually set the error.message and error.name,
+        // destructuring removes the stack
+        currErr = {...currErr}
+        // err.message would be present if it is an instance of app error
+        currErr.message = err.message
+        currErr.name = err.name
+        if (currErr.name === 'CastError') currErr = handleCastErrorDB(currErr);
         //Handles duplicates, i.e. If a user signed up using an email that already exists in the database.
-        if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+        if (currErr.code === 11000) currErr = handleDuplicateFieldsDB(currErr);
         //Validation errors
-        if (error.name === 'ValidationError')error = handleValidationErrorDB(error);
+        if (currErr.name === 'ValidationError') currErr= handleValidationErrorDB(currErr);
         //If the token is invalid or manipulated.
-        if (error.name === 'JsonWebTokenError') error = handleJWTError();
+        if (currErr.name === 'JsonWebTokenError') currErr = handleJWTError();
         //If the token expired
-        if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
-        sendErrorProd(error, req, res);
+        if (currErr.name === 'TokenExpiredError') currErr = handleJWTExpiredError();
+        sendErrorProd(currErr, req, res);
     }
 }

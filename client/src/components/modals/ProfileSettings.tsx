@@ -165,7 +165,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
     
     useEffect(()=>{
         setModalVisible(true)
-    },[])
+    },[setModalVisible])
 
     return(
         <div className={`profile-settings-modal-container ${modalVisible?'visible':''}`}>

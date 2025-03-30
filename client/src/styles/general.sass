@@ -1,13 +1,15 @@
+@use './variable' as variables
+    
 *
     font-size: 18px
     box-sizing: border-box
-    color: $white-text
+    color: variables.$white-text
 
     
 body
     margin: 0
     padding: 0
-    background-color: $primary-bg
+    background-color: variables.$primary-bg
     font-family: 'Raleway', sans-serif
     position: relative
     
@@ -28,7 +30,7 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active 
   transition: background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s // Slow transition for background and text color
-  -webkit-text-fill-color: $white-text !important // Set your preferred text color
+  -webkit-text-fill-color: variables.$white-text !important // Set your preferred text color
   box-shadow: 0 0 0px 1000px transparent inset // 'Fakes' a transparent background
 
 

@@ -5,7 +5,7 @@ import User from './models/userModel.js';
 import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
 import mongoose from 'mongoose';
-import { logger, infoLogger } from './utils/cloudwatchConfig.js';
+import { errLogger, infoLogger } from './utils/cloudwatchConfig.js';
 import redisClient from './utils/redisClient.js';
 
 
@@ -16,30 +16,15 @@ redisClient.on('connect', () => {
 });
 
 redisClient.on('error', (err) => {
-  logger.error('Redis Client Error', {message:err})
+  errLogger.error('Redis Client Error', {message:err})
 });
-
-//Flush all data during server restart.
-//Since we only use redis for updating user status, this works.
-const clearRedisData = async () => {
-  try{
-    await redisClient.flushall()
-    infoLogger.info('Redis data cleared on restart as configured')
-  }catch(err){
-    logger.error('Redis Flush All Error', {message:err.message})
-  }
-}
-
-if (process.env.ALLOW_REDIS_FLUSH_ON_RESTART === 'true' && redisClient) {
-  await clearRedisData();
-}
 
 const getUserIdFromSocket = async (token) => {
   try {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
     return decoded.id
-  } catch (error) {
-    logger.error('Token Decoding Error', {message:error.message, stack:error.stack})
+  }catch (error) {
+    errLogger.error('Token Decoding Error', {message:error.message, stack:error.stack})
   }
 };
 
@@ -85,7 +70,7 @@ export default (httpServer) => {
         })
       }
     }catch(err){
-      logger.error('User Status Icrement Error', {message:err.message, stack:err.stack})
+      errLogger.error('User Status Icrement Error', {message:err.message, stack:err.stack})
     }
 
     //JOIN ROOM
@@ -164,7 +149,7 @@ export default (httpServer) => {
         newTime:data.time, newFormattedTime:data.formattedDate, message:messageInfo, channelType:data.channelType})
         socket.to(`${data.channelNumber}`).emit('receive_message', messageInfo);
       }catch(err){
-        logger.error('Send Message Error', {message:err.message, stack:err.stack})
+        errLogger.error('Send Message Error', {message:err.message, stack:err.stack})
         await session.abortTransaction()
       }finally{
         await session.endSession()
@@ -186,7 +171,7 @@ export default (httpServer) => {
         {user:userObject, channelNumber:currChannelObject.channelNumber, newTime:data.newTime, type:'Joined'})
         socket.to(`user-${userObject._id}`).emit('invited_to_group', currChannelObject)
       }catch(err){
-        logger.error('User Invite Success Live Update Error', {message:err.message, stack:err.stack})
+        errLogger.error('User Invite Success Live Update Error', {message:err.message, stack:err.stack})
         await session.abortTransaction()
       }finally{
         await session.endSession()
@@ -200,7 +185,7 @@ export default (httpServer) => {
         user.photoUrl = `${cloudfrontDomainName}/${user.photo}`
         io.to(`channel-${data.channelId}`).emit(`channel_member_update`, {user, channelNumber:data.channelNumber, type:'Left'})
       }catch(err){
-        logger.error('Leave Group Live Update Error', {message:err.message, stack:err.stack})
+        errLogger.error('Leave Group Live Update Error', {message:err.message, stack:err.stack})
       }
     })
     
@@ -241,7 +226,7 @@ export default (httpServer) => {
             await delay(delayTime); // Wait for a specified delayTime before retrying
             return attemptOperation(); // Retry the operation
           }
-          logger.error('Continue Message Error', {message:err.message, stack:err.stack})
+          errLogger.error('Continue Message Error', {message:err.message, stack:err.stack})
       }}
       await attemptOperation()
     })
@@ -254,7 +239,7 @@ export default (httpServer) => {
               seen: verifiedCurrentUserId
           }}, {new:true})
       }catch(err){
-        logger.error('New Message Seen Error', {message:err.message, stack:err.stack})
+        errLogger.error('New Message Seen Error', {message:err.message, stack:err.stack})
       }
     })
 
@@ -330,7 +315,7 @@ export default (httpServer) => {
           })
         }
       }catch(err){
-        logger.error('User Status Decrement Error', {message:err.message, stack:err.stack})
+        errLogger.error('User Status Decrement Error', {message:err.message, stack:err.stack})
       }
     })
   })

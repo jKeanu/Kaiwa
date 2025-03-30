@@ -26,7 +26,7 @@ const Unfriend:React.FC<UnfriendProps>=({channelId, friendId, token, socket, han
                 setIsModalDisabled(false)
                 setModalVisible(false)
             }
-        }catch(err){
+        }catch(_err){
             setIsLoading(false)
             setErrorMsg({isError:true, message:'An unknown error occurred. Please try again later.'})
             setIsModalDisabled(false)
@@ -35,7 +35,7 @@ const Unfriend:React.FC<UnfriendProps>=({channelId, friendId, token, socket, han
 
     useEffect(()=>{
         setModalVisible(true)
-    },[])
+    },[setModalVisible])
     return(
         <div className={`unfriend-modal-container s-modal ${modalVisible?"visible":""}`}>
             <h2 className="modal-header">Remove Friend</h2>

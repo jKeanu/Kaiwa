@@ -1,3 +1,5 @@
+@use './variable' as variables
+    
 @keyframes l3 
     20%
         background-position:0%   0%, 50%  50%,100%  50%
@@ -24,7 +26,7 @@
     transform: translate(-50%, -50%)
     width: 90%
     height: fit-content
-    background-color: $modal-bg
+    background-color: variables.$modal-bg
     box-shadow: 3px 3px 3px 3px #0e0e0e6b
     padding: 1rem
     transition: all 0.2s ease-in-out
@@ -55,7 +57,7 @@
 @mixin modal($border-radius)
     position: absolute
     top: 40%
-    background-color: $primary-bg
+    background-color: variables.$primary-bg
     padding: 1.5rem
     border-radius: $border-radius
     min-height: 10rem
@@ -114,7 +116,7 @@
     .cancel-button
         border-radius: 8px
         border: none
-        border: 1px solid $white-text
+        border: 1px solid variables.$white-text
         background-color: transparent
         padding: 0 0.6rem
         font-family: 'Open Sans', sans-serif
@@ -122,13 +124,13 @@
         transition: background-color 0.1s ease-in, color 0.1s ease-in
         &:hover
             cursor: pointer
-            background-color: $white-text
+            background-color: variables.$white-text
             color: black
     &.s-modal-button-container
         position: relative
         .s-modal-err
             position: absolute
-            color: $error-message
+            color: variables.$error-message
             font-family: 'Open Sans', sans-serif
             font-size: 0.7rem
             left: 0
@@ -162,7 +164,7 @@
         font-size: 1rem
         width: 100%
         border: none
-        border-bottom: 1px solid $white-line
+        border-bottom: 1px solid variables.$white-line
         padding: 5px 0
         background-color: transparent
         outline: none
@@ -180,7 +182,6 @@
         position: absolute
         top: 5px
         left: 0
-        color: $white-text
         transition: all 0.3s ease
         pointer-events: none
         font-family: 'Raleway', sans-serif
@@ -192,7 +193,7 @@
         height: 2px
         width: 100%
         transform-origin: left
-        background-color: $secondary-bg
+        background-color: variables.$secondary-bg
         transform: scaleX(0)
         transition: all 0.3s ease
         will-change: transform
@@ -202,14 +203,14 @@
         left: 0
         font-family: 'Raleway', sans-serif
         font-size: 0.7rem
-        color: $error-message
-        @media (max-width: $breakpoint-mobile)
+        color: variables.$error-message
+        @media (max-width: variables.$breakpoint-mobile)
             position: absolute
             top: 105%
             left: 0
             font-family: 'Raleway', sans-serif
             font-size: 0.6rem
-            color: $error-message
+            color: variables.$error-message
         
     .input-success-message
         position: absolute

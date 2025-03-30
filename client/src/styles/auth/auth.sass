@@ -1,15 +1,17 @@
+@use '../variable' as variables
+    
 .auth-page-container
     position: relative
     background-image: url('/img/auth-background.png')
     background-repeat: no-repeat
     background-size: cover
     background-position: top
-    @media (min-width: $breakpoint-mobile + 1px)
+    @media (min-width: variables.$breakpoint-mobile + 1px)
         width: 100vw
         height: 100vh
         @media (max-height: 600px)
             height: 600px !important
-    @media (max-width: $breakpoint-mobile)
+    @media (max-width: variables.$breakpoint-mobile)
         height: 100vh
         height: 100dvh
         width: fit-content

@@ -1,3 +1,6 @@
+@use "../variable" as variables 
+@use "../mixin" as mixin
+
 @mixin login-page($input-width, $login-container-w, $login-container-h, $button-width, $header-size-mult)
     @if $login-container-w == 100vw and $login-container-h == 100vh
         display: flex
@@ -31,7 +34,6 @@
         font-size: calc( 1.8rem * $header-size-mult )
         font-family: 'Raleway', sans-serif
         font-weight: 800
-        color: $white-text
         text-align: center
         margin: 0
         margin-bottom: 0.5rem
@@ -44,7 +46,7 @@
             flex-direction: column
             align-items: center
             .input-container
-                @include input($w: $input-width)
+                @include mixin.input($w: $input-width)
             .login-password-input-container
                 .forgot-password-button
                     position: absolute
@@ -61,7 +63,7 @@
                     &:hover
                         text-decoration: underline
                     .forgot-password-loading
-                        @include loading(10px, 15px)
+                        @include mixin.loading(10px, 15px)
             button
                 background-color: #37404d
                 border-radius: 4px
@@ -81,7 +83,7 @@
                 &:hover
                     background-color: transparent
                 .login-loading
-                    @include loading(0px, 30px)
+                    @include mixin.loading(0px, 30px)
     .need-an-account-text
         color: white
         font-size: 0.6rem
@@ -100,19 +102,19 @@
 
     
 =login-page-mobile
-    @media (max-width: $breakpoint-mobile)
+    @media (max-width: variables.$breakpoint-mobile)
         @include login-page($input-width: 17rem, $login-container-w: 100vw, $login-container-h: 100vh, $button-width: 10rem, $header-size-mult: 0.7)
 
 =login-page-tablet
-    @media (min-width: $breakpoint-mobile + 1px) and (max-width: $breakpoint-tablet)    
+    @media (min-width: variables.$breakpoint-mobile + 1px) and (max-width: variables.$breakpoint-tablet)    
         @include login-page($input-width: 16rem, $login-container-w: 22rem, $login-container-h: 0, $button-width: 10rem, $header-size-mult: 0.8)
 
 =login-page-laptop
-    @media (min-width: $breakpoint-tablet + 1px) and (max-width: $breakpoint-laptop)
+    @media (min-width: variables.$breakpoint-tablet + 1px) and (max-width: variables.$breakpoint-laptop)
         @include login-page($input-width: 16rem, $login-container-w: 22rem, $login-container-h: 0, $button-width: 10rem, $header-size-mult: 0.9)
 
 =login-page-desktop
-    @media (min-width: $breakpoint-laptop + 1px )
+    @media (min-width: variables.$breakpoint-laptop + 1px )
         @include login-page($input-width: 21rem, $login-container-w: 25rem, $login-container-h: 0, $button-width: 10rem, $header-size-mult: 1)
         
 

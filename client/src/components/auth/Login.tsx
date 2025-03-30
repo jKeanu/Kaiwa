@@ -42,7 +42,6 @@ const LoginPage:React.FC=()=> {
                 }else{
                     setErrorMessage('Something went wrong.')
                 }
-
             }else {
                 setErrorMessage('An unknown error occurred.')
             }

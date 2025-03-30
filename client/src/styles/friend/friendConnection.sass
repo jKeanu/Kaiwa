@@ -1,11 +1,14 @@
+@use '../variable' as variables
+@use '../mixin' as mixins
+    
 =friend-connection-mobile
-    @media (max-width: $breakpoint-tablet)
+    @media (max-width: variables.$breakpoint-tablet)
         position: absolute
         height: 100vh
         height: 100dvh
         width: 100vw
         padding: 0.7rem 0.8rem
-        background-color: $primary-bg
+        background-color: variables.$primary-bg
         left: 100%
         top: 0%
         transition: left 0.2s ease-in-out
@@ -47,7 +50,6 @@
                 font-size: 0.8rem
                 padding: 0.3rem 0.5rem
                 font-family: 'Open Sans', sans-serif
-                color: $white-text
             .friend-request-button
                 position: relative
                 .request-indicator
@@ -57,14 +59,14 @@
                         border-radius: 0.25rem
                         top: -4px
                         right: 1px
-                        background-color: $error-message
+                        background-color: variables.$error-message
                         font-size: 0.6rem
                         color: white
                         font-weight: 300  
     
         
 =friend-connection-desktop
-    @media (min-width: $breakpoint-tablet + 1)
+    @media (min-width: variables.$breakpoint-tablet + 1)
         flex: 1
         padding-top: 46.8px
         display: flex
@@ -90,7 +92,6 @@
                 padding: 0.3rem 0.5rem
                 font-family: system-ui
                 font-weight: 500
-                color: $white-text
                 cursor: pointer
             .friend-request-button 
                 background-color: transparent
@@ -107,7 +108,7 @@
                     border-radius: 0.25rem
                     top: -4px
                     right: 1px
-                    background-color: $error-message
+                    background-color: variables.$error-message
                     font-size: 0.6rem
                     color: white
                     font-weight: 300

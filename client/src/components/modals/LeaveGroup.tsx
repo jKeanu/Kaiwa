@@ -53,7 +53,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
     
     useEffect(()=>{
         setModalVisible(true)
-    },[])
+    },[setModalVisible])
 
 
     return(

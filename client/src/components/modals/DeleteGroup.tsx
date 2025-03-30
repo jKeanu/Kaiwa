@@ -31,7 +31,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
                 setModalVisible(false)
                 
             }
-        }catch(err){
+        }catch(_err){
             setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
             setLoading(false)
             setModalDisabled(false)
@@ -40,7 +40,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
     
     useEffect(()=>{
         setModalVisible(true)
-    },[])
+    },[setModalVisible])
 
 
     return(

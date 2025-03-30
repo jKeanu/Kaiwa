@@ -1,5 +1,8 @@
+@use '../variable' as variables
+@use '../mixin' as mixins
+
 =add-friend-mobile
-    @media (max-width: $breakpoint-tablet)
+    @media (max-width: variables.$breakpoint-tablet)
         border-radius: 1rem
         box-shadow: 1px 1px 8px 1px #00000064
         position: absolute
@@ -57,7 +60,7 @@
     
     
 =add-friend-desktop
-    @media (min-width: $breakpoint-tablet + 1)
+    @media (min-width: variables.$breakpoint-tablet + 1)
         background-color: #1b1f275e
         margin-top: 0.3rem
         box-shadow: 1px 2px 1px 3px rgba(0, 0, 0, 0.4)

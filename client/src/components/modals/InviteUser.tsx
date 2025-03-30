@@ -20,7 +20,7 @@ const InviteUserModal:React.FC<InviteFriend>=({
 
     useEffect(()=>{
         setModalVisible(true)
-    },[])
+    },[setModalVisible])
 
     const isFriendInGroup:FriendDetails[] = friends.filter(friend => !currChannelMembersId.includes(friend._id))
 
@@ -48,7 +48,7 @@ const InviteUserModal:React.FC<InviteFriend>=({
                 }, 150)
             }
         }
-        catch(err){
+        catch(_err){
             setError(prevError=>{
                 return {isError:true, users:[...prevError.users, `${friend._id}`]}
             })
@@ -62,7 +62,7 @@ const InviteUserModal:React.FC<InviteFriend>=({
         if(loadings.length===0){
             setModalDisabled(false)
         }
-    }, [loadings])
+    }, [loadings, setModalDisabled])
 
 
     return(

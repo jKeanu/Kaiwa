@@ -4,7 +4,9 @@ import User from '../models/userModel.js';
 import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/appError.js';
 import { Email } from '../utils/email.js';
+import { errLogger } from '../utils/cloudwatchConfig.js';
 import crypto from 'crypto'
+import sanitizeObject from '../utils/sanitizeObj.js';
 
 function signToken(id){
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -14,8 +16,6 @@ function signToken(id){
 
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
-  //Remove password from output
-  user.password = undefined;
   res.status(statusCode).json({
     status: 'success',
     token
@@ -38,7 +38,11 @@ export const signup = catchAsync(async (req, res, next)=>{
     if(req.body.displayName.length>12){
       return next(new AppError("Display Name can only be 12 characters or less", 400))
     }
-    const newUser = await User.create(req.body)
+    // Even though we have escape characters on the client, we still need this for creating a new user since,
+    // We use handlbars when we send an email to users during forgot password.
+    // Unlike React, email clients do not auto-escape content.
+    const currBody = sanitizeObject(req.body)
+    const newUser = await User.create(currBody)
     createSendToken(newUser, 201, req, res)
 })
 
@@ -101,6 +105,7 @@ export const forgotPassword = catchAsync(async (req,res,next)=>{
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({validateBeforeSave: false});
+      errLogger.error('Authentication uncaught error', {message:err.message, stack:err.stack})
       return next(new AppError('There was an error sending the email. Try again later!', 500))
   }
 })

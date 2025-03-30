@@ -60,7 +60,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                     })
                 }
             }
-        }catch(err : unknown){  
+        }catch(_err : unknown){  
             setLoading(prevLoading=>{
                 const updateLoading = [...prevLoading]
                 return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
@@ -91,7 +91,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
                     socket.emit("declined_pending_friend_request", {declinedUser: pendingUserId, userId:currUserId})
                 }
         }
-        }catch(err){
+        }catch(_err){
             setLoading(prevLoading=>{
                 const updateLoading = [...prevLoading]
                 return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)

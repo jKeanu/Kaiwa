@@ -15,7 +15,6 @@ import groupRouter from './routes/groupRoutes.js';
 import userFriendRouter from './routes/userFriendRoutes.js';
 import userGroupRouter from './routes/userGroupRoutes.js';
 import userChannelRouter from './routes/userChannelRoutes.js';
-import sanitizeRequest from './middelwares/sanitizeRequest.js';
 
 const app = express();
 
@@ -61,9 +60,6 @@ app.use(helmet({
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-
-// Data sanitization against malicious html with js code in the form of strings through input
-app.use(sanitizeRequest)
 
 // Data sanitization against NoSQL query
 app.use(mongoSanitize());

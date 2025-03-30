@@ -28,7 +28,7 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
 
     useEffect(()=>{
         setModalVisible(true)
-    },[])
+    },[setModalVisible])
 
     const handleSubmit = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()

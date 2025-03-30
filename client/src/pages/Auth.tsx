@@ -14,7 +14,7 @@ const AuthenticationPage = () => {
         if (token) {
             navigate('/@me');
         }
-    }, []);
+    }, [navigate]);
 
 
     return (

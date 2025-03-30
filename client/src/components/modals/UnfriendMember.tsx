@@ -26,7 +26,7 @@ const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token,
                 setModalDisabled(false)
                 setModalVisible(false)
             }
-        }catch(err){
+        }catch(_err){
             setIsLoading(false)
             setErrorMsg({isError:true, message:'An unknown error occurred. Please try again later.'})
             setModalDisabled(false)
@@ -35,7 +35,7 @@ const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token,
 
     useEffect(()=>{
         setModalVisible(true)
-    },[])
+    },[setModalVisible])
 
 
     return(

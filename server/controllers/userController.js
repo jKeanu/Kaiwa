@@ -5,6 +5,7 @@ import AppError from '../utils/appError.js';
 import multer from 'multer';
 import sharp from 'sharp';
 import { S3Client, PutObjectCommand, DeleteObjectCommand} from '@aws-sdk/client-s3';
+import sanitizeObject from '../utils/sanitizeObj.js';
 
 const bucketName = process.env.BUCKET_NAME
 const bucketRegion = process.env.BUCKET_REGION
@@ -101,8 +102,9 @@ export const updateUser = catchAsync(async(req, res, next)=>{
         return next(new AppError('This route is not for password updates.', 400))
     }
     const filteredBody = filterObj(req.body, 'displayName', 'friendTag')
+    const sanitizedBody = sanitizeObject(filteredBody)
     //We can run validators since the passwordConfirm validator only works on create or save.
-    const updatedUserObject = await User.findByIdAndUpdate(req.user.id, filteredBody, {new:true, runValidators:true})
+    const updatedUserObject = await User.findByIdAndUpdate(req.user.id, sanitizedBody, {new:true, runValidators:true})
         .select('photo friendTag displayName')
         .lean()
     updatedUserObject.photoUrl = `${process.env.CLOUDFRONT_DOMAIN_NAME}/${updatedUserObject.photo}`
@@ -112,7 +114,7 @@ export const updateUser = catchAsync(async(req, res, next)=>{
     })
 })
 
-export const getMe = catchAsync(async(req, res, next)=>{
+export const getMe = catchAsync(async(req, res)=>{
     //Since we only need to populate the group and friend channel when getting
     //the current logged information, we can just populate all of them here.
     const currentUserObject = await User.findById(req.user._id).select('-__v')

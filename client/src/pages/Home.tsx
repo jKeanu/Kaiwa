@@ -238,7 +238,7 @@ const HomePage:React.FC = () => {
                     setIsOnline(false)
                 }
             }
-        }, [currUserDataError] )
+        }, [currUserDataError, navigate] )
 
         //We need this function specifically when we acccept a friend request, or someone accepted ours,
         //to create a new channel
@@ -389,7 +389,7 @@ const HomePage:React.FC = () => {
             //current URL, this ensures that the effect will re-execute whenever the url changes, providing
             //the most up to date object inside the effect. Without so, the value would remain the same
             //even though the url changes (the location would be similar to its initial value always)
-        }, [socket, location, userData])
+        }, [socket, location, userData, mutate])
 
         //This updates when a member left or joined the channel that you are part of
         useEffect(()=>{
@@ -421,7 +421,7 @@ const HomePage:React.FC = () => {
                 }
                 return cleanup
             }
-        }, [socket])
+        }, [socket, mutate])
 
         //This executed when a you were invited to an already existing group channel
         useEffect(()=>{
@@ -459,7 +459,7 @@ const HomePage:React.FC = () => {
                 }
                 socket.on("channel-member-update", handleChannelMemberInfoUpdate)
             }
-        }, [socket])
+        }, [socket, mutate])
 
         //When a friend or a member of the group you're part of went online
         useEffect(()=>{
@@ -495,7 +495,7 @@ const HomePage:React.FC = () => {
                     socket.removeListener('user_status_update_online', handleUserOnlineStatus);
                 }
                 return cleanup
-        }},[socket, friendChannelIds])
+        }},[socket, friendChannelIds, mutate])
 
         //When a friend or a member of the group you're part of went offline
         useEffect(()=>{
@@ -530,7 +530,7 @@ const HomePage:React.FC = () => {
                     socket.removeListener('user_status_update_offline', handleUserOfflineStatus);
                 }
                 return cleanup
-        }},[socket, friendChannelIds])
+        }},[socket, friendChannelIds, mutate])
 
         //When someone added you as a friend
         useEffect(()=>{
@@ -590,7 +590,7 @@ const HomePage:React.FC = () => {
                 }
                 return cleanup
             }
-        }, [socket, location])
+        }, [socket, location, navigate])
 
         //This executes when you have been unfriended by one of your friends
         useEffect(()=>{
@@ -611,7 +611,7 @@ const HomePage:React.FC = () => {
                 }
                 return cleanup
             }
-        }, [socket, location])
+        }, [socket, location, navigate])
 
         //When someone assigned you as a new leader of a group channel
         useEffect(()=>{
@@ -627,7 +627,7 @@ const HomePage:React.FC = () => {
                     })
                 })
             }
-        }, [socket])
+        }, [socket, mutate])
 
         
         const formatToTodayIfCurrentDate = useCallback((dateStr: string): string => {

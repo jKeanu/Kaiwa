@@ -1,3 +1,6 @@
+@use '../variable' as  variables
+@use '../mixin' as mixins
+    
 @mixin user-setting-desktop()
     height: 20rem
     width: 35rem
@@ -48,7 +51,7 @@
                     width: 100%
                     border: none
                     padding: 4px 0px 4px 16px
-                    background-color: $modal-bg
+                    background-color: variables.$modal-bg
                     font-size: 1rem
                     font-family: system-ui
                     font-weight: 300
@@ -102,7 +105,7 @@
             .user-sett-error
                 position: absolute
                 bottom: 0%
-                color: $error-message
+                color: variables.$error-message
                 font-size: 0.7rem
                 font-family: 'Open Sans', sans-serif
             .user-info-button-container
@@ -126,7 +129,7 @@
                     &:hover
                         background-color: #384d69
                     .user-setting-loading
-                        @include loading(0, 1.5rem)
+                        @include mixins.loading(0, 1.5rem)
             .user-friend-tag-input
                 width: 6rem
         .user-password-form
@@ -150,7 +153,7 @@
             .user-sett-error
                 position: absolute
                 bottom: 0%
-                color: $error-message
+                color: variables.$error-message
                 font-size: 0.7rem
                 font-family: 'Open Sans', sans-serif
             .user-password-button-container
@@ -174,7 +177,7 @@
                     &:hover
                         background-color: #384d69
                     .user-setting-loading
-                        @include loading(0, 1.5rem) 
+                        @include mixins.loading(0, 1.5rem) 
 
     
     
@@ -182,7 +185,7 @@
     
     
 =left-home-mobile
-    @media (max-width: $breakpoint-tablet)
+    @media (max-width: variables.$breakpoint-tablet)
         width: 100vw
         height: 100vh
         height: 100dvh
@@ -191,7 +194,7 @@
         display: flex
         flex-direction: column
         z-index: 1 !important
-        background-color: $primary-bg !important
+        background-color: variables.$primary-bg !important
         .modal-window-container
             height: 100vh
             height: 100dvh
@@ -206,7 +209,7 @@
                 left: 0%
                 transition: top 0.15s ease-in-out
                 top: 100%
-                background-color: $modal-bg
+                background-color: variables.$modal-bg
                 position: absolute
                 display: flex
                 flex-direction: column
@@ -315,7 +318,7 @@
                         .user-sett-error
                             position: absolute
                             top: 0%
-                            color: $error-message
+                            color: variables.$error-message
                             font-size: 0.7rem
                             font-family: 'Open Sans', sans-serif
                         .user-info-button-container
@@ -336,7 +339,7 @@
                                 align-items: center
                                 justify-content: center
                                 .user-setting-loading
-                                    @include loading(0, 1.5rem)
+                                    @include mixins.loading(0, 1.5rem)
                         .user-friend-tag-input
                             width: 6rem
                     .user-password-form
@@ -372,11 +375,11 @@
                                 align-items: center
                                 -webkit-appearance: none
                                 .user-setting-loading
-                                    @include loading(0, 1.5rem) 
+                                    @include mixins.loading(0, 1.5rem) 
                         .user-sett-error
                             position: absolute
                             top: 0%
-                            color: $error-message
+                            color: variables.$error-message
                             font-size: 0.7rem
                             font-family: 'Open Sans', sans-serif
             .create-group-modal-container
@@ -384,7 +387,7 @@
                 position: absolute
                 top: 100%
                 left: 0
-                background-color: $modal-bg
+                background-color: variables.$modal-bg
                 height: 100vh
                 height: 100dvh
                 width: 100vw
@@ -432,7 +435,7 @@
                                 font-family: system-ui
                                 font-weight: 500
                             .create-group-loading
-                                @include loading(0, 20px)
+                                @include mixins.loading(0, 20px)
                 .modal-header
                     display: none
                 .create-group-sections
@@ -446,7 +449,7 @@
                         position: relative
                         .create-group-error
                             bottom: 100%
-                            color: $error-message
+                            color: variables.$error-message
                             font-size: 0.7rem
                             font-family: 'Open Sans', sans-serif
                             position: absolute
@@ -491,7 +494,7 @@
                     .create-group-modal-invite-container
                         flex: 1
                         overflow-y: scroll
-                        @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
+                        @include mixins.scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
                         .create-group-search
                             display: none
                         .modal-text
@@ -589,7 +592,7 @@
                         border-radius: 0.25rem
                         top: 1px
                         right: 8px
-                        background-color: $error-message
+                        background-color: variables.$error-message
                         font-size: 0.6rem
                 .messages-text
                     font-weight: 600
@@ -611,7 +614,6 @@
                         padding: 0.35rem
                         margin: 0.25rem 0
                         .create-group-image-1
-                            fill: $white-text
                             width: 1rem
                             height: 1rem
                             align-self: center
@@ -636,7 +638,6 @@
                     background-color: transparent
                     border-radius: 0.35rem
                     border-style: none
-                    color: $white-text
                     padding-left: 1rem
                     font-family: 'Open Sans', sans-serif
                     font-size: 0.9rem
@@ -712,7 +713,7 @@
                                 width: 100%
         .user-info-container
             position: relative
-            border-top: 1px solid $white-line
+            border-top: 1px solid variables.$white-line
             display: flex
             justify-content: space-between
             align-items: center
@@ -752,7 +753,7 @@
                     border-radius: 1.25rem
                     margin-right: 0.5rem
                 .user-info-text
-                    @media (min-width: $breakpoint-mobile + 1) and (max-width: $breakpoint-tablet)  
+                    @media (min-width: variables.$breakpoint-mobile + 1) and (max-width: variables.$breakpoint-tablet)  
                         width: 15rem
                         display: flex
                         justify-content: center
@@ -770,13 +771,13 @@
                             color: rgb(191, 191, 191)
                             font-size: 0.7rem     
                             text-align: start     
-                    @media (max-width: $breakpoint-mobile)
+                    @media (max-width: variables.$breakpoint-mobile)
                         width: 10rem
                         display: flex
                         justify-content: center
                         align-items: flex-start
                         flex-direction: column
-                        @media (max-width: calc($breakpoint-mobile/1.5))
+                        @media (max-width: calc(variables.$breakpoint-mobile/1.5))
                             width: 7rem
                         .display-name-info
                             text-align: start
@@ -806,8 +807,8 @@
 
 
 =left-home-laptop
-    @media (min-width: $breakpoint-tablet + 1) and (max-width: $breakpoint-laptop)
-        background-color: $primary-bg
+    @media (min-width: variables.$breakpoint-tablet + 1) and (max-width: variables.$breakpoint-laptop)
+        background-color: variables.$primary-bg
         border-right: 1px solid rgba(142, 142, 142, 0.3)
         font-family: 'Open Sans', sans-serif
         width: 4rem
@@ -819,12 +820,12 @@
         max-height: 100vh
         .modal-window-container
             overflow: hidden
-            @include modal-container
+            @include mixins.modal-container
             .profile-settings-modal-container
-                @include modal($border-radius: 0.25rem)
+                @include mixins.modal($border-radius: 0.25rem)
                 @include user-setting-desktop()
             .create-group-modal-container
-                @include modal($border-radius: 0.25rem)
+                @include mixins.modal($border-radius: 0.25rem)
                 .modal-x-button-container
                     .create-group-top
                         display: none
@@ -868,7 +869,7 @@
                                 padding: 0.2rem 0 0.2rem 0.8rem
                                 margin-top: 0.5rem
                             .group-name-error
-                                color: $error-message
+                                color: variables.$error-message
                                 font-size: 0.7rem
                                 font-family: 'Open Sans', sans-serif
                                 position: absolute
@@ -931,10 +932,8 @@
                                     transition: background-color 0.15s ease
                                     &:hover
                                         background-color: #485267
-                                    span
-                                        color: $white-text
                                     .create-group-loading
-                                        @include loading(0, 30px) 
+                                        @include mixins.loading(0, 30px) 
                                 .create-group-back-button
                                     border-radius: 4px
                                     background-color: #2c3447
@@ -946,19 +945,17 @@
                                     transition: background-color 0.15s ease
                                     &:hover
                                         background-color: #485267
-                                    span
-                                        color: $white-text
                             .create-group-err
                                 bottom: 100%
                                 position: absolute
-                                color: $error-message
+                                color: variables.$error-message
                                 font-size: 0.7rem
                                 font-family: 'Open Sans', sans-serif
                             .create-group-modal-friend-list
                                 border-top: 1px solid #ffffff39
                                 height: 27rem
                                 overflow-y: scroll
-                                @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
+                                @include mixins.scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
                                 position: relative
                                 .friend-checkbox-container
                                     display: flex
@@ -1098,7 +1095,6 @@
                     background-color: transparent
                     border-radius: 0.35rem
                     border-style: none
-                    color: $white-text
                     padding-left: 1rem
                     font-family: 'Open Sans', sans-serif
                     font-size: 0.8rem
@@ -1168,7 +1164,7 @@
 
         .user-info-container
             position: relative
-            border-top: 1px solid $white-line
+            border-top: 1px solid variables.$white-line
             display: flex
             justify-content: space-between
             align-items: center
@@ -1229,8 +1225,8 @@
 
     
 =left-home-desktop
-    @media (min-width: $breakpoint-laptop + 1px )
-        background-color: $primary-bg
+    @media (min-width: variables.$breakpoint-laptop + 1px )
+        background-color: variables.$primary-bg
         border-right: 1px solid rgba(142, 142, 142, 0.3)
         font-family: 'Open Sans', sans-serif
         width: 14rem
@@ -1242,12 +1238,12 @@
         max-height: 100vh
         .modal-window-container
             overflow: hidden
-            @include modal-container
+            @include mixins.modal-container
             .profile-settings-modal-container
-                @include modal($border-radius: 0.25rem)
+                @include mixins.modal($border-radius: 0.25rem)
                 @include user-setting-desktop()
             .create-group-modal-container
-                @include modal($border-radius: 0.25rem)
+                @include mixins.modal($border-radius: 0.25rem)
                 .modal-x-button-container
                     .create-group-top
                         display: none
@@ -1290,7 +1286,7 @@
                                 margin-top: 0.5rem
                                 border-radius: 4px
                             .group-name-error
-                                color: $error-message
+                                color: variables.$error-message
                                 font-size: 0.7rem
                                 font-family: 'Open Sans', sans-serif
                                 position: absolute
@@ -1353,10 +1349,8 @@
                                     transition: background-color 0.15s ease
                                     &:hover
                                         background-color: #485267
-                                    span
-                                        color: $white-text
                                     .create-group-loading
-                                        @include loading(0, 30px) 
+                                        @include mixins.loading(0, 30px) 
                                 .create-group-back-button
                                     border-radius: 4px
                                     background-color: #2c3447
@@ -1371,14 +1365,14 @@
                             .create-group-err
                                 bottom: 100%
                                 position: absolute
-                                color: $error-message
+                                color: variables.$error-message
                                 font-size: 0.7rem
                                 font-family: 'Open Sans', sans-serif
                             .create-group-modal-friend-list
                                 border-top: 1px solid #ffffff39
                                 height: 27rem
                                 overflow-y: scroll
-                                @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
+                                @include mixins.scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
                                 position: relative
                                 .friend-checkbox-container
                                     display: flex
@@ -1491,7 +1485,7 @@
                         .create-group-image-2
                             display: none
                         &:hover > .create-group-image-1
-                            fill: $white-text
+                            fill: variables.$white-text
                         &:hover > .create-group-tooltip
                             opacity: 1
                             pointer-events: auto
@@ -1529,7 +1523,6 @@
                     background-color: transparent
                     border-radius: 0.35rem
                     border-style: none
-                    color: $white-text
                     padding-left: 1rem
                     font-family: 'Open Sans', sans-serif
                     font-size: 0.8rem
@@ -1614,7 +1607,7 @@
 
         .user-info-container
             position: relative
-            border-top: 1px solid $white-line
+            border-top: 1px solid variables.$white-line
             display: flex
             justify-content: space-between
             align-items: center

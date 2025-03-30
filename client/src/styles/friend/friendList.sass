@@ -1,11 +1,14 @@
+@use '../variable' as variables
+@use '../mixin' as mixins 
+    
 =friend-list-mobile
-    @media (max-width: $breakpoint-tablet)
+    @media (max-width: variables.$breakpoint-tablet)
         width: 100vw
         height: 100vh
         height: 100dvh
         display: flex
         flex-direction: column
-        background-color: $primary-bg !important
+        background-color: variables.$primary-bg !important
         .friend-list-top-section
             padding: 0.3rem 0.8rem
             .friend-list-to-home-button
@@ -27,7 +30,6 @@
                     align-items: center
                     display: flex
                 .friends-header
-                    color: $white-text
                     font-family: 'Open Sans', sans-serif
                     font-weight: bold
                     font-size: 1.1rem
@@ -63,7 +65,7 @@
                                 position: absolute
                                 bottom: 0px
                                 right: 1px
-                                border: solid 3px $primary-bg
+                                border: solid 3px variables.$primary-bg
                         .user-displayName-status-container
                             display: flex
                             flex-direction: column
@@ -87,28 +89,28 @@
                     display: flex
                     justify-content: center
                     align-items: center
-                    background-color: $modal-bg !important
+                    background-color: variables.$modal-bg !important
                     &.pop-up-active
                         height: 2.2rem
                     .remove-friend-button
                         width: 100%
                         background-color: transparent
                         border: none
-                        color: $error-message
+                        color: variables.$error-message
                         font-size: 0.8rem
                         font-family: 'Open Sans', sans-serif
         .modal-window-container
-            @include modal-container
+            @include mixins.modal-container
             .unfriend-modal-container
-                @include modal-mobile
+                @include mixins.modal-mobile
                 .unfriend-buttons-container
-                    @include modal-button-container
+                    @include mixins.modal-button-container
 
 
 
 
 =friend-list-desktop
-    @media (min-width: $breakpoint-tablet + 1)
+    @media (min-width: variables.$breakpoint-tablet + 1)
         width: 45rem
         display: flex
         flex-direction: column
@@ -118,7 +120,6 @@
             .friend-list-mob-top-section-container
                 display: none
             .friends-header
-                color: $white-text
                 font-family: 'Open Sans', sans-serif
                 font-weight: bold
                 font-size: 1.1rem
@@ -146,10 +147,10 @@
                                 position: absolute
                                 bottom: 0px
                                 right: 1px
-                                border: solid 2px $primary-bg
+                                border: solid 2px variables.$primary-bg
                         .user-displayName-status-container
                             .friend-displayName
-                                @media (max-width: calc($breakpoint-laptop*0.85))
+                                @media (max-width: calc(variables.$breakpoint-laptop*0.85))
                                     width: 4rem
                                     white-space: nowrap
                                     overflow: hidden
@@ -174,7 +175,6 @@
                     .friend-pop-up-link
                         padding: 6px 0
                         text-align: center
-                        color: $white-text
                         text-decoration: none
                         width: 100%
                         font-size: 0.8rem
@@ -184,20 +184,19 @@
                         padding: 6px 0
                         text-align: center
                         width: 100%
-                        color: $error-message
+                        color: variables.$error-message
                         background-color: transparent
                         border: none
                         font-size: 0.8rem
                         cursor: pointer
                         &:hover
-                            color: $white-text
                             background-color: #b53737
         .modal-window-container
-            @include modal-container
+            @include mixins.modal-container
             .unfriend-modal-container
-                @include modal($border-radius: 0.25rem)
+                @include mixins.modal($border-radius: 0.25rem)
                 .unfriend-buttons-container
-                    @include modal-button-container
+                    @include mixins.modal-button-container
 .friend-list-container
     +friend-list-mobile
     +friend-list-desktop
@@ -209,7 +208,6 @@
             padding: 0.4rem 0.4rem
             font-family: 'Raleway', sans-serif
             font-size: 16px
-            color: $white-text
             border: 1px solid transparent
             border-radius: 0.2rem
             margin-bottom: 0.2rem
@@ -225,7 +223,7 @@
         overflow-x: visible
         height: 100%
         width: 100%
-        @include scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
+        @include mixins.scroll($scroll-color: rgb(81, 84, 110), $w: 0.3rem)
         .friend-link-container, .friend-container
             width: 100%
             position: relative

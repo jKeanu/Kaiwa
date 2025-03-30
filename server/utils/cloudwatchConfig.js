@@ -12,7 +12,7 @@ const awsCredentials ={
   region: process.env.AWS_REGION
 }
 
-export const logger = winston.createLogger({
+export const errLogger = winston.createLogger({
   level: 'error',
   format: winston.format.json(),
   transports: [
