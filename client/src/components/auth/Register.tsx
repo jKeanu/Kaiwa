@@ -5,8 +5,10 @@ import {useNavigate} from 'react-router-dom'
 import { RegisterForm, AuthStatus} from '../../types/generalTypes';
 import { registerUser } from '../../services/apiService';
 import { useEffect } from 'react';
+import useAuth from '../../hooks/useAuth';
 
 const RegisterPage:React.FC=()=>{
+    const {isAuthenticated, isError:authenticationError} = useAuth()
     const [formData, setFormData] = useState<RegisterForm>({
         email:"",
         password:"",
@@ -22,6 +24,18 @@ const RegisterPage:React.FC=()=>{
     useEffect(()=>{
         setContainerVisible(true)
     },[])
+
+    useEffect(()=>{
+        if(isAuthenticated){
+            navigate('/@me')
+        }
+    }, [isAuthenticated, navigate])
+
+    useEffect(()=>{
+        if(authenticationError){
+            setErrorMessage({type:'other', message:'Spam detected, please try again later.'})
+        }
+    }, [authenticationError])
 
     //The syntax could also be
     //const handleRegister: (e: FormEvent<HTMLFormElement>) => Promise<void> = async (e) =>
@@ -127,7 +141,7 @@ const RegisterPage:React.FC=()=>{
                         &&
                         <span className='input-error-message'>{errorMessage.message}</span>}
                     </div>
-                    <button type="submit" disabled={isLoading}>
+                    <button type="submit" disabled={isLoading||authenticationError}>
                         {isLoading?<div className="register-loading"></div>:'Register'}
                     </button>
                 </form>

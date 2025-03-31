@@ -10,6 +10,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
 import cors from 'cors';
 import globalHandleError from './controllers/errorController.js';
+import authRouter from './routes/authRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import groupRouter from './routes/groupRoutes.js';
 import userFriendRouter from './routes/userFriendRoutes.js';
@@ -28,7 +29,9 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.static(path.join(__dirname, 'public')));
 
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL_PROD : process.env.CLIENT_URL_DEV,
+  origin: process.env.NODE_ENV === 'production' ? 
+  [process.env.CLIENT_URL_PROD, process.env.SUB_CLIENT_URL_PROD]:
+  process.env.CLIENT_URL_DEV,
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
@@ -66,6 +69,7 @@ app.use(mongoSanitize());
 
 app.use(compression());
 
+app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/groups', groupRouter);
 app.use('/api/v1/channels', userChannelRouter);

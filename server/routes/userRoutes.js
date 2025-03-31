@@ -53,6 +53,7 @@ const resetPasswordLimiter = rateLimit({
 
 router.post('/register',  registerLimiter, authController.signup)
 router.post('/login', loginLimiter, authController.login)
+router.get('/auth')
 
 //Password reset
 router.post('/forgotPassword', forgotPasswordLimiter, authController.forgotPassword)

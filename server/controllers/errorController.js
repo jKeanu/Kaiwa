@@ -67,20 +67,13 @@ const sendErrorProd=(err, req, res)=>{
 }
 
 
-export default function globalHandleError(err, req, res, next){
+export default function globalHandleError(err, req, res, _next){
     let currErr = err
     currErr.statusCode = currErr.statusCode || 500;
     currErr.status = currErr.status || 'error';
     if (process.env.NODE_ENV === 'development'){
         sendErrorDev(currErr, req, res)
     }else if(process.env.NODE_ENV === 'production'){
-        // Since not all properties of the 'Error' object are enumerable (message and name included)
-        // we need to manually set the error.message and error.name,
-        // destructuring removes the stack
-        currErr = {...currErr}
-        // err.message would be present if it is an instance of app error
-        currErr.message = err.message
-        currErr.name = err.name
         if (currErr.name === 'CastError') currErr = handleCastErrorDB(currErr);
         //Handles duplicates, i.e. If a user signed up using an email that already exists in the database.
         if (currErr.code === 11000) currErr = handleDuplicateFieldsDB(currErr);

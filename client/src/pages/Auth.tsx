@@ -21,7 +21,7 @@ const AuthenticationPage = () => {
         <div className='auth-page-container'>
             <Routes>
                 <Route path='/login' element={<LoginPage />}/>
-                <Route path='register' element={<RegisterPage />} />
+                <Route path='/register' element={<RegisterPage />} />
                 <Route path='/resetpassword/:resetPasswordToken' element={<ResetPassword />}/>
                 <Route path="*" element={<NotFound />} />
             </Routes>

@@ -5,7 +5,6 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
   js.configs.recommended,
-  eslintConfigPrettier,
   {
     files: ['**/*.js'],
     languageOptions: {
@@ -14,15 +13,31 @@ export default [
       },
     },
     rules: {
-      "no-console": "warn",
-      "no-param-reassign": ["error", { 
-        "props": true,
-        "ignorePropertyModificationsFor": ["req", "res"] 
-      }],
-      "prefer-destructuring": ["error", { 
-        "object": false, 
-        "array": false 
-      }]
-    }
-  }
+      'no-console': 'warn',
+      'no-param-reassign': [
+        'error',
+        {
+          props: true,
+          ignorePropertyModificationsFor: ['req', 'res'],
+        },
+      ],
+      'prefer-destructuring': [
+        'error',
+        {
+          object: false,
+          array: false,
+        },
+      ],
+      'no-unused-vars': [
+        'warn',
+        {
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+  eslintConfigPrettier,
 ];

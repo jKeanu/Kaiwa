@@ -5,9 +5,11 @@ import { AuthStatus } from '../../types/generalTypes';
 import { AxiosResponse } from 'axios';
 import {useNavigate} from 'react-router-dom'
 import { forgotPassword, loginUser } from '../../services/apiService';
+import useAuth from '../../hooks/useAuth';
 
 
 const LoginPage:React.FC=()=> {
+    const {isAuthenticated, isError:authenticationError} = useAuth()
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('')
@@ -20,6 +22,18 @@ const LoginPage:React.FC=()=> {
     useEffect(()=>{
         setContainerVisible(true)
     },[])
+
+    useEffect(()=>{
+        if(isAuthenticated){
+            navigate('/@me')
+        }
+    }, [isAuthenticated, navigate])
+
+    useEffect(()=>{
+        if(authenticationError){
+            setErrorMessage('Spam detected, please try again later.')
+        }
+    }, [authenticationError])
 
     const handleLogin = async (e:React.FormEvent<HTMLFormElement>):Promise<void> => {
         e.preventDefault();
@@ -107,14 +121,14 @@ const LoginPage:React.FC=()=> {
                         value={password} onChange={e => setPassword(e.target.value)} required
                         style={{borderBottomColor:`${errorMessage&&'#c93a3a'}`}}/>
                         <label htmlFor="password" className="input-label" >Password</label>
-                        <button className='forgot-password-button' type='button' disabled={loading.isLoading} onClick={handleForgotPassword}>
+                        <button className='forgot-password-button' type='button' disabled={loading.isLoading||authenticationError} onClick={handleForgotPassword}>
                             {loading.type==='forgotPassword'?<div className="forgot-password-loading"></div>:'Forgot your password?'}
                         </button>
                         {!errorMessage&&<span className='input-highlight'></span>}
                         {errorMessage&&
                         <span className='input-error-message'>{errorMessage}</span>}
                     </div>
-                    <button type="submit" disabled={loading.isLoading}>
+                    <button type="submit" disabled={loading.isLoading||authenticationError}>
                         {loading.type==='logIn'?<div className="login-loading"></div>:'Log In'}
                     </button>
                 </form>

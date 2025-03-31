@@ -14,13 +14,39 @@ function signToken(id){
     });
 };
 
-const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user._id);
+const createSendToken = (userId, statusCode, req, res) => {
+  const token = signToken(userId);
+  res.cookies('jwt', token, {
+    expires: new Date(
+      Date.now() + Number(process.env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true, // Ensures the cookie is only accessible via HTTP(S), not JavaScript
+    sameSite: 'none', //or Strict
+    secure: true,
+    domain: process.env.NODE_ENV === 'production'? process.env.PERMIT_COOKIE_DOMAIN : undefined
+  })
   res.status(statusCode).json({
     status: 'success',
-    token
   });
 };
+
+// For login and signup page in case the user is logged in already.
+export const isLoggedIn = catchAsync(async (req, res, next)=>{
+  const token = req.cookies.jwt
+  if (!token) return res.status(401).json({isAuthenticated:false})
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
+  const currentUser = await User.findById(decoded.id)
+  if(!currentUser){
+    return next(new AppError('This user no longer exists.', 404))
+  }
+  if(currentUser.changedPasswordAfter(decoded.iat)){
+    return next(new AppError('This user recently changed password! Please Log in again', 401))
+  }
+  res.status(200).json({
+    isAuthenticated:true
+  })
+})  
+
 
 export const login = catchAsync(async (req, res, next)=>{
     const {email, password} = req.body
@@ -31,7 +57,7 @@ export const login = catchAsync(async (req, res, next)=>{
     if(!user||!(await user.correctPassword(password, user.password))){
         return next(new AppError('Incorrect password or email', 401))
     }
-    createSendToken(user, 200, req, res)
+    createSendToken(user._id, 200, req, res)
 })
 
 export const signup = catchAsync(async (req, res, next)=>{
@@ -43,13 +69,13 @@ export const signup = catchAsync(async (req, res, next)=>{
     // Unlike React, email clients do not auto-escape content.
     const currBody = sanitizeObject(req.body)
     const newUser = await User.create(currBody)
-    createSendToken(newUser, 201, req, res)
+    createSendToken(newUser._id, 201, req, res)
 })
 
 export const protect = catchAsync(async (req, res, next)=>{
   let token;
-  if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
-    token = req.headers.authorization.split(' ')[1]
+  if (req.cookies && req.cookies.jwt){
+    token = req.cookies.jwt
   }
   if(!token){
     return next(new AppError('You are not logged in! Pleace log in to get access', 401))
@@ -75,7 +101,7 @@ export const changePassword = catchAsync(async (req, res, next)=>{
   currentUser.password = req.body.password
   currentUser.passwordConfirm = req.body.passwordConfirm
   await currentUser.save()
-  createSendToken(currentUser, 200, req, res)
+  createSendToken(currentUser._id, 200, req, res)
 })
 
 
@@ -127,5 +153,5 @@ export const resetPassword = catchAsync(async(req,res,next)=>{
   //we don't need validateBeforeSave: false since we need to check if the passwordConfirm is the same as the password.
   await user.save()
   // 4) Log the user in, send the JWT to client
-  createSendToken(user, 200, req, res)
+  createSendToken(user._id, 200, req, res)
 })
