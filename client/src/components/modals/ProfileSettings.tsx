@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from "axios"
 import { useLeftCustomContext } from "../../context"
-import { ProfileSettings, UpdateUserStatus} from "../../types/generalTypes"
+import { ProfileSettings, UpdateUserStatus } from "../../types/userTypes"
 import React, { useEffect, useMemo, useState } from "react"
-import { changeUserPassword, updateCurrentUser } from "../../services/apiService"
+import { changeUserPassword, updateCurrentUser } from "../../api/currentUser"
 
 const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, handleCloseButton, setIsDisabled})=>{
     const [userInfo, setUserInfo] = useState<{displayName:string, friendTag:string, profileImage:null|File}>
@@ -11,7 +11,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
     const [currSetting, setCurrSetting] = useState('userInfo')
     const [userSettErr, setUserSettErr] = useState({err:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
-    const {token, setUserData, setToken, setModalVisible, modalVisible, socket, channelNumberAndIds} = useLeftCustomContext()
+    const {setUserData, setModalVisible, modalVisible, socket, channelNumberAndIds} = useLeftCustomContext()
     const profileImagePreview = useMemo(()=>{
         return userInfo.profileImage? URL.createObjectURL(userInfo.profileImage):null
     }, [userInfo.profileImage])
@@ -30,7 +30,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                 formData.append('profileImage', userInfo.profileImage)
                 formData.append('currPhoto', currUserData.photo)
             }
-            const res:AxiosResponse<UpdateUserStatus> = await updateCurrentUser(token, formData)
+            const res:AxiosResponse<UpdateUserStatus> = await updateCurrentUser(formData)
             if(res.data.status==='success'){
                 setUserData(prevUserData=>{
                     if(prevUserData){
@@ -81,11 +81,9 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
         setIsDisabled(true)
         setUserSettErr({err:false, message:''})
         try{
-            const res:AxiosResponse<{status:string, token:string}>= await changeUserPassword(token, userPassword)
+            const res:AxiosResponse<{status:string}>= await changeUserPassword(userPassword)
             if(res.data.status==='success'){
-                setToken('')
                 setIsDisabled(false)
-                localStorage.removeItem('token')
                 window.location.href = '/login'
             }
         }catch(err: unknown){

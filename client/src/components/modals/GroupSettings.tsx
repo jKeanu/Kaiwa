@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useMemo} from "react"
-import { GroupSettingsProps, UpdateGroupStatus } from "../../types/generalTypes"
+import { GroupSettingsProps, UpdateGroupStatus } from "../../types/groupTypes"
 import axios, { AxiosResponse } from "axios"
-import { changeGroupSettings } from "../../services/apiService"
+import { changeGroupSettings } from "../../api/group"
 import { useChannelCustomContext } from "../../context"
 
 const GroupSettingsModal:React.FC<GroupSettingsProps>=
     ({ 
-        token, 
         channelId, 
         channelName, 
         groupPhoto, 
@@ -48,7 +47,7 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                 formData.append('currPhoto', groupPhoto)
                 formData.append('groupProfileImage', groupFormData.groupProfileImage)
             }
-            const res:AxiosResponse<UpdateGroupStatus> = await changeGroupSettings(token, channelId, formData)
+            const res:AxiosResponse<UpdateGroupStatus> = await changeGroupSettings(channelId, formData)
             if(res.data.status==='success'){
                 setCurrentChannel(prevChannelData=>{
                     if(prevChannelData){

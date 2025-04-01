@@ -2,13 +2,11 @@ import React, { useState} from 'react';
 import { Link } from 'react-router-dom';
 import axios, {AxiosResponse} from 'axios';
 import {useNavigate} from 'react-router-dom'
-import { RegisterForm, AuthStatus} from '../../types/generalTypes';
-import { registerUser } from '../../services/apiService';
+import { RegisterForm, AuthStatus } from '../../types/authTypes';
+import { registerUser } from '../../api/auth';
 import { useEffect } from 'react';
-import useAuth from '../../hooks/useAuth';
 
-const RegisterPage:React.FC=()=>{
-    const {isAuthenticated, isError:authenticationError} = useAuth()
+const RegisterPage:React.FC<{isError:boolean}>=({isError:authenticationError})=>{
     const [formData, setFormData] = useState<RegisterForm>({
         email:"",
         password:"",
@@ -20,16 +18,9 @@ const RegisterPage:React.FC=()=>{
     const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
 
-
     useEffect(()=>{
         setContainerVisible(true)
     },[])
-
-    useEffect(()=>{
-        if(isAuthenticated){
-            navigate('/@me')
-        }
-    }, [isAuthenticated, navigate])
 
     useEffect(()=>{
         if(authenticationError){
@@ -46,7 +37,6 @@ const RegisterPage:React.FC=()=>{
         try {
             const res:AxiosResponse<AuthStatus> = await registerUser(formData)
             if (res.data.status === "success") {
-                localStorage.setItem('token', res.data.token)
                 navigate('/@me')
             }
             setIsLoading(false)

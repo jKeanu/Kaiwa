@@ -1,13 +1,14 @@
 import { AxiosResponse } from "axios"
-import { ActionType, DeleteGroup } from "../../types/generalTypes"
-import { deleteGroup } from "../../services/apiService"
+import { ActionType } from "../../types/channelTypes"
+import { DeleteGroup } from "../../types/groupTypes"
+import { deleteGroup } from "../../api/group"
 import { useState } from "react"
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useChannelCustomContext } from "../../context"
 
 
-const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButton,
+const DeleteGroupModal:React.FC<DeleteGroup>=({channelId, handleCloseButton,
     socket, membersId, channelNumber, setModalDisabled})=>{
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
@@ -20,7 +21,7 @@ const DeleteGroupModal:React.FC<DeleteGroup>=({token, channelId, handleCloseButt
         setModalDisabled(true)
         setLoading(true)
         try{
-            const res:AxiosResponse<void> = await deleteGroup(token, channelId)
+            const res:AxiosResponse<void> = await deleteGroup(channelId)
             if(res.status === 204){
                 channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId}})
                 if(socket){

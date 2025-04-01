@@ -6,6 +6,7 @@ import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
 import mongoose from 'mongoose';
 import { errLogger, infoLogger } from './utils/cloudwatchConfig.js';
+import { verifyToken } from './controllers/authController.js';
 import redisClient from './utils/redisClient.js';
 
 
@@ -18,15 +19,6 @@ redisClient.on('connect', () => {
 redisClient.on('error', (err) => {
   errLogger.error('Redis Client Error', {message:err})
 });
-
-const getUserIdFromSocket = async (token) => {
-  try {
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
-    return decoded.id
-  }catch (error) {
-    errLogger.error('Token Decoding Error', {message:error.message, stack:error.stack})
-  }
-};
 
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -43,11 +35,46 @@ export default (httpServer) => {
         }
       },
       methods: ['GET', 'POST'],
+      credentials: true
     },
   })
 
+    //Validate the jwt cookie
+    io.use(async (socket, next)=>{
+      const cookieHeader = socket.request.headers.cookie;
+      if(cookieHeader){
+          const cookieArray = cookieHeader.split('; ').reduce((acc, cookie) => {
+            const [key, value] = cookie.split('=');
+            return { ...acc, [key]: value }; // Return new object instead of modifying
+          }, {}); 
+          try{
+              if(cookieArray['jwt']){
+                // Verify the cookie
+                const decoded = await verifyToken(cookieArray['jwt'], process.env.JWT_SECRET)
+                if (!decoded){
+                  return next(new Error('There was an during token verification.'))
+                }
+                const currentUser = await User.findById(decoded.id).select('_id')
+                if(!currentUser){
+                  return next(new Error('User not found.'))
+                }
+                  // eslint-disable-next-line no-param-reassign
+                socket.user = decoded.id
+                next()
+              }else{
+                next(new Error('Token missing in cookies'))
+              }
+          }catch(_err){
+              next(new Error('Invalid or expired token'))
+          }
+      }
+      else{
+          next(new Error('No cookies found'))
+      }
+    })
+
   io.on('connection', async (socket) => {
-    const verifiedCurrentUserId = await getUserIdFromSocket(socket.handshake.query.token);
+    const verifiedCurrentUserId = socket.user
     //err
     try{
       const incrStatusCount = await redisClient.incr(`user:${verifiedCurrentUserId}:connections`)
@@ -299,9 +326,9 @@ export default (httpServer) => {
         if(decrStatusCount<=0){
           await redisClient.del(`user:${verifiedCurrentUserId}:connections`)
           const currentUserData = await User.findByIdAndUpdate(verifiedCurrentUserId, {status: 'Offline'}, {new:true})
-          .populate({path:'friends.friend', select:'status'})
-          .populate({path:'friends.channel', select:'channelNumber'})
-          .populate({path:'groups', select:'channelNumber'})
+            .populate({path:'friends.friend', select:'status'})
+            .populate({path:'friends.channel', select:'channelNumber'})
+            .populate({path:'groups', select:'channelNumber'})
           const filteredFriends = [...currentUserData.friends].filter(friend=>friend.status==='Friend')
           const friendChannels = filteredFriends.map(friend=>friend.channel)
           friendChannels.forEach(channel=>{

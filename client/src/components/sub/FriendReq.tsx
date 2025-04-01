@@ -1,14 +1,14 @@
 import { useState } from "react"
-import { FriendReqProps, AcceptFriendStatus, Friend } from "../../types/generalTypes"
+import { FriendReqProps, AcceptFriendStatus, Friend } from "../../types/friendTypes"
 import { AxiosResponse } from "axios"
-import { acceptFriend, declineFriend } from "../../services/apiService"
+import { acceptFriend, declineFriend } from "../../api/friend"
 import { useHomeCustomContext } from "../../context"
 
 
 const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
     const [loading, setLoading] = useState([''])
     const [error, setError] = useState([''])
-    const {socket, token, handleNewFriendChannel, setFriendReqs, currUserId} = useHomeCustomContext()
+    const {socket, handleNewFriendChannel, setFriendReqs, currUserId} = useHomeCustomContext()
     
     //friendId is the object that contains the user info and your status with that user
     const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string, friendId:string):Promise<void>=>{
@@ -19,7 +19,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
             return updateError.filter(error=>error!==`error-${pendingUserId}`)
         })  
         try{
-            const res:AxiosResponse<AcceptFriendStatus> = await acceptFriend(token, pendingUserId)
+            const res:AxiosResponse<AcceptFriendStatus> = await acceptFriend( pendingUserId)
             if(res.data.status==='success'){
                 const fetchedNewChannelData = {...res.data.newChannel}
                 //we sort it this way to make the pending user always on the index 0
@@ -77,7 +77,7 @@ const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
             return updateError.filter(error=>error!==`error-${pendingUserId}`)
         })  
         try{
-            const res:AxiosResponse<void>= await declineFriend(token, pendingUserId)
+            const res:AxiosResponse<void>= await declineFriend(pendingUserId)
             if(res.status===204){
                 setFriendReqs(prevUserReqs=>{
                     const updateUserReqs = [...prevUserReqs]

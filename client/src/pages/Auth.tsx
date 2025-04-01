@@ -5,26 +5,31 @@ import LoginPage from '../components/auth/Login';
 import RegisterPage from '../components/auth/Register';
 import ResetPassword from '../components/auth/ResetPassword';
 import NotFound from './notFound';
+import useAuth from '../hooks/useAuth';
+import LoadingScreen from '../components/loadings/LoadingScreen';
 
 const AuthenticationPage = () => {
     const navigate = useNavigate()
+    const {isAuthenticated, isError, isLoading} = useAuth()
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            navigate('/@me');
+    useEffect(()=>{
+        if(isAuthenticated){
+            navigate('/@me')
         }
-    }, [navigate]);
-
+    }, [isAuthenticated, navigate])
 
     return (
         <div className='auth-page-container'>
-            <Routes>
-                <Route path='/login' element={<LoginPage />}/>
-                <Route path='/register' element={<RegisterPage />} />
-                <Route path='/resetpassword/:resetPasswordToken' element={<ResetPassword />}/>
-                <Route path="*" element={<NotFound />} />
-            </Routes>
+            {
+                isLoading?
+                <LoadingScreen />:
+                <Routes>
+                    <Route path='/login' element={<LoginPage isError={isError}/>}/>
+                    <Route path='/register' element={<RegisterPage isError={isError}/>} />
+                    <Route path='/resetpassword/:resetPasswordToken' element={<ResetPassword isError={isError}/>}/>
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            }
             <div className="auth-copy">
                 © 2025 Kaiwa
             </div>

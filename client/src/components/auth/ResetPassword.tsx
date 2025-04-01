@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { resetPassword } from "../../services/apiService";
+import { resetPassword } from "../../api/auth";
 import {useNavigate} from 'react-router-dom';
 import axios, { AxiosResponse } from "axios";
 
 
-const ResetPassword:React.FC=()=>{
+const ResetPassword:React.FC<{isError:boolean}>=({isError:authenticationError})=>{
     const [resetPassForm, setResetPassForm]= useState({passwordConfirm:'', password:''})
     const {resetPasswordToken} = useParams()
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [containerVisible, setContainerVisible] = useState(false)
     const navigate = useNavigate()
+
+    useEffect(()=>{
+        if(authenticationError){
+            setErrorMessage('Spam detected, please try again later.')
+        }
+    }, [authenticationError])
 
     const handleChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
         e.preventDefault()
@@ -29,9 +35,8 @@ const ResetPassword:React.FC=()=>{
         e.preventDefault()
         if(resetPasswordToken){
             try{
-                const res:AxiosResponse<{status:string, token:string}> = await resetPassword(resetPasswordToken, resetPassForm)
+                const res:AxiosResponse<{status:string}> = await resetPassword(resetPasswordToken, resetPassForm)
                 if(res.data.status==='success'){
-                    localStorage.setItem('token', res.data.token)
                     navigate('/@me')
                 }
             }catch(err){

@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios"
 import axiosInstance from "./axiosInstance"
-import { AcceptFriendStatus, AddFriendStatus } from "../types/generalTypes"
+import { AcceptFriendStatus, AddFriendStatus } from "../types/friendTypes"
 
 export const addFriend = (displayName:string, friendTag:string):Promise<AxiosResponse<AddFriendStatus>>=>{
     return axiosInstance.post(`/api/v1/me/friends`, {displayName, friendTag})

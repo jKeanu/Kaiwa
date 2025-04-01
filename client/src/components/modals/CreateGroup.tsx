@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react"
-import { ActionType, CreateGroup, CreateGroupStatus } from "../../types/generalTypes"
+import { ActionType } from "../../types/channelTypes"
+import { CreateGroup, CreateGroupStatus } from "../../types/groupTypes"
 import { useMemo } from "react"
 import { AxiosResponse } from "axios"
 import axios from 'axios'
-import { createGroup } from "../../services/apiService"
+import { createGroup } from "../../api/group"
 import { useNavigate } from "react-router-dom"
 import { useLeftCustomContext } from "../../context"
 
@@ -16,7 +17,9 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
-    const {friendsInfo, channelsDispatch, socket, token, setModalVisible, modalVisible} = useLeftCustomContext()
+    const {friendsInfo, channelsDispatch, 
+        socket, setModalVisible, 
+        modalVisible} = useLeftCustomContext()
 
     const filteredFriends = useMemo(()=>{
         return [...friendsInfo].filter(friends=>friends.displayName.toLowerCase().includes(searchQuery.toLocaleLowerCase()))
@@ -51,7 +54,7 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
         setLoading(true)
         setIsDisabled(true)
         try{
-            const res:AxiosResponse<CreateGroupStatus> = await createGroup(token, members, groupName)
+            const res:AxiosResponse<CreateGroupStatus> = await createGroup(members, groupName)
             const {members:newMembers, __v, ...newChannel} = {...res.data.newChannel}
             if(res.data.status==="success"){
                 channelsDispatch({type:ActionType.NewChannel, payload:{data:newChannel}})

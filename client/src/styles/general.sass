@@ -5,14 +5,27 @@
     box-sizing: border-box
     color: variables.$white-text
 
+html
+    background-color: variables.$primary-bg
     
 body
     margin: 0
     padding: 0
-    background-color: variables.$primary-bg
     font-family: 'Raleway', sans-serif
     position: relative
-    
+
+.loading-screen
+    position: absolute
+    width: 100vw
+    height: 100dvh
+    height: 100vh
+    left: 0
+    top: 0
+    background-color: variables.$primary-bg
+    display: flex
+    justify-content: center
+    align-items: center
+    z-index: 1
 ul 
     list-style-type: none
     padding: 0

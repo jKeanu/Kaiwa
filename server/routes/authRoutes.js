@@ -1,7 +1,7 @@
 
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { isLoggedIn } from '../controllers/authController';
+import { isLoggedIn } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -12,8 +12,6 @@ const authCheckLimit = rateLimit({
 })
 
 
-router.get('/check', 
-    authCheckLimit, 
-    isLoggedIn)
+router.get('/check', authCheckLimit, isLoggedIn)
 
 export default router

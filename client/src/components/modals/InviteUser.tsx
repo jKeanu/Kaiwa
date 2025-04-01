@@ -1,5 +1,7 @@
-import { ActionType, FriendDetails, InviteFriend } from "../../types/generalTypes"
-import { inviteFriendtoGroup } from "../../services/apiService"
+import { ActionType } from "../../types/channelTypes"
+import { FriendDetails } from "../../types/friendTypes"
+import { InviteFriend } from "../../types/channelTypes"
+import { inviteFriendtoGroup } from "../../api/group"
 import { AxiosResponse } from "axios"
 import React, { useEffect } from "react"
 import { useState} from "react"
@@ -7,7 +9,6 @@ import { useChannelCustomContext } from "../../context"
 
 const InviteUserModal:React.FC<InviteFriend>=({
         channelId, 
-        token, 
         currChannelMembersId, 
         socket, 
         channelNumber,
@@ -33,7 +34,7 @@ const InviteUserModal:React.FC<InviteFriend>=({
         })
         try{
             const newTime = Date.now()
-            const res:AxiosResponse<{status:string}> = await inviteFriendtoGroup(token, newTime, channelId, friend._id)
+            const res:AxiosResponse<{status:string}> = await inviteFriendtoGroup(newTime, channelId, friend._id)
             if(res.data.status === 'success'){
                 if(channelNumber){
                     channelsDispatch({type: ActionType.NewMember, payload:{channelNumber:Number(channelNumber), newTime}})

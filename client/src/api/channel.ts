@@ -1,4 +1,4 @@
-import { ChannelDataStatus, ChannelMessagesStatus } from "../types/generalTypes";
+import { ChannelDataStatus, ChannelMessagesStatus } from "../types/channelTypes";
 import axiosInstance from "./axiosInstance";
 
 export const channelFetcher = async (endpoint: string):Promise<ChannelDataStatus> => {

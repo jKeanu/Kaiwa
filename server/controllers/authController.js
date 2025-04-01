@@ -16,7 +16,7 @@ function signToken(id){
 
 const createSendToken = (userId, statusCode, req, res) => {
   const token = signToken(userId);
-  res.cookies('jwt', token, {
+  res.cookie('jwt', token, {
     expires: new Date(
       Date.now() + Number(process.env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000
     ),
@@ -30,11 +30,27 @@ const createSendToken = (userId, statusCode, req, res) => {
   });
 };
 
+
+
+export const verifyToken = promisify((token, secret, callback) => {
+  // A callback function (err, decoded) which will be invoked by verify once it completes its operation.
+  // the third parameter (err, decoded) is a callback that is called when verify finishes its work, 
+  // When the original callback function is called callback(err, decoded as JwtPayload) by verify, promisify captures the 
+  // err and decoded values and resolves or rejects the promise based on those values.
+  const {verify} = jwt
+  return verify(token, secret, (err, decoded) => {
+    callback(err, decoded);
+  });
+});
+
 // For login and signup page in case the user is logged in already.
 export const isLoggedIn = catchAsync(async (req, res, next)=>{
-  const token = req.cookies.jwt
+  let token;
+  if (req.cookies && req.cookies.jwt){
+    token = req.cookies.jwt
+  }
   if (!token) return res.status(401).json({isAuthenticated:false})
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
+  const decoded = await verifyToken(token, process.env.JWT_SECRET)
   const currentUser = await User.findById(decoded.id)
   if(!currentUser){
     return next(new AppError('This user no longer exists.', 404))
@@ -70,6 +86,17 @@ export const signup = catchAsync(async (req, res, next)=>{
     const currBody = sanitizeObject(req.body)
     const newUser = await User.create(currBody)
     createSendToken(newUser._id, 201, req, res)
+})
+
+export const logout = catchAsync(async (req, res, _next)=>{
+  res.clearCookie('jwt', {
+    httpOnly: true, // Ensures the cookie is only accessible via HTTP(S), not JavaScript
+    sameSite: 'none', //or Strict
+    secure: true
+  });
+  res.status(200).json({
+    status:"success"
+  });
 })
 
 export const protect = catchAsync(async (req, res, next)=>{

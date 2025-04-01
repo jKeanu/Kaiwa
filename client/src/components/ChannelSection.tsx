@@ -1,20 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom"
 import React, { useState, useEffect, useRef, useMemo} from 'react'
-import {
-        ChannelDataStatus,
-        ChannelMessage,
-        CurrentChannel,
-        ChannelSectionProps,
-        ChannelMember,
-        ChannelMessagesStatus,
-        ModalWindow,
-        AddFriendStatus,
-        MemberModalSettings,
-        AcceptFriendStatus,
-        Friend,
-        ActionType
-    } from "../types/generalTypes"
-import { acceptFriend, addFriend,  channelFetcher,  declineFriend,  messageFetcher} from "../services/apiService"
+import { acceptFriend, addFriend, declineFriend } from "../api/friend"
+import { channelFetcher, messageFetcher } from "../api/channel"
 import ReactTextareaAutosize from "react-textarea-autosize"
 import useSWR, {useSWRConfig} from "swr"
 import LeaveGroupModal from "./modals/LeaveGroup"
@@ -27,9 +14,15 @@ import throttle from 'lodash.throttle'
 import GroupSettingsModal from "./modals/GroupSettings"
 import { useChannelCustomContext } from "../context"
 import MessageLimitModal from "./modals/MessageLimit"
+import { ModalWindow, MemberModalSettings } from "../types/modalTypes"
+import { AddFriendStatus, AcceptFriendStatus, Friend } from "../types/friendTypes"
+import { ActionType } from "../types/channelTypes"
+import { 
+    ChannelDataStatus, ChannelMessage, 
+    CurrentChannel, ChannelSectionProps, 
+    ChannelMember, ChannelMessagesStatus } from "../types/channelTypes"
 
 const ChannelSection:React.FC<ChannelSectionProps>=({
-        token,
         socket, 
         currentUserData, 
         sentReqs,
@@ -100,7 +93,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     //fetching channel data 
     const {data:channelData, error: channelError} = useSWR<ChannelDataStatus>(
         channelCacheKey, (endpoint:string) =>
-        channelFetcher(endpoint, token),
+        channelFetcher(endpoint),
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: true,
@@ -139,7 +132,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const { data: messagesData, error: messagesError} = useSWR<ChannelMessagesStatus>(
         //if there's already a data in the cache, we no longer need to fetch 
         messageCacheKey, (endpoint:string) =>
-        messageFetcher(endpoint, 16, 0, token),
+        messageFetcher(endpoint, 16, 0),
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
@@ -572,7 +565,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setMemberPopUp('')
         setActivePopup(false)
         try{
-            const res:AxiosResponse<AddFriendStatus> = await addFriend(token, displayName, friendTag)
+            const res:AxiosResponse<AddFriendStatus> = await addFriend(displayName, friendTag)
             if(res.data.status==='success'){
                 if(socket){
                     setSentReqs(prevSentReqs=>[...prevSentReqs, res.data.sentRequestDetails])
@@ -594,7 +587,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setMemberError('')
         if(friendId){
             try{
-                const res:AxiosResponse<AcceptFriendStatus>= await acceptFriend(token, memberId)
+                const res:AxiosResponse<AcceptFriendStatus>= await acceptFriend(memberId)
                 if(res.data.status==="success"){
                     const fetchedNewChannelData = {...res.data.newChannel}
                     //we sort it this way to make the pending user always on the index 0
@@ -642,7 +635,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         setMemberError('')
         setActivePopup(false)
         try{
-            const res:AxiosResponse<void>=await declineFriend(token, memberId)
+            const res:AxiosResponse<void>=await declineFriend(memberId)
             if(res.status===204){
                 setFriendReqs(prevUserReqs=>{
                     const updateUserReqs = [...prevUserReqs]
@@ -708,8 +701,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         const newMessagesData = await messageFetcher(
                             messageCacheKey,
                             messagesLimit,
-                            messagesSkip,
-                            token)
+                            messagesSkip)
                         if(newMessagesData.messages.length < messagesLimit){
                             setAllMessagesFetched(true)
                         }       
@@ -724,7 +716,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             }
         }
         fetchMoreMessages()
-    }, [messagesSkip, messageCacheKey, mutate, token])
+    }, [messagesSkip, messageCacheKey, mutate])
 
 
     useEffect(()=>{
@@ -758,7 +750,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         setModalWindow={setModalWindow}
                         setModalDisabled={setModalDisabled}
                         handleCloseButton={handleCloseButton}
-                        token={token}
                         socket={socket}
                         channelId={currentChannel._id}
                         channelName={currentChannel.channelName}
@@ -770,7 +761,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     {(modalWindow.window==='leaveGroup')
                     &&
                     <LeaveGroupModal 
-                        token={token} 
                         channelId={currentChannel._id} 
                         socket={socket}
                         currUserId={_id} 
@@ -783,7 +773,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     <InviteUserModal
                         handleCloseButton={handleCloseButton}
                         channelId={currentChannel._id}
-                        token={token} 
                         currChannelMembersId={membersId} 
                         socket={socket}
                         channelNumber={channelNumber}
@@ -792,7 +781,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     {(modalWindow.window==='deleteGroup')
                     &&
                     <DeleteGroupModal 
-                        token={token} 
                         channelId={currentChannel._id} 
                         channelNumber={channelNumber}
                         handleCloseButton={handleCloseButton} 
@@ -803,7 +791,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                     {memberModal.type==='unfriend'&&
                     <UnfriendMemberModal
                         setModalSettings={setMemberModal}
-                        token={token}
                         socket={socket}
                         displayName={memberModal.displayName}
                         handleCloseButton={handleCloseButton}
@@ -813,7 +800,6 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         />}
                     {memberModal.type==='changeLeader'&&
                     <ChangeLeaderModal 
-                        token={token}
                         setModalSettings={setMemberModal}
                         socket={socket}
                         displayName={memberModal.displayName}

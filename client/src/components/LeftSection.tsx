@@ -1,13 +1,13 @@
 import { NavLink, Link} from 'react-router-dom';
-import {LeftSectionProps} from '../types/generalTypes';
+import { LeftSectionProps } from '../types/leftSectionTypes';
 import React, { useMemo, useState } from 'react';
 import CreateGroupModal from './modals/CreateGroup';
 import ProfileSettingsModal from './modals/ProfileSettings';
 import { useLeftCustomContext } from '../context';
+import { logoutUser } from '../api/auth';
 
 const LeftSection:React.FC<LeftSectionProps>=({
     channels, 
-    handleLogout, 
     currentUserData, 
     friendReqs, 
     setIsFriendsOpen,
@@ -19,6 +19,20 @@ const LeftSection:React.FC<LeftSectionProps>=({
     const [isDisabled, setIsDisabled] = useState(false)
     const [modal, setModal] = useState({active:false, type:''})
     const {setModalVisible} = useLeftCustomContext()
+
+
+    const handleLogout = async () =>{
+        try{
+            const res = await logoutUser()
+            if(res.data.status==="success"){
+                window.location.href = '/login'
+            }
+        }catch(_err){
+            // Since we only clear the cookies during logout, if it fails ( very unusual )
+            // it indicates a server error. We can just reload
+            window.location.href = '/@me'
+        }
+    }
 
     const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
         if (e.button===0 && e.target === e.currentTarget){

@@ -1,15 +1,12 @@
 import React, { useState, useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { AuthStatus } from '../../types/generalTypes';
+import { AuthStatus } from '../../types/authTypes';
 import { AxiosResponse } from 'axios';
 import {useNavigate} from 'react-router-dom'
-import { forgotPassword, loginUser } from '../../services/apiService';
-import useAuth from '../../hooks/useAuth';
+import { loginUser, forgotPassword } from '../../api/auth';
 
-
-const LoginPage:React.FC=()=> {
-    const {isAuthenticated, isError:authenticationError} = useAuth()
+const LoginPage:React.FC<{isError:boolean}>=({isError:authenticationError})=> {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('')
@@ -23,11 +20,6 @@ const LoginPage:React.FC=()=> {
         setContainerVisible(true)
     },[])
 
-    useEffect(()=>{
-        if(isAuthenticated){
-            navigate('/@me')
-        }
-    }, [isAuthenticated, navigate])
 
     useEffect(()=>{
         if(authenticationError){
@@ -44,7 +36,6 @@ const LoginPage:React.FC=()=> {
         try {
             const res:AxiosResponse<AuthStatus> = await loginUser(email, password);
             if (res.data.status === "success") {
-                localStorage.setItem('token', res.data.token)
                 navigate('/@me')
             }
         } catch (error: unknown) { 

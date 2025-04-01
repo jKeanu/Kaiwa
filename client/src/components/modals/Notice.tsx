@@ -1,4 +1,4 @@
-import { Notice } from "../../types/generalTypes"
+import { Notice } from "../../types/modalTypes"
 import { useEffect, useState } from "react"
 
 const NoticeModal:React.FC<Notice>=({handleModalConfirm})=>{

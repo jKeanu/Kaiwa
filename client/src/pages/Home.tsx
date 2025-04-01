@@ -1,25 +1,28 @@
 import React, {useState, useEffect, useMemo, useCallback, useReducer} from 'react'
 import {Routes, Route, useNavigate, useLocation, Navigate} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
-import {jwtDecode} from 'jwt-decode'
 import useSWR, {useSWRConfig} from "swr"
 import LeftSection from '../components/LeftSection'
 import ChannelSection from '../components/ChannelSection'
-import {User, Channel, 
-        Friend, UserDataStatus, 
-        FriendDetails, ChannelDataStatus, 
-        ChannelMemberUpdate, LastMessageUpdate,
-        ChannelMessagesStatus, UserStatusUpdate, FriendReq, SentReq, FriendRequestAccepted, NoticeModalSettings,
-        FIdChannelInfo,
-        ChannelAction,
-        ActionType,
-        MemberUpdateInfo} 
-        from '../types/generalTypes'
+import { User, UserDataStatus, UserStatusUpdate } from '../types/userTypes'
+import { 
+    Friend, FriendDetails, 
+    FriendReq, SentReq, 
+    FriendRequestAccepted, 
+    FIdChannelInfo } from '../types/friendTypes'
+import { 
+    Channel, ChannelDataStatus, 
+    ChannelMemberUpdate, LastMessageUpdate, 
+    ChannelMessagesStatus, ChannelAction, 
+    ActionType } from '../types/channelTypes'
+import { NoticeModalSettings } from '../types/modalTypes'
+import { MemberUpdateInfo } from '../types/groupTypes'
 import HomeSection from '../components/HomeSection'
-import {  getCurrUserFetcher } from '../services/apiService'
+import { getCurrUserFetcher } from '../api/currentUser'
 import axios from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
+import LoadingScreen from '../components/loadings/LoadingScreen'
 
 
 function sortChannels(channels:Channel[]):Channel[]{
@@ -89,8 +92,6 @@ function channelReducer(state:Channel[] | [], action:ChannelAction){
 }
 
 const HomePage:React.FC = () => {
-        //Get token from local storage
-        const [token, setToken] = useState(localStorage.getItem('token'))
         //We use this to navigate from pages to pages
         const navigate = useNavigate()
         //This is where we saved the fetched current logged in user's data
@@ -148,15 +149,13 @@ const HomePage:React.FC = () => {
 
     
         useEffect(() => {
-            if (token) {
-                const url = import.meta.env.MODE==='production'? import.meta.env.VITE_API_URL_PROD : import.meta.env.VITE_API_URL_DEV
-                const socketConn = io(url, { query: { token }, reconnectionAttempts: 10, reconnectionDelay: 3000 });
-                setSocket(socketConn);
-                return ()=>{
-                    socketConn.disconnect()
-                }
-            }     
-        }, [token])
+            const url = import.meta.env.MODE==='production'? import.meta.env.VITE_API_URL_PROD:import.meta.env.VITE_API_URL_DEV
+            const socketConn = io(url, {withCredentials: true});
+            setSocket(socketConn);
+            return ()=>{
+                socketConn.disconnect()
+            }  
+        }, [])
 
 
         useEffect(() => {
@@ -177,9 +176,9 @@ const HomePage:React.FC = () => {
             };
           }, [])
 
-        const { data:currUserData, error:currUserDataError} = useSWR<UserDataStatus>(
-            token ? userCacheKey : null,  // Fetch data only if token is present
-            token ? (endpoint) => getCurrUserFetcher(endpoint, token) : null,
+        const { data:currUserData, error:currUserDataError, isLoading:currUserDataLoading} = useSWR<UserDataStatus>(
+            userCacheKey,
+            (endpoint) => getCurrUserFetcher(endpoint),
             {
                 revalidateOnFocus: false,
                 revalidateOnReconnect: true
@@ -229,14 +228,10 @@ const HomePage:React.FC = () => {
             if(currUserDataError){
                 if(axios.isAxiosError(currUserDataError)){
                     if(currUserDataError.response?.status === 401 || currUserDataError.response?.status === 404){
-                        localStorage.removeItem('token')
-                        setToken('')
                         navigate('/login')
                     }
-                    setIsOnline(false)
-                }else{
-                    setIsOnline(false)
                 }
+                setIsOnline(false)
             }
         }, [currUserDataError, navigate] )
 
@@ -268,28 +263,6 @@ const HomePage:React.FC = () => {
             })
             channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:channelId}})
         }, [])
-
-        useEffect(() => {
-            // Check if token doesn't exist, then navigate to login
-            if (!token) {
-                navigate('/login');
-            }
-          }, [token, navigate])
-
-        useEffect(() => {
-            //Check if the token is not yet expired
-            if (token) {
-                const decodedToken = jwtDecode(token);
-                //default value is 0, if the expiration of the token is not defined.
-                const isExpired = (decodedToken.exp??0) * 1000 < Date.now();
-                //if expired remove the token, and navigate to login page
-                if (isExpired) {
-                    setToken('')
-                    localStorage.removeItem('token')
-                    window.location.href = '/login'
-                }
-            }
-        }, [token, navigate]);
 
         //LIVE UPDATES
         useEffect(()=>{
@@ -653,17 +626,15 @@ const HomePage:React.FC = () => {
             }
         }, [messageLimit])
 
-        const handleLogout: (e: React.MouseEvent<HTMLButtonElement>) => void = (e) => {
-            e.preventDefault()
-            setToken('')
-            localStorage.removeItem('token')
-            navigate('/login')
-        };
-
 
         return(
-            <>
-            {userData&&token?
+        <>
+            {
+                currUserDataLoading?
+                <LoadingScreen />
+           :
+           ( 
+            userData?
                 <main className='homepage'>
                     {noticeModal.isOpen&&
                     <dialog className='modal-window-container'>
@@ -674,15 +645,12 @@ const HomePage:React.FC = () => {
                         setModalVisible,
                         channelsDispatch, 
                         friendsInfo:myFriends, 
-                        token, 
                         socket, 
-                        setToken, 
                         channelNumberAndIds,
                         setUserData}}>
                         <LeftSection 
                             formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}
                             channels={channels} 
-                            handleLogout={handleLogout} 
                             currentUserData={userData}
                             friendReqs={friendReqs} 
                             setIsFriendsOpen={setIsFriendsOpen}
@@ -694,7 +662,6 @@ const HomePage:React.FC = () => {
                             <HomeSectionContext.Provider value={{
                                 modalVisible,
                                 setModalVisible,
-                                token,
                                 currUserId:userData._id,
                                 socket,
                                 handleNewFriendChannel, 
@@ -730,18 +697,18 @@ const HomePage:React.FC = () => {
                                 socket={socket}
                                 currentUserData={userData}
                                 formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}
-                                token={token}/>
+                                />
                             </ChannelSectionContext.Provider>
                             }/>
                         <Route path="*" element={<Navigate replace to="/@me"/>} />
                     </Routes>
                 </main>
                 :
-            <main className='homepage'>
-                <section className='left-home-section'></section>
-                <section className='home-section-container'></section>
-            </main>
-            }
+                <main className='homepage'>
+                    <section className='left-home-section'></section>
+                    <section className='home-section-container'></section>
+                </main>
+            )}
         </>
     )   
 }

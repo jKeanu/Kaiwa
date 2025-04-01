@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react"
-import { HomeSectionProps } from "../types/generalTypes"
+import { HomeSectionProps } from "../types/homeTypes"
 import FriendList from "./sub/FriendList"
 import FriendReq from "./sub/FriendReq"
 import AddFriend from "./sub/AddFriend"

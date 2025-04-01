@@ -1,5 +1,5 @@
-import { AddFriendProps, AddFriendStatus } from "../../types/generalTypes";
-import { addFriend } from "../../services/apiService";
+import { AddFriendProps, AddFriendStatus } from "../../types/friendTypes";
+import { addFriend } from "../../api/friend";
 import { useState } from "react";
 import axios, { AxiosResponse } from "axios";
 import { useHomeCustomContext } from "../../context";
@@ -10,7 +10,7 @@ const AddFriend:React.FC<AddFriendProps>=({currComponent})=>{
     const [friendTag, setFriendTag] = useState('')
     const [requestStatus, setRequestStatus] = useState<{type:string, message:string}>()
     const [isSending, setIsSending] = useState(false)
-    const {token, socket, setSentReqs} = useHomeCustomContext()
+    const {socket, setSentReqs} = useHomeCustomContext()
     
     
     const handleAddFriend = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
@@ -18,7 +18,7 @@ const AddFriend:React.FC<AddFriendProps>=({currComponent})=>{
         setRequestStatus({type:'', message:''})
         setIsSending(true)
         try{
-            const res:AxiosResponse<AddFriendStatus> = await addFriend(token, displayName, friendTag)
+            const res:AxiosResponse<AddFriendStatus> = await addFriend(displayName, friendTag)
             if(res.data.status==='success'){
                 setRequestStatus({type:'success', message:'Successfully sent the request!'})
                 setDisplayName('')

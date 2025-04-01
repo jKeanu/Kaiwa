@@ -1,10 +1,10 @@
-import { MemberUnfriend} from "../../types/generalTypes"
+import { MemberUnfriend } from "../../types/groupTypes"
 import { AxiosResponse } from "axios"
-import { removeFriend } from "../../services/apiService"
+import { removeFriend } from "../../api/friend"
 import { useEffect, useState } from "react"
 import { useChannelCustomContext } from "../../context"
 
-const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token, socket,
+const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, socket,
     handleCloseButton, displayName, setModalSettings, channelNumber, setModalDisabled})=>{
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
     const [isLoading, setIsLoading] = useState(false)
@@ -15,7 +15,7 @@ const UnfriendMemberModal:React.FC<MemberUnfriend>=({channelId, memberId, token,
         setIsLoading(true)
         setModalDisabled(true)
         try{
-            const res:AxiosResponse<void> = await removeFriend(token, memberId)
+            const res:AxiosResponse<void> = await removeFriend(memberId)
             if(res.status===204){
                 handleFriendChannelDelete(channelId)
                 if(socket){

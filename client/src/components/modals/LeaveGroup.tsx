@@ -1,11 +1,12 @@
 import axios, { AxiosResponse } from "axios";
-import { ActionType, LeaveGroup } from "../../types/generalTypes";
-import { leaveGroup } from "../../services/apiService";
+import { ActionType } from "../../types/channelTypes";
+import { LeaveGroup } from "../../types/groupTypes";
+import { leaveGroup } from "../../api/group";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useChannelCustomContext } from "../../context";
 
-const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton, 
+const LeaveGroupModal:React.FC<LeaveGroup>=({channelId, handleCloseButton, 
     socket, channelNumber, setModalDisabled})=>{
     const navigate = useNavigate()
     const [isLoading, setIsLoading]  = useState(false)
@@ -18,7 +19,7 @@ const LeaveGroupModal:React.FC<LeaveGroup>=({token, channelId, handleCloseButton
         setIsLoading(true)
         setModalDisabled(true)
         try{
-            const res:AxiosResponse<void> = await leaveGroup(token, channelId)
+            const res:AxiosResponse<void> = await leaveGroup(channelId)
             if(res.status===204){
                 navigate('/@me')
                 setIsLoading(false)

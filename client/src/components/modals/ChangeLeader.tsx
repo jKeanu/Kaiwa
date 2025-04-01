@@ -1,12 +1,13 @@
 import { AxiosResponse } from "axios"
-import { ChangeLeader, ChannelDataStatus} from "../../types/generalTypes"
+import { ChangeLeader } from "../../types/groupTypes"
+import { ChannelDataStatus } from "../../types/channelTypes"
 import { mutate } from "swr"
 import { useState } from "react"
 import { useEffect } from "react"
-import { changeGroupLeader } from "../../services/apiService"
+import { changeGroupLeader } from "../../api/group"
 import { useChannelCustomContext } from "../../context"
 
-const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseButton, socket,
+const ChangeLeaderModal:React.FC<ChangeLeader>=({channelId, handleCloseButton, socket,
     memberId, channelNumber, setModalSettings, displayName, setModalDisabled})=>{
     const [loading, setLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState({isError:false, message:''})
@@ -17,7 +18,7 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({token, channelId, handleCloseBu
         setLoading(true)
         setModalDisabled(true)
         try{
-            const res:AxiosResponse<{status:string}> = await changeGroupLeader(token, channelId, memberId)
+            const res:AxiosResponse<{status:string}> = await changeGroupLeader(channelId, memberId)
             if(res.data.status==="success"){
                 if(socket){
                     mutate(`api/v1/channels/${channelNumber}`, (prevChannelDataStatus:undefined|ChannelDataStatus)=>{

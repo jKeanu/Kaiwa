@@ -1,5 +1,5 @@
 import { useChannelCustomContext } from "../../context"
-import { MessageLimit} from "../../types/generalTypes"
+import { MessageLimit } from "../../types/modalTypes"
 import { useEffect } from "react"
 
 const MessageLimitModal:React.FC<MessageLimit>=({handleCloseButton})=>{

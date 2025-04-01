@@ -1,4 +1,5 @@
-import { FriendListProps, UnfriendModalSettings } from "../../types/generalTypes";
+import { FriendListProps } from "../../types/friendTypes";
+import { UnfriendModalSettings } from "../../types/modalTypes";
 import { Link } from "react-router-dom";
 import React, { useState, useMemo, useRef} from "react";
 import Unfriend from "../modals/Unfriend";
@@ -12,7 +13,7 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 , clickX:0, clickY:0})
     const [isModalDisabled, setIsModalDisabled] = useState(false)
     const [modalSettings, setModalSettings] = useState<UnfriendModalSettings>({isOpen:false, ids:{channelId:'', friendId:''}, displayName:'', channelNumber:undefined})
-    const {setIsFriendsOpen, socket, token, handleFriendChannelDelete, setModalVisible} = useHomeCustomContext()
+    const {setIsFriendsOpen, socket, handleFriendChannelDelete, setModalVisible} = useHomeCustomContext()
 
     const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
         e.preventDefault()
@@ -114,7 +115,6 @@ const FriendList:React.FC<FriendListProps>=({friends, setIsFriendConnection})=>{
                 channelNumber={modalSettings.channelNumber}
                 handleCloseButton={handleCloseButton}
                 socket={socket} handleFriendChannelDelete={handleFriendChannelDelete} 
-                token={token}
                 setModalSettings={setModalSettings}
                 setIsModalDisabled={setIsModalDisabled}
                 />
