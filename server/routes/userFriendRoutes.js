@@ -7,7 +7,8 @@ const router = express.Router();
 
 const friendLimiter = rateLimit({
     max: 15,
-    windowMs: 1000*60*60*2
+    windowMs: 1000*60*60*2,
+    message: 'Too many requests have been detected, please try again later.'
 })
 
 router.use(authController.protect);

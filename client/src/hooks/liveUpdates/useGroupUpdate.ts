@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { Socket } from "socket.io-client"
-import { ActionType, Channel, ChannelAction, ChannelDataStatus } from "../../types/channelTypes"
+import { ActionType, Channel, ChannelAction, CurrentChannel } from "../../types/channelTypes"
 import { useLocation, useNavigate } from "react-router-dom"
 import { NoticeModalSettings } from "../../types/modalTypes"
 import { useSWRConfig } from "swr"
@@ -64,14 +64,14 @@ const useGroupUpdate = (socket:Socket|undefined, channelsDispatch: (value: Chann
     useEffect(()=>{
         if(socket){
             const handleNewLeader = (data:{channelNumber:number, newLeaderId:string}):void=>{
-                mutate(`api/v1/channels/${data.channelNumber}`, (prevChannelDataStatus:ChannelDataStatus|undefined)=>{
-                    if(!prevChannelDataStatus){
+                mutate(`api/v1/channels/${data.channelNumber}`, (cachedChannelData:CurrentChannel|undefined)=>{
+                    if(!cachedChannelData){
                         return
                     }
-                    const updateChannelData = {...prevChannelDataStatus.channel}
+                    const updateChannelData = {...cachedChannelData}
                     updateChannelData.groupLeader = data.newLeaderId
-                    return {status:prevChannelDataStatus.status, channel:updateChannelData}
-                })
+                    return updateChannelData
+                }, false)
             }
 
             socket.on("new_group_leader", handleNewLeader)

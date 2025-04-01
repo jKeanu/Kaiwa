@@ -22,7 +22,7 @@ const useFriendUpdate = (
     const navigate = useNavigate()
     const location = useLocation()
 
-    //When someone added you as a friend
+    // When someone added you as a friend
     useEffect(()=>{
         if(socket){
             const handleFriendRequest = (data:FriendReq)=>{
@@ -36,7 +36,7 @@ const useFriendUpdate = (
         }
     }, [socket, setFriendReqs])
     
-    //New Friend channel
+    // New Friend channel when someone accepted your friend request.
     useEffect(()=>{
         if(socket){
             const handleRequestAccepted = (data:FriendRequestAccepted)=>{

@@ -18,7 +18,7 @@ import { ModalWindow, MemberModalSettings } from "../types/modalTypes"
 import { AddFriendStatus, AcceptFriendStatus, Friend } from "../types/friendTypes"
 import { ActionType } from "../types/channelTypes"
 import { 
-    ChannelDataStatus, ChannelMessage, 
+    ChannelMessage, 
     CurrentChannel, ChannelSectionProps, 
     ChannelMember, ChannelMessagesStatus } from "../types/channelTypes"
 
@@ -91,7 +91,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     const {setModalVisible} = useChannelCustomContext()
 
     //fetching channel data 
-    const {data:channelData, error: channelError} = useSWR<ChannelDataStatus>(
+    const {data:channelData, error: channelError} = useSWR<CurrentChannel>(
         channelCacheKey, (endpoint:string) =>
         channelFetcher(endpoint),
         {
@@ -118,8 +118,8 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
 
     useEffect(() => {
         if (channelData) {
-            setCurrentChannel(channelData.channel)
-            setCurrentChannelMembers(channelData.channel.members)
+            setCurrentChannel(channelData)
+            setCurrentChannelMembers(channelData.members)
         }else if (channelError){
             if(axios.isAxiosError(channelError)){
                 if(channelError.response?.status===404 || channelError.response?.status===401 || channelError.response?.status===500){
@@ -207,13 +207,13 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
                         return [newMessage, ...prevMessages];
                     });
                 }
-                mutate(channelCacheKey, (currChannelCachedData: ChannelDataStatus | undefined)=>{
+                mutate(channelCacheKey, (currChannelCachedData: CurrentChannel | undefined)=>{
                     if(!currChannelCachedData){
                         return undefined
                     }
-                    const updateChannelData = {...currChannelCachedData.channel}
+                    const updateChannelData = {...currChannelCachedData}
                     updateChannelData.seen.push(_id)
-                    return {status: currChannelCachedData.status, channel: updateChannelData}
+                    return updateChannelData
                 }, false)
                 mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) => {
                     if (!currMsgCachedData){
@@ -724,14 +724,14 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             if(!currentChannel.seen.includes(_id)){
                 socket.emit('new_message_seen', {channelId:currentChannel._id})
                 channelsDispatch({type:ActionType.Seen, payload:{channelId:currentChannel._id, currUserId:_id}})
-                mutate(channelCacheKey, (currChannelCachedData: ChannelDataStatus | undefined)=>{
+                mutate(channelCacheKey, (currChannelCachedData: CurrentChannel | undefined)=>{
                     if(!currChannelCachedData){
                         return undefined
                     }
-                    const updateChannelData = {...currChannelCachedData.channel}
+                    const updateChannelData = {...currChannelCachedData}
                     updateChannelData.seen.push(_id)
-                    return {status: currChannelCachedData.status, channel: updateChannelData}
-                })
+                    return updateChannelData
+                }, false)
             }
         }
     }, [socket, currentChannel, channelCacheKey, _id, channelsDispatch, mutate])

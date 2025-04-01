@@ -1,9 +1,10 @@
-import { ChannelDataStatus, ChannelMessagesStatus } from "../types/channelTypes";
+import { AxiosResponse } from "axios";
+import { ChannelDataStatus, ChannelMessagesStatus, CurrentChannel } from "../types/channelTypes";
 import axiosInstance from "./axiosInstance";
 
-export const channelFetcher = async (endpoint: string):Promise<ChannelDataStatus> => {
-    const response = await axiosInstance.get(`/${endpoint}`)
-    return response.data;
+export const channelFetcher = async (endpoint: string):Promise<CurrentChannel> => {
+    const response:AxiosResponse<ChannelDataStatus> = await axiosInstance.get(`/${endpoint}`)
+    return response.data.channel;
 }
 
 

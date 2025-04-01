@@ -21,7 +21,7 @@ export const getFriend = catchAsync(async(req, res, next)=>{
     }
     //Determine if the current user is friend with the other user
     if(!findFriendshipStatus(req.user._id, friendUser, 'Friend')){
-        return next(new AppError(`You are not friends with the user to perform this action.`, 409))
+        return next(new AppError(`You are not friends with the user to perform this action.`, 403))
     }
     res.status(200).json({
         status:"success",

@@ -49,10 +49,8 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
             setIsDisabled(false)
             setModalVisible(true)
         }catch(err:unknown){
-            if(axios.isAxiosError(err)){
-                if(err.response?.status===409){
-                    setUserSettErr({err:true, message:err.response.data.message})
-                }else if(err.response?.status===400){
+            if(axios.isAxiosError(err) && err.response){
+                if(err.response.status===400){
                     let errMessages = err.response.data.message
                     if(errMessages.split('. ').length>1){
                         errMessages = errMessages.split('. ')[1]
@@ -60,8 +58,7 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                     }else{
                         setUserSettErr({err:true, message: 'There was an error changing the user information.'})
                     }
-                
-                }else if(err.response?.status===429){
+                }else if(err.response.status===429){
                     setUserSettErr({err:true, message: 'Too many user info change attempts, please try again later.'})
                 }
                 else{

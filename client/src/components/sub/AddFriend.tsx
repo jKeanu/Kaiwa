@@ -34,8 +34,12 @@ const AddFriend:React.FC<AddFriendProps>=({currComponent})=>{
         }catch(err:unknown){
             if(axios.isAxiosError(err)){
                 if(err.response){
-                    if(err.response.status===400 || err.response.status===404 || err.response.status===409){
+                    if(err.response.status===400 || err.response.status===404 
+                        || err.response.status===409 || err.response.status===429
+                        || err.response.status===403){
                         setRequestStatus({type:'error', message:err.response.data.message})
+                    }else{
+                        setRequestStatus({type:'error', message:`There was an error sending the friend request.`})
                     }
                 }else{
                     setRequestStatus({type:'error', message:`An unknown error occurred. Please try again later.`})

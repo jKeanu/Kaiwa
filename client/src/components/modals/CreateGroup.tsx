@@ -68,14 +68,14 @@ const CreateGroupModal:React.FC<CreateGroup>=({currUserId, setIsDisabled, setMod
                 setModalVisible(false)
             }
         }catch(err:unknown){
-            if (axios.isAxiosError(err)){
-                if(err.response?.status===400 || err.response?.status === 409){
+            if (axios.isAxiosError(err) && err.response){
+                if(err.response.status===400){
                     if (err.response.data.message.split('. ').length>1){
                         setCreateGroupErr({err:true, type:'createErr', message:err.response.data.message.split('. ')[1]})
                     }else{
                         setCreateGroupErr({err:true, type:'createErr', message:err.response.data.message})
                     }
-                }else if(err.response?.status===429){
+                }else if(err.response.status===429){
                     setCreateGroupErr({err:true, type:'createErr', message:'Too many group creation detected, please try again later.'})
                 }
                 else{

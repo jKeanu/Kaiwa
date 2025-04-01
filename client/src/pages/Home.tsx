@@ -9,10 +9,11 @@ import {
     Friend,
     FriendReq, SentReq} from '../types/friendTypes'
 import { 
-    Channel, ChannelDataStatus, 
+    Channel, 
     LastMessageUpdate, 
     ChannelMessagesStatus, ChannelAction, 
-    ActionType } from '../types/channelTypes'
+    ActionType, 
+    CurrentChannel} from '../types/channelTypes'
 import { NoticeModalSettings } from '../types/modalTypes'
 import HomeSection from '../components/HomeSection'
 import { getCurrUserFetcher } from '../api/currentUser'
@@ -213,13 +214,13 @@ const HomePage:React.FC = () => {
                     channelsDispatch({type:ActionType.NewMessage, payload:{location:location.pathname,
                     newMessageInfo:data, currUserId:userData._id}})
                     if(location.pathname !== `/@me/channels/${data.channelNumber}`){
-                        mutate(`api/v1/channels/${data.channelNumber}`, (currChannelCachedData: ChannelDataStatus | undefined)=>{
+                        mutate(`api/v1/channels/${data.channelNumber}`, (currChannelCachedData: CurrentChannel | undefined)=>{
                             if(!currChannelCachedData){
                                 return 
                             }
-                            const updateChannel = {...currChannelCachedData.channel}
+                            const updateChannel = {...currChannelCachedData}
                             updateChannel.seen = data.seen
-                            return {status:currChannelCachedData.status, channel:updateChannel}
+                            return updateChannel
                         }, false)
                         mutate(`api/v1/channels/${data.channelNumber}/messages`, (prevMessagesDataCache:ChannelMessagesStatus|undefined)=>{
                             if(!prevMessagesDataCache){

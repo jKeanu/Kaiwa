@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios"
 import { ChangeLeader } from "../../types/groupTypes"
-import { ChannelDataStatus } from "../../types/channelTypes"
+import { CurrentChannel } from "../../types/channelTypes"
 import { mutate } from "swr"
 import { useState } from "react"
 import { useEffect } from "react"
@@ -21,13 +21,13 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({channelId, handleCloseButton, s
             const res:AxiosResponse<{status:string}> = await changeGroupLeader(channelId, memberId)
             if(res.data.status==="success"){
                 if(socket){
-                    mutate(`api/v1/channels/${channelNumber}`, (prevChannelDataStatus:undefined|ChannelDataStatus)=>{
-                        if(!prevChannelDataStatus){
+                    mutate(`api/v1/channels/${channelNumber}`, (cachedChannelData:undefined|CurrentChannel)=>{
+                        if(!cachedChannelData){
                             return
                         }
-                        const updateChannel = {...prevChannelDataStatus.channel}
+                        const updateChannel = {...cachedChannelData}
                         updateChannel.groupLeader = memberId
-                        return {status:prevChannelDataStatus.status, channel:updateChannel}
+                        return updateChannel
                     }, false)
                     socket.emit("group_channel_leader_change", {memberId, channelNumber})
                 }
