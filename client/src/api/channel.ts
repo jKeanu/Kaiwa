@@ -9,7 +9,6 @@ export const channelFetcher = async (endpoint: string):Promise<ChannelDataStatus
 
 export const messageFetcher = async (endpoint: string, limit: number, skip: number)
     :Promise<ChannelMessagesStatus> => {
-
     const response = await axiosInstance.get(`/${endpoint}?limit=${limit}&skip=${skip}`)
     return response.data
 }

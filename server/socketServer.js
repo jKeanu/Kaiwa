@@ -1,6 +1,4 @@
-import jwt from 'jsonwebtoken';
 import { Server } from 'socket.io';
-import { promisify } from 'util';
 import User from './models/userModel.js';
 import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';

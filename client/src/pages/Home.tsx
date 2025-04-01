@@ -1,95 +1,33 @@
-import React, {useState, useEffect, useMemo, useCallback, useReducer} from 'react'
+import React, {useState, useEffect, useCallback, useReducer} from 'react'
 import {Routes, Route, useNavigate, useLocation, Navigate} from 'react-router-dom'
 import {io, Socket} from 'socket.io-client'
 import useSWR, {useSWRConfig} from "swr"
 import LeftSection from '../components/LeftSection'
 import ChannelSection from '../components/ChannelSection'
-import { User, UserDataStatus, UserStatusUpdate } from '../types/userTypes'
+import { User, UserDataStatus } from '../types/userTypes'
 import { 
-    Friend, FriendDetails, 
-    FriendReq, SentReq, 
-    FriendRequestAccepted, 
-    FIdChannelInfo } from '../types/friendTypes'
+    Friend,
+    FriendReq, SentReq} from '../types/friendTypes'
 import { 
     Channel, ChannelDataStatus, 
-    ChannelMemberUpdate, LastMessageUpdate, 
+    LastMessageUpdate, 
     ChannelMessagesStatus, ChannelAction, 
     ActionType } from '../types/channelTypes'
 import { NoticeModalSettings } from '../types/modalTypes'
-import { MemberUpdateInfo } from '../types/groupTypes'
 import HomeSection from '../components/HomeSection'
 import { getCurrUserFetcher } from '../api/currentUser'
 import axios from 'axios'
 import NoticeModal from '../components/modals/Notice'
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context'
 import LoadingScreen from '../components/loadings/LoadingScreen'
+import useFriendInfo from '../hooks/useFriendInfo'
+import useChannelInfo from '../hooks/useChannelInfo'
+import channelReducer from '../utils/channelReducer'
+import useFriendStatusUpdate from '../hooks/liveUpdates/useFriendStatusUpdate'
+import useChannelUpdate from '../hooks/liveUpdates/useChannelUpdate'
+import useFriendUpdate from '../hooks/liveUpdates/useFriendUpdate'
+import useGroupUpdate from '../hooks/liveUpdates/useGroupUpdate'
 
-
-function sortChannels(channels:Channel[]):Channel[]{
-    return channels.sort((a, b) => {
-        const dateA = new Date(a.lastMessage).getTime() 
-        const dateB = new Date(b.lastMessage).getTime() 
-        return dateB - dateA; 
-    })
-}
-
-function channelReducer(state:Channel[] | [], action:ChannelAction){
-    switch (action.type){
-        case ActionType.InitialFetch:
-            return action.payload
-        case ActionType.Seen: {
-            const channels = [...state].map(channel => {
-                if (channel._id === action.payload.channelId && !channel.seen.includes(action.payload.currUserId)) {
-                    // Create a new object for the changed channel
-                    const currChannel = {...channel}
-                    currChannel.seen.push(action.payload.currUserId)
-                    return currChannel
-                }
-                return channel; // Return the original channel object if no change is needed
-            });
-            return channels;
-        }
-        case ActionType.NewChannel:{
-            const updateChannels = [...state]
-            updateChannels.unshift(action.payload.data)
-            return updateChannels
-        }
-        case ActionType.DeleteChannel:{
-            const updateChannels = [...state]
-            return updateChannels.filter(channel=>channel._id!==action.payload.channelId)
-        }
-        case ActionType.NewMessage:{
-            const {channelNumber, channelId, seen, newTime, newFormattedTime} = action.payload.newMessageInfo
-            const currChannels = [...state].map(channel=>{
-                if(channel._id ===channelId){
-                    const currChannel = {...channel}
-                    if(action.payload.location === `/@me/channels/${channelNumber}`){
-                        currChannel.seen.push(action.payload.currUserId.toString())
-                    }else{
-                        currChannel.seen = [...seen]
-                    }
-                    currChannel.lastMessage = newTime
-                    if(newFormattedTime){
-                        currChannel.formattedLastMessage = newFormattedTime
-                    }
-                    return {...currChannel}
-                }
-                return channel
-            })
-            return sortChannels(currChannels)
-        }
-        case ActionType.NewMember:{
-            const updateChannels = [...state]
-            const currChannel = updateChannels.find(channel=>channel.channelNumber===action.payload.channelNumber)
-            if(currChannel){
-                currChannel.lastMessage = action.payload.newTime
-            }
-            return sortChannels(updateChannels)
-        }
-        default:
-            return state
-    }   
-}
 
 const HomePage:React.FC = () => {
         //We use this to navigate from pages to pages
@@ -112,42 +50,47 @@ const HomePage:React.FC = () => {
         const [isOnline, setIsOnline] = useState(true)
         //Message Limit
         const [messageLimit, setMessageLimit] = useState<number>(0)
-        
         const {mutate} = useSWRConfig()
-
         const [channels, channelsDispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(channelReducer, [])
-
         const location = useLocation()
-
         const userCacheKey = 'api/v1/users/me'
 
-        const friendChannelIds = useMemo(()=>{
-            return [...friendChannels].map(friendChannel => friendChannel.channel._id)
-        }, [friendChannels])
-        
-        const myFriends:FriendDetails[] = useMemo(()=>{
-            return [...friendChannels].map(friend=>friend.friend)
-        }, [friendChannels])
+        //Custom hooks
+        const {friendChannelIds, myFriends, fIdAndChannelInfos} = useFriendInfo(friendChannels)
+        const {channelIds, channelNumberAndIds} = useChannelInfo(channels)
+        //Live updates
+        useChannelUpdate(socket, channelsDispatch)
+        useFriendStatusUpdate(socket, friendChannelIds, setFriendChannels)
+        useGroupUpdate(socket, channelsDispatch, setNoticeModal)
 
-        const fIdAndChannelInfos:FIdChannelInfo[] = useMemo(()=>{
-            return [...friendChannels].map(friend=>{
-                return {friendId:friend.friend._id, channelNumber:friend.channel.channelNumber, channelId:friend.channel._id}
+
+        //We need this function specifically when we acccept a friend request, or someone accepted ours,
+        //to create a new channel
+        const handleNewFriendChannel = useCallback((friendInfo:Friend):void=>{
+            const convertChannel:Channel = {
+                channelName:friendInfo.friend.displayName,
+                channelNumber: friendInfo.channel.channelNumber,
+                channelType: friendInfo.channel.channelType,
+                id: friendInfo.channel.id,
+                _id: friendInfo.channel._id,
+                lastMessage: friendInfo.channel.lastMessage,
+                photo: friendInfo.friend.photo,
+                photoUrl: friendInfo.friend.photoUrl,
+                formattedLastMessage: friendInfo.channel.formattedLastMessage,
+                seen: friendInfo.channel.seen
+            }
+            channelsDispatch({type:ActionType.NewChannel, payload:{data:convertChannel}})
+            setFriendChannels(prevFriendChannels=>{
+                return [...prevFriendChannels, friendInfo]
             })
-        }, [friendChannels])
+        }, [])
 
-        //join rooms based on the channel id, so when there's an update in the channel
-        //we will be notified
-        const channelIds:string[] = useMemo(()=>{
-            return [...channels].map(channel => channel._id)
-        }, [channels])
+        useFriendUpdate(socket, sentReqs, 
+            setSentReqs, handleNewFriendChannel, 
+            setFriendReqs, channelsDispatch, 
+            setFriendChannels, setNoticeModal)
 
-        const channelNumberAndIds:{channelNumber:number, channelId:string}[] = useMemo(()=>{
-            return [...channels].map(channel => {
-                return {channelNumber:channel.channelNumber, channelId:channel._id}
-            })
-        }, [channels])
 
-    
         useEffect(() => {
             const url = import.meta.env.MODE==='production'? import.meta.env.VITE_API_URL_PROD:import.meta.env.VITE_API_URL_DEV
             const socketConn = io(url, {withCredentials: true});
@@ -233,28 +176,7 @@ const HomePage:React.FC = () => {
                 }
                 setIsOnline(false)
             }
-        }, [currUserDataError, navigate] )
-
-        //We need this function specifically when we acccept a friend request, or someone accepted ours,
-        //to create a new channel
-        const handleNewFriendChannel = useCallback((friendInfo:Friend):void=>{
-            const convertChannel:Channel = {
-                channelName:friendInfo.friend.displayName,
-                channelNumber: friendInfo.channel.channelNumber,
-                channelType: friendInfo.channel.channelType,
-                id: friendInfo.channel.id,
-                _id: friendInfo.channel._id,
-                lastMessage: friendInfo.channel.lastMessage,
-                photo: friendInfo.friend.photo,
-                photoUrl: friendInfo.friend.photoUrl,
-                formattedLastMessage: friendInfo.channel.formattedLastMessage,
-                seen: friendInfo.channel.seen
-            }
-            channelsDispatch({type:ActionType.NewChannel, payload:{data:convertChannel}})
-            setFriendChannels(prevFriendChannels=>{
-                return [...prevFriendChannels, friendInfo]
-            })
-        }, [])
+        }, [currUserDataError, navigate])
         
         //When we remove a friend from a friend list, or someone did remove us.
         const handleFriendChannelDelete = useCallback((channelId:string):void=>{
@@ -283,46 +205,6 @@ const HomePage:React.FC = () => {
             }
         }, [channels, socket, channelIds])
 
-        //New Friend channel
-        useEffect(()=>{
-            if(socket){
-                const handleRequestAccepted = (data:FriendRequestAccepted)=>{
-                    const newFriendInfo = [...sentReqs].find(sentReq=>sentReq.friend._id===data.newFriendId)
-                    if(newFriendInfo){
-                        const newFriendChannel:Friend = {
-                            channel:{...data.newChannelInfo},
-                            friend:{
-                                ...newFriendInfo.friend
-                            },
-                            _id:newFriendInfo._id,
-                            status:"Friend"
-                        }
-                        handleNewFriendChannel(newFriendChannel)
-                        setSentReqs(prevSentReqs=>{
-                            return [...prevSentReqs].filter(sentReqs=>sentReqs.friend._id!==data.newFriendId)
-                        })
-                    }}
-                socket.on('friend_request_accepted', handleRequestAccepted)
-                const cleanup = ():void=>{
-                    socket.removeListener('friend_request_accepted', handleRequestAccepted)
-                }
-                return cleanup
-            }
-        }, [socket, sentReqs, handleNewFriendChannel])
-
-        //When someone declined your friend request
-        useEffect(()=>{
-            if(socket){
-                const handleRequestDeclined = (data:{userId:string}):void=>{
-                    setSentReqs(prevSentReqs=>[...prevSentReqs].filter(sentReq=>sentReq.friend._id!==data.userId))
-                }
-                socket.on("friend_request_declined", handleRequestDeclined)
-                const cleanup = ():void=>{
-                    socket.removeListener('friend_request_declined', handleRequestDeclined)
-                }
-                return cleanup
-            }
-        }, [sentReqs, socket])
 
         //If someone sends a message on a channel, this updates the order of the channel list
         useEffect(()=>{
@@ -364,174 +246,6 @@ const HomePage:React.FC = () => {
             //even though the url changes (the location would be similar to its initial value always)
         }, [socket, location, userData, mutate])
 
-        //This updates when a member left or joined the channel that you are part of
-        useEffect(()=>{
-            if(socket){
-                const handleChannelMemberUpdate = (data:ChannelMemberUpdate):void=>{
-                    mutate(`api/v1/channels/${data.channelNumber}`, (channelDataCache:ChannelDataStatus|undefined)=>{
-                        if(!channelDataCache){
-                            return undefined
-                        }
-                        if(data.type==='Joined'){
-                            //Update the channels when someone joined the channel
-                            const updateChannelDataCache = {...channelDataCache.channel}
-                            updateChannelDataCache.members = [...updateChannelDataCache.members, data.user]
-                            return {status:channelDataCache.status, channel:updateChannelDataCache}
-                        }else if(data.type==='Left'){
-                            const updateChannelDataCache = {...channelDataCache.channel}
-                            updateChannelDataCache.members = [...updateChannelDataCache.members].filter(member=>member._id!==data.user._id)
-                            return {status:channelDataCache.status, channel:updateChannelDataCache}
-                        }
-                    })
-                    if(data.type==='Joined'){
-                        //update the channels when someone joined the channel
-                        channelsDispatch({type:ActionType.NewMember, payload:{channelNumber:data.channelNumber, newTime:data.newTime}})
-                    }
-                }
-                socket.on(`channel_member_update`, handleChannelMemberUpdate)
-                const cleanup = ():void  =>{
-                    socket.removeListener('channel_member_update', handleChannelMemberUpdate);
-                }
-                return cleanup
-            }
-        }, [socket, mutate])
-
-        //This executed when a you were invited to an already existing group channel
-        useEffect(()=>{
-            if(socket){
-                const groupChannelInvite = (newGroupChannel:Channel)=>{
-                    channelsDispatch({type:ActionType.NewChannel, payload:{data:newGroupChannel}})
-                }
-                socket.on('invited_to_group', groupChannelInvite)
-                const cleanup = ():void=>{
-                    socket.removeListener('invited_to_group', groupChannelInvite)
-                }
-                return cleanup
-            }
-        }, [socket])
-
-
-        useEffect(()=>{
-            if(socket){
-                const handleChannelMemberInfoUpdate = (data:MemberUpdateInfo) =>{
-                    mutate(`api/v1/channels/${data.channelNumber}`, (ChannelCachedData: ChannelDataStatus | undefined)=>{
-                        if(!ChannelCachedData){
-                            return
-                        }
-                        const currentChannel = {...ChannelCachedData.channel}
-                        const updateMembers = currentChannel.members.map(member=>{
-                            if(member._id!==data.updatedUser._id){
-                                return member
-                            }else{
-                                return  {...member, ...data.updatedUser}
-                            }
-                        })
-                        currentChannel.members = updateMembers
-                        return {status:ChannelCachedData.status, channel: currentChannel}
-                    })
-                }
-                socket.on("channel-member-update", handleChannelMemberInfoUpdate)
-            }
-        }, [socket, mutate])
-
-        //When a friend or a member of the group you're part of went online
-        useEffect(()=>{
-            if(socket){
-                const handleUserOnlineStatus = (data:UserStatusUpdate):void=>{
-                    mutate(`api/v1/channels/${data.channelNumber}`, (channelDataCache:ChannelDataStatus|undefined)=>{
-                        if(!channelDataCache){
-                            return
-                        }
-                        const updateChannelDataCache = {...channelDataCache.channel}
-                        const channelMembers = updateChannelDataCache.members
-                        const channelMemberIndex = updateChannelDataCache.members.findIndex(member=>member._id===data.userId)
-                        //update user status to online
-                        channelMembers[channelMemberIndex] = {...channelMembers[channelMemberIndex], status:'Online'}
-                        return {status:channelDataCache.status, channel:updateChannelDataCache}
-                    })
-                    //check if the user who went online is also your friend based on the friend channel id
-                    if(data.type==='Friend'){
-                        const friendChannelId = friendChannelIds.find(friendChannelId => friendChannelId === data.channelId)
-                        if(friendChannelId){
-                            setFriendChannels(prevFriendChannels=>{
-                                const updateFriendChannel = [...prevFriendChannels]
-                                const friendIndex = updateFriendChannel
-                                    .findIndex(friendchannel=>friendchannel.channel._id===friendChannelId)
-                                updateFriendChannel[friendIndex].friend.status = 'Online'
-                                return updateFriendChannel
-                            })
-                        }
-                    }
-                }
-                socket.on('user_status_update_online', handleUserOnlineStatus)
-                const cleanup =():void =>{
-                    socket.removeListener('user_status_update_online', handleUserOnlineStatus);
-                }
-                return cleanup
-        }},[socket, friendChannelIds, mutate])
-
-        //When a friend or a member of the group you're part of went offline
-        useEffect(()=>{
-            if(socket){
-                const handleUserOfflineStatus = (data:UserStatusUpdate):void=>{
-                    mutate(`api/v1/channels/${data.channelNumber}`, (channelDataCache:ChannelDataStatus|undefined)=>{
-                        if(!channelDataCache){
-                            return undefined
-                        }
-                        const updateChannelDataCache = {...channelDataCache.channel}
-                        const channelMembers = updateChannelDataCache.members
-                        const channelMemberIndex = updateChannelDataCache.members.findIndex(member=>member._id===data.userId)
-                        //update user status to online
-                        channelMembers[channelMemberIndex] = {...channelMembers[channelMemberIndex], status:'Offline'}
-                        return {status:channelDataCache.status, channel:updateChannelDataCache}
-                    })
-                    if(data.type==='Friend'){
-                        const friendChannelId = friendChannelIds.find(friendChannelId => friendChannelId === data.channelId)
-                        if(friendChannelId){
-                            setFriendChannels(prevFriendChannels=>{
-                                const updateFriendChannel = [...prevFriendChannels]
-                                const friendIndex = updateFriendChannel
-                                    .findIndex(friendchannel=>friendchannel.channel._id===friendChannelId)
-                                updateFriendChannel[friendIndex].friend.status = 'Offline'
-                                return updateFriendChannel
-                            })
-                        }
-                    }
-                }
-                socket.on('user_status_update_offline', handleUserOfflineStatus)
-                const cleanup =():void =>{
-                    socket.removeListener('user_status_update_offline', handleUserOfflineStatus);
-                }
-                return cleanup
-        }},[socket, friendChannelIds, mutate])
-
-        //When someone added you as a friend
-        useEffect(()=>{
-            if(socket){
-                const handleFriendRequest = (data:FriendReq)=>{
-                    setFriendReqs(prevUserReqs=> [...prevUserReqs, data])
-                }
-                socket.on('receive-friend-request', handleFriendRequest)
-                const cleanup = ():void=>{
-                    socket.removeListener('receive-friend-request', handleFriendRequest)
-                }
-                return cleanup
-            }
-        }, [socket])
-
-        //When someone in your friends included you in a new group
-        useEffect(()=>{
-            if(socket){
-                const handleNewGroupChannel = (data:Channel)=>{
-                    channelsDispatch({type:ActionType.NewChannel, payload:{data:data}})
-                }
-                socket.on('new_group_channel', handleNewGroupChannel)
-                const cleanup=():void=>{
-                    socket.removeListener('new_group_channel', handleNewGroupChannel)
-                }
-                return cleanup
-            }
-        }, [socket])
 
         const handleModalConfirm = (e:React.MouseEvent<HTMLButtonElement>)=>{
             e.preventDefault()
@@ -546,63 +260,7 @@ const HomePage:React.FC = () => {
             }
         }
 
-        //This executes when the group leader of a group channel deleted the group channel
-        useEffect(()=>{
-            if(socket){
-                const handleGroupDeletion = (data:{channelNumber:number, channelId:string}):void=>{
-                    if(location.pathname === `/@me/channels/${data.channelNumber}`){
-                        navigate('/@me')
-                        setNoticeModal({isOpen:true, channelId:data.channelId, type:'Group'})
-                    }else{
-                        channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:data.channelId}})
-                    }
-                }
-                socket.on("delete_group_channel", handleGroupDeletion)
-                const cleanup=():void=>{
-                    socket.removeListener('delete_group_channel', handleGroupDeletion)
-                }
-                return cleanup
-            }
-        }, [socket, location, navigate])
-
-        //This executes when you have been unfriended by one of your friends
-        useEffect(()=>{
-            if(socket){
-                const handleFriendDeletion = (data:{channelNumber:number, channelId:string}):void=>{
-                    if(location.pathname === `/@me/channels/${data.channelNumber}`){
-                        navigate('/@me')
-                        setNoticeModal({isOpen:true, channelId:data.channelId, type:'Friend'})
-                    }else{
-                        channelsDispatch({type:ActionType.DeleteChannel, payload:{channelId:data.channelId}})
-                        setFriendChannels(prevFriendChannels=> [...prevFriendChannels]
-                            .filter(channel=>channel.channel._id!==data.channelId))
-                    }
-                }
-                socket.on("delete_friend_channel", handleFriendDeletion)
-                const cleanup=():void=>{
-                    socket.removeListener('delete_friend_channel', handleFriendDeletion)
-                }
-                return cleanup
-            }
-        }, [socket, location, navigate])
-
-        //When someone assigned you as a new leader of a group channel
-        useEffect(()=>{
-            if(socket){
-                socket.on("new_group_leader", (data:{channelNumber:number, newLeaderId:string}):void=>{
-                    mutate(`api/v1/channels/${data.channelNumber}`, (prevChannelDataStatus:ChannelDataStatus|undefined)=>{
-                        if(!prevChannelDataStatus){
-                            return
-                        }
-                        const updateChannelData = {...prevChannelDataStatus.channel}
-                        updateChannelData.groupLeader = data.newLeaderId
-                        return {status:prevChannelDataStatus.status, channel:updateChannelData}
-                    })
-                })
-            }
-        }, [socket, mutate])
-
-        
+ 
         const formatToTodayIfCurrentDate = useCallback((dateStr: string): string => {
             const currentDate = new Date();
             const messageDate = new Date(dateStr);

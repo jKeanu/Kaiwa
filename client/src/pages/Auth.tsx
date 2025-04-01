@@ -14,7 +14,7 @@ const AuthenticationPage = () => {
 
     useEffect(()=>{
         if(isAuthenticated){
-            navigate('/@me')
+            navigate('/@me', { replace: true })
         }
     }, [isAuthenticated, navigate])
 
