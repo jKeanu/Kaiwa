@@ -92,7 +92,8 @@ export const logout = catchAsync(async (req, res, _next)=>{
   res.clearCookie('jwt', {
     httpOnly: true, // Ensures the cookie is only accessible via HTTP(S), not JavaScript
     sameSite: 'none', //or Strict
-    secure: true
+    secure: true,
+    domain: process.env.NODE_ENV === 'production'? process.env.PERMIT_COOKIE_DOMAIN : undefined
   });
   res.status(200).json({
     status:"success"
