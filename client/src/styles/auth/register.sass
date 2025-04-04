@@ -1,5 +1,5 @@
 @use '../variable' as variables
-@use "../mixin" as mixin   
+@use "../mixin" as mixins   
 
 @mixin register-page($input-width, $register-container-w, $register-container-h, $button-width, $header-size-mult)
     @if $register-container-w == 100vw and $register-container-h == 100vh
@@ -47,7 +47,7 @@
             flex-direction: column
             align-items: center
             .input-container
-                @include mixin.input($w: $input-width)
+                @include mixins.input($w: $input-width)
             button
                 border-radius: 4px
                 background-color: #37404d
@@ -67,7 +67,7 @@
                 &:hover
                     background-color: transparent
                 .register-loading
-                    @include mixin.loading(0, 30px)
+                    @include mixins.loading(0, 30px)
     .already-have-an-account-text
         color: white
         font-size: 0.6rem

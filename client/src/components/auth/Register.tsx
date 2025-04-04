@@ -39,7 +39,6 @@ const RegisterPage:React.FC<{isError:boolean}>=({isError:authenticationError})=>
             if (res.data.status === "success") {
                 navigate('/@me')
             }
-            setIsLoading(false)
         } catch (error: unknown) { 
             if (axios.isAxiosError(error)) { // Type guard for AxiosError
                 // Now you can safely assume error is of type AxiosError
@@ -67,6 +66,7 @@ const RegisterPage:React.FC<{isError:boolean}>=({isError:authenticationError})=>
             } else {
                 setErrorMessage({type:'other', message:'An unknown error occurred. Please try again later.'})
             }
+        }finally{
             setIsLoading(false)
         }
     };

@@ -10,6 +10,7 @@ const ResetPassword:React.FC<{isError:boolean}>=({isError:authenticationError})=
     const {resetPasswordToken} = useParams()
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [containerVisible, setContainerVisible] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
 
     useEffect(()=>{
@@ -34,6 +35,7 @@ const ResetPassword:React.FC<{isError:boolean}>=({isError:authenticationError})=
     const handleSubmit = async (e:React.FormEvent<HTMLFormElement>)=>{
         e.preventDefault()
         if(resetPasswordToken){
+            setIsLoading(true)
             try{
                 const res:AxiosResponse<{status:string}> = await resetPassword(resetPasswordToken, resetPassForm)
                 if(res.data.status==='success'){
@@ -53,13 +55,15 @@ const ResetPassword:React.FC<{isError:boolean}>=({isError:authenticationError})=
                             setErrorMessage('There was an error changing the password.')
                         }
                     }else if(err.response?.status===429){
-                        setErrorMessage('Too many password change attempts were detected, try again later.')
+                        setErrorMessage('Too many change password attempts.')
                     }else{
                         setErrorMessage('There was an error changing the password.')
                     }
                 }else{
                     setErrorMessage('There was an error changing the password.')
                 }
+            }finally{
+                setIsLoading(false)
             }
         }
     }
@@ -85,7 +89,9 @@ const ResetPassword:React.FC<{isError:boolean}>=({isError:authenticationError})=
                 {errorMessage&&
                 <span className='input-error-message' id='input-error-message'>{errorMessage}</span>}
             </div>
-            <button type="submit">Change Password</button>
+            <button type="submit" disabled={isLoading||authenticationError}>
+                {isLoading?<div className="reset-password-loading"></div>:'Change Password'}
+            </button>
         </form>
     </div>
     )

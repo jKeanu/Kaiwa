@@ -1,5 +1,5 @@
 @use "../variable" as variables 
-@use "../mixin" as mixin
+@use "../mixin" as mixins
 
 @mixin login-page($input-width, $login-container-w, $login-container-h, $button-width, $header-size-mult)
     @if $login-container-w == 100vw and $login-container-h == 100vh
@@ -46,7 +46,7 @@
             flex-direction: column
             align-items: center
             .input-container
-                @include mixin.input($w: $input-width)
+                @include mixins.input($w: $input-width)
             .login-password-input-container
                 .forgot-password-button
                     position: absolute
@@ -63,7 +63,7 @@
                     &:hover
                         text-decoration: underline
                     .forgot-password-loading
-                        @include mixin.loading(10px, 15px)
+                        @include mixins.loading(10px, 15px)
             button
                 background-color: #37404d
                 border-radius: 4px
@@ -83,7 +83,7 @@
                 &:hover
                     background-color: transparent
                 .login-loading
-                    @include mixin.loading(0px, 30px)
+                    @include mixins.loading(0px, 30px)
     .need-an-account-text
         color: white
         font-size: 0.6rem

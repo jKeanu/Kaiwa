@@ -50,8 +50,9 @@ const LoginPage:React.FC<{isError:boolean}>=({isError:authenticationError})=> {
             }else {
                 setErrorMessage('An unknown error occurred.')
             }
+        }finally{
+            setLoading({isLoading:false, type:''})
         }
-        setLoading({isLoading:false, type:''})
     };
 
     const handleForgotPassword = async (e:React.MouseEvent<HTMLButtonElement>):Promise<void>=>{
