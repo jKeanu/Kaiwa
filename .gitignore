@@ -15,6 +15,6 @@ node_modules/
 
 /server/*.log
 
-todo.txt
+*.txt
 
 /cra
