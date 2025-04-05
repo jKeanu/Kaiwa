@@ -6,15 +6,6 @@
     background-repeat: no-repeat
     background-size: cover
     background-position: top
-    @media (min-width: variables.$breakpoint-mobile + 1px)
-        width: 100vw
-        height: 100vh
-        @media (max-height: 600px)
-            height: 600px !important
-    @media (max-width: variables.$breakpoint-mobile)
-        height: 100vh
-        height: 100dvh
-        width: fit-content
     .auth-copy
         font-family: sans-serif
         align-content: center
@@ -26,3 +17,12 @@
         height: 35px
         font-size: 18px
         color: #f1f1f1
+    @media (min-width: variables.$breakpoint-mobile + 1px)
+        width: 100vw
+        height: 100vh
+        @media (max-height: 600px)
+            height: 600px !important
+    @media (max-width: variables.$breakpoint-mobile)
+        height: 100vh
+        height: 100dvh
+        width: 100vw
