@@ -1,19 +1,19 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto'
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
-    displayName:{
-        type:String,
-        required:[true, 'Must have a display name'],
-        maxlength:[10, 'Display Name must contain no more than 10 characters'],
-        minlength:[1, 'Please provide a display name']
+    displayName: {
+        type: String,
+        required: [true, 'Must have a display name'],
+        maxlength: [10, 'Display Name must contain no more than 10 characters'],
+        minlength: [1, 'Please provide a display name'],
     },
-    friendTag:{
-        type:String,
-        required:[true, 'Friend Tag is required'],
-        default: ()=>{
+    friendTag: {
+        type: String,
+        required: [true, 'Friend Tag is required'],
+        default: () => {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let friendID = '';
             for (let i = 0; i < 6; i++) {
@@ -21,144 +21,126 @@ const userSchema = new mongoose.Schema({
             }
             return friendID;
         },
-        validate:[
+        validate: [
             {
-                validator: function(value) {
+                validator: function (value) {
                     return /^[A-Z0-9]+$/.test(value); // Removed the 'i' flag
                 },
-                message: props => `${props.value} is not a valid friend tag.`
+                message: (props) => `${props.value} is not a valid friend tag.`,
             },
             {
                 // Ensure the length is exactly 6 characters
-                validator: function(value) {
+                validator: function (value) {
                     return value.length === 6;
                 },
-                message: 'Friend Tag must be exactly 6 characters.'
-            }
-
-        ]
+                message: 'Friend Tag must be exactly 6 characters.',
+            },
+        ],
     },
-    email:{
-        type:String,
-        unique:true,
+    email: {
+        type: String,
+        unique: true,
         required: [true, 'Please provide your email'],
         lowercase: true,
         validate: [validator.isEmail, 'Please provide a valid email'],
-        maxlength:[50, 'Email must contain no more than 50 characters'],
+        maxlength: [50, 'Email must contain no more than 50 characters'],
     },
-    photo:{
-        type:String,
-        default:'default.jpeg'
+    photo: {
+        type: String,
+        default: 'default.jpeg',
     },
-    password:{
-        type:String,
-        required:[true, 'Must have a password'],
-        minlength:[8, 'Password must contain at least 8 characters'],
-        select:false
-    },
-    passwordConfirm:{
-        type:String,
-        required:true,
-        validate:{
-            validator: function(val){
-                return val === this.password
-            },
-            message:'Confirm password is incorrect'
-        }
+    password: {
+        type: String,
+        required: [true, 'Must have a password'],
+        minlength: [8, 'Password must contain at least 8 characters'],
+        select: false,
     },
     friends: [
         {
             friend: {
                 type: mongoose.Schema.ObjectId,
                 ref: 'User',
-                index: true
+                index: true,
             },
             channel: {
                 type: mongoose.Schema.ObjectId,
                 ref: 'Channel',
-                required: [function() {
-                    return this.status === 'Friend';
-                }, 'A friend channel is required.']
+                required: [
+                    function () {
+                        return this.status === 'Friend';
+                    },
+                    'A friend channel is required.',
+                ],
             },
-            status:{
+            status: {
                 type: String,
-                enum: ['Pending', 'Friend', 'Sent']
-            }
-        }
+                enum: ['Pending', 'Friend', 'Sent'],
+            },
+        },
     ],
-    status:{
-        type:String,
+    status: {
+        type: String,
         default: 'Offline',
-        enum:['Online', 'Offline']
+        enum: ['Online', 'Offline'],
     },
-    groups:[{
+    groups: [
+        {
             type: mongoose.Schema.ObjectId,
-            ref: 'Channel'
-        }],
+            ref: 'Channel',
+        },
+    ],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
-})
-
+});
 
 //combination of friendTag and username has to be unique
-userSchema.index({friendTag:1, displayName:1}, {unique:true})
+userSchema.index({ friendTag: 1, displayName: 1 }, { unique: true });
 
 // pre-save middleware is executed after the validation step
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     //by default creating a new document is considered motified
     if (!this.isModified('password')) return next();
     // Hash the password with cost of 12
     this.password = await bcrypt.hash(this.password, 12);
-    // Delete passwordConfirm field
-    this.passwordConfirm = undefined;
     next();
 });
 
-userSchema.pre('save', function(next){
+userSchema.pre('save', function (next) {
     //if the file does not yet exists on the database, or its not modified, i.e you changed something that is not password,
-    //it would meet this condition 
-    if (!this.isModified('password')||this.isNew){
-        return next()
+    //it would meet this condition
+    if (!this.isModified('password') || this.isNew) {
+        return next();
     }
     //sometimes saving to the database is slower than issuing a token, so we need to minus it by 1sec (1000ms)
     this.passwordChangedAt = Date.now() - 1000;
-    next()
-})
+    next();
+});
 
-userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
+userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
     return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-userSchema.methods.changedPasswordAfter = function(TokenIssued){
+userSchema.methods.changedPasswordAfter = function (TokenIssued) {
     //this refers to the current document
-    if(this.passwordChangedAt){
+    if (this.passwordChangedAt) {
         //this expression is converting a JavaScript Date object into Unix timestamp
         //10 is the default val
-        const changedTimestamp = parseInt(this.passwordChangedAt.getTime() /1000, 10)
-        return TokenIssued < changedTimestamp
+        const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+        return TokenIssued < changedTimestamp;
     }
-    return false
-}
+    return false;
+};
 
-
-userSchema.methods.createPasswordResetToken = function(){
+userSchema.methods.createPasswordResetToken = function () {
     //32 number of characters
-    const resetToken =  crypto.randomBytes(32).toString('hex');
-    this.passwordResetToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     //10 * 60 * 1000 means 10 min, 1000(1s) * 10 * 60
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-    return resetToken
-}
+    return resetToken;
+};
 
-const User = mongoose.model('User', userSchema)
+const User = mongoose.model('User', userSchema);
 
-export default User
-
-
-
-
-
+export default User;

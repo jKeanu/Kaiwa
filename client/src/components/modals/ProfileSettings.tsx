@@ -43,11 +43,9 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                 if(socket){
                     socket.emit('user-profile-settings-change', {updatedUser:res.data.user, channelNumberAndIds})
                 }
+                setModal({active:false, type:''})
+                setModalVisible(true)
             }
-            setIsLoading(false)
-            setModal({active:false, type:''})
-            setIsDisabled(false)
-            setModalVisible(true)
         }catch(err:unknown){
             if(axios.isAxiosError(err) && err.response){
                 if(err.response.status===400){
@@ -67,21 +65,27 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
             }else{
                 setUserSettErr({err:true, message:'There was an error changing the user information.'})
             }  
+        }finally{
+            setIsLoading(false)
+            setIsDisabled(false) 
         }
-        setIsLoading(false)
-        setIsDisabled(false) 
     }
 
     const handleUserPasswordSubmit = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
         e.preventDefault()
+        if (userPassword.password !== userPassword.passwordConfirm){
+            return setUserSettErr({err:true, message: 'Confirm password is incorrect.'})
+        }
         setIsLoading(true)
         setIsDisabled(true)
         setUserSettErr({err:false, message:''})
         try{
-            const res:AxiosResponse<{status:string}>= await changeUserPassword(userPassword)
+            const res:AxiosResponse<{status:string}>= await changeUserPassword(
+                {currentPassword: userPassword.currentPassword, password:userPassword.password}
+            )
             if(res.data.status==='success'){
-                setIsDisabled(false)
-                window.location.href = '/login'
+                setModal({active:false, type:''})
+                setModalVisible(true)
             }
         }catch(err: unknown){
             if(axios.isAxiosError(err)){
@@ -98,13 +102,14 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                 }else if(err.response?.status===429){
                     setUserSettErr({err:true, message: 'Too many password change attempts, please try again later.'})
                 }else{
-                    setUserSettErr({err:true, message: 'There was an error changing the group settings.'})
+                    setUserSettErr({err:true, message: 'There was an error changing the password.'})
                 }
             }else{
-                setUserSettErr({err:true, message: 'There was an error changing the group settings.'})
+                setUserSettErr({err:true, message: 'There was an error changing the password.'})
             }
-            setIsDisabled(false)
+        }finally{
             setIsLoading(false)
+            setIsDisabled(false)
         }
     }
 
@@ -234,9 +239,6 @@ const ProfileSettingsModal:React.FC<ProfileSettings>=({currUserData, setModal, h
                         </div>}
                     </form>
                     <form className={`user-password-form ${currSetting==='userPassword'?'active':''} user-settings-form`} onSubmit={handleUserPasswordSubmit}>
-                        <div className="user-password-sett-notice">
-                            After a successful password change, you will be redirected to the login page.
-                        </div>
                         <div className="user-password-input-container">
                             <label className="user-setting-input-label" htmlFor="user-setting-currentPassword">
                                 Current Password

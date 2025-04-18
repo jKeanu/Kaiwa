@@ -28,6 +28,7 @@ import useFriendStatusUpdate from '../hooks/liveUpdates/useFriendStatusUpdate'
 import useChannelUpdate from '../hooks/liveUpdates/useChannelUpdate'
 import useFriendUpdate from '../hooks/liveUpdates/useFriendUpdate'
 import useGroupUpdate from '../hooks/liveUpdates/useGroupUpdate'
+import { verifyToken } from '../api/socket'
 
 
 const HomePage:React.FC = () => {
@@ -92,14 +93,35 @@ const HomePage:React.FC = () => {
             setFriendChannels, setNoticeModal)
 
 
-        useEffect(() => {
-            const url = import.meta.env.MODE==='production'? import.meta.env.VITE_API_URL_PROD:import.meta.env.VITE_API_URL_DEV
-            const socketConn = io(url, {withCredentials: true});
-            setSocket(socketConn);
-            return ()=>{
-                socketConn.disconnect()
-            }  
-        }, [])
+    useEffect(() => {
+        let socketConn: ReturnType<typeof io> | null = null;
+        const connectSocket = async () => {
+            try {
+                // Verify the first before connecting to the socket.
+                const resStatus = await verifyToken();
+                if (resStatus === 204) {
+                    const url = import.meta.env.MODE === 'production'
+                        ? import.meta.env.VITE_API_URL_PROD
+                        : import.meta.env.VITE_API_URL_DEV;
+                    socketConn = io(url, { withCredentials: true }); // Remove 'const' here
+                    setSocket(socketConn);
+                }
+            } catch(_err) {
+                setIsOnline(false)
+            }
+        }
+        connectSocket();
+        return () => {
+            if (socketConn) {
+                socketConn.disconnect();
+                setSocket((prevSocket)=>{
+                    if(prevSocket) prevSocket.disconnect()
+                    return undefined
+                })
+            }
+        };
+    }, []);
+
 
 
         useEffect(() => {
@@ -198,13 +220,13 @@ const HomePage:React.FC = () => {
         }, [userData, socket])
 
         useEffect(()=>{
-            if(channels&&socket){
+            if(channelIds&&socket){
                 socket.emit('channel_live_updates', channelIds)
                 return ()=>{
                     socket.emit('leave_channel_live_updates', channelIds)
                 }
             }
-        }, [channels, socket, channelIds])
+        }, [socket, channelIds])
 
 
         //If someone sends a message on a channel, this updates the order of the channel list

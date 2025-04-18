@@ -32,10 +32,15 @@ const RegisterPage:React.FC<{isError:boolean}>=({isError:authenticationError})=>
     //const handleRegister: (e: FormEvent<HTMLFormElement>) => Promise<void> = async (e) =>
     const handleRegister = async (e:React.FormEvent<HTMLFormElement>):Promise<void> => {
         e.preventDefault();
+        if (formData.passwordConfirm !== formData.password){
+            setErrorMessage({type:'password', message: 'Confirm password is incorrect.'})
+            return 
+        }
         setErrorMessage({type:'', message:''})
         setIsLoading(true)
         try {
-            const res:AxiosResponse<AuthStatus> = await registerUser(formData)
+            const {passwordConfirm: _passwordConfirm, ...submitData} = formData
+            const res:AxiosResponse<AuthStatus> = await registerUser(submitData)
             if (res.data.status === "success") {
                 navigate('/@me')
             }
@@ -61,9 +66,7 @@ const RegisterPage:React.FC<{isError:boolean}>=({isError:authenticationError})=>
                 }else{
                     setErrorMessage({type:'other', message:'An unknown error occurred. Please try again later.'})
                 }
-            } else if (error instanceof Error) {
-                setErrorMessage({type:'other', message:'An unknown error occurred. Please try again later.'})
-            } else {
+            }else {
                 setErrorMessage({type:'other', message:'An unknown error occurred. Please try again later.'})
             }
         }finally{

@@ -2,70 +2,38 @@ import express from 'express';
 import * as authController from '../controllers/authController.js';
 import * as userController from '../controllers/userController.js';
 import rateLimit from 'express-rate-limit';
-
+import verifyUserIdentity from '../middlewares/verifyUserIdentity.js';
 
 const router = express.Router();
 
 const getMeLimiter = rateLimit({
     max: 150,
-    windowMs: 1000*60*60*3
-})
-
-const loginLimiter = rateLimit({
-    max: 8,
-    windowMs: 60*30*1000,
-    message: 'Too many login attempts, please try again later.'
-})
-  
-const registerLimiter = rateLimit({
-    max: 3,
-    windowMs: 60*1000*60*2,
-    message: 'Too many registration attempts detected, please try again later.',
-    skipFailedRequests: true
-})
+    windowMs: 1000 * 60 * 60 * 3,
+});
 
 const userSettLimiter = rateLimit({
     limit: 3,
-    windowMs: 1000*60*60*12,
+    windowMs: 1000 * 60 * 60 * 12,
     message: 'Too many profile change attempts, please try again later.',
-    skipFailedRequests: true
-})
+    skipFailedRequests: true,
+});
 
 const passwordChangeLimiter = rateLimit({
     limit: 3,
-    windowMs: 1000*60*60*12,
+    windowMs: 1000 * 60 * 60 * 12,
     message: 'Too many profile change attempts, please try again later.',
-    skipFailedRequests: true
-})
+    skipFailedRequests: true,
+});
 
-const forgotPasswordLimiter = rateLimit({
-    limit: 3,
-    windowMs: 1000*60*60*12,
-    message: 'Too many forgot password attempts, please try again later.',
-    skipFailedRequests: true
-})
+router.use(verifyUserIdentity);
 
-const resetPasswordLimiter = rateLimit({
-    limit: 10,
-    windowMs: 1000*60*60*6,
-    message: 'Too many reset password attempts, please try again later.'
-})
-
-router.post('/register',  registerLimiter, authController.signup)
-router.post('/login', loginLimiter, authController.login)
-router.post('/logout', authController.logout)
-
-//Password reset
-router.post('/forgotPassword', forgotPasswordLimiter, authController.forgotPassword)
-router.patch('/resetPassword/:token', resetPasswordLimiter, authController.resetPassword)
-
-router.use(authController.protect);
-
-router.patch('/updateMe',
+router.patch(
+    '/updateMe',
     userSettLimiter,
     userController.uploadProfileImage,
     userController.resizeUserPhoto,
-    userController.updateUser);
+    userController.updateUser
+);
 
 router.patch('/changepassword', passwordChangeLimiter, authController.changePassword);
 router.get('/me', getMeLimiter, userController.getMe);

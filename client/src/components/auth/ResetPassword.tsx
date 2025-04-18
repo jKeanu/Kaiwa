@@ -35,9 +35,13 @@ const ResetPassword:React.FC<{isError:boolean}>=({isError:authenticationError})=
     const handleSubmit = async (e:React.FormEvent<HTMLFormElement>)=>{
         e.preventDefault()
         if(resetPasswordToken){
+            if(resetPassForm.password !== resetPassForm.passwordConfirm){
+                return setErrorMessage('Confirm password is incorrect.')
+            }
             setIsLoading(true)
             try{
-                const res:AxiosResponse<{status:string}> = await resetPassword(resetPasswordToken, resetPassForm)
+                const res:AxiosResponse<{status:string}> = await resetPassword(resetPasswordToken, 
+                    {password: resetPassForm.password})
                 if(res.data.status==='success'){
                     navigate('/@me')
                 }

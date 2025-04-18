@@ -136,7 +136,7 @@ const GroupSettingsModal:React.FC<GroupSettingsProps>=
                         Channel Name
                     </label>
                     <input id="channel-name-input" className="group-setting-input" value={groupFormData.channelName}
-                     onChange={handleChange} name="channelName"/>
+                     onChange={handleChange} name="channelName" maxLength={12}/>
                 </div>
                 <div className="group-setting-button-container">
                     <button className="group-setting-button" type="submit" disabled={isLoading}>

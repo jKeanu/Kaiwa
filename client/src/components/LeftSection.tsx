@@ -24,7 +24,7 @@ const LeftSection:React.FC<LeftSectionProps>=({
     const handleLogout = async () =>{
         try{
             const res = await logoutUser()
-            if(res.data.status==="success"){
+            if(res.status===204){
                 window.location.href = '/login'
             }
         }catch(_err){

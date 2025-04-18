@@ -9,7 +9,7 @@ A real-time chat app where users can message friends privately or in groups, cus
 **➤ https://kaiwachat.com**
 
 ## ✨ Features  
-- **🔐 JWT Authentication** – Secure login/register with token-based auth.  
+- **🔐 JWT Authentication** – Secure login/register with refresh token-based auth.  
 - **💬 Real-time messaging** – Instant updates via WebSockets (Socket.io).  
 - **👥 Friend System** – Add/remove friends, send requests.  
 - **🗨️ Group & Private Chats** – Create rooms or DM users.  

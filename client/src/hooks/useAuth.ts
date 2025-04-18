@@ -11,9 +11,9 @@ function useAuth() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const resData = await isLoggedIn()
+        const resStatus = await isLoggedIn()
         // If true, this means that the user is already logged in.
-        if (resData){
+        if (resStatus === 204){
           setIsAuthenticated(true)
         }   
       } catch (err) {

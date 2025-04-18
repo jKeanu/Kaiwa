@@ -8,7 +8,7 @@ export const getCurrUserFetcher = async(endpoint:string):Promise<UserDataStatus>
 }
 
 export const changeUserPassword = async (
-    passwordInfo:{currentPassword:string, password:string, passwordConfirm:string}):Promise<AxiosResponse<{status:string}>>=>{
+    passwordInfo:{currentPassword:string, password:string}):Promise<AxiosResponse<{status:string}>>=>{
         return axiosInstance.patch(`/api/v1/users/changepassword`, passwordInfo)  
     }
 

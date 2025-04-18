@@ -1,4 +1,4 @@
-import { AxiosResponse } from "axios"
+import { AxiosResponse, isAxiosError } from "axios"
 import { ChangeLeader } from "../../types/groupTypes"
 import { CurrentChannel } from "../../types/channelTypes"
 import { mutate } from "swr"
@@ -36,8 +36,17 @@ const ChangeLeaderModal:React.FC<ChangeLeader>=({channelId, handleCloseButton, s
                 setModalVisible(false)
                 setModalSettings({isOpen:false, ids:{channelId:'', memberId:''}, displayName:'', type:'', channelNumber:undefined})
             }
-        }catch{
-            setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
+        }catch(err){
+            if(isAxiosError(err)){
+                if(err.response && (err.response.status === 400 || err.response.status === 401)){
+                    setErrorMsg({isError:true, message:err.response.data.message})
+                }else{
+                    setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
+                }
+            }else{
+                setErrorMsg({isError:true, message:'An error occurred. Please try again later.'})
+            }
+        }finally{
             setLoading(false)
             setModalDisabled(false)
         }
