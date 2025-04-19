@@ -1,5 +1,5 @@
-const NotFound = () =>{
-    return(
+const NotFound = () => {
+    return (
         <div className="not-found-container">
             404 Not Found
             <span>
@@ -9,7 +9,7 @@ const NotFound = () =>{
                 </a>
             </span>
         </div>
-    )
-}
+    );
+};
 
-export default NotFound
+export default NotFound;

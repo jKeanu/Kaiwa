@@ -1,77 +1,112 @@
-import { ActionType } from "../../types/channelTypes"
-import { FriendDetails } from "../../types/friendTypes"
-import { InviteFriend } from "../../types/channelTypes"
-import { inviteFriendtoGroup } from "../../api/group"
-import { AxiosResponse } from "axios"
-import React, { useEffect } from "react"
-import { useState} from "react"
-import { useChannelCustomContext } from "../../context"
+import { ActionType } from '../../types/channelTypes';
+import { FriendDetails } from '../../types/friendTypes';
+import { InviteFriend } from '../../types/channelTypes';
+import { inviteFriendtoGroup } from '../../api/group';
+import { AxiosResponse } from 'axios';
+import { useEffect } from 'react';
+import { useState } from 'react';
+import { useChannelCustomContext } from '../../context';
 
-const InviteUserModal:React.FC<InviteFriend>=({
-        channelId, 
-        currChannelMembersId, 
-        socket, 
-        channelNumber,
-        handleCloseButton,
-        setModalDisabled})=>{
-    const [loadings, setLoadings] = useState<string[]>([])
-    const [error, setError] = useState<{isError:boolean, users:string[]}>({isError:false, users:[]})
-    const {friends, channelsDispatch, setModalVisible, modalVisible} = useChannelCustomContext()
+const InviteUserModal: React.FC<InviteFriend> = ({
+    channelId,
+    currChannelMembersId,
+    socket,
+    channelNumber,
+    handleCloseButton,
+    setModalDisabled,
+}) => {
+    const [loadings, setLoadings] = useState<string[]>([]);
+    const [error, setError] = useState<{ isError: boolean; users: string[] }>({
+        isError: false,
+        users: [],
+    });
+    const { friends, channelsDispatch, setModalVisible, modalVisible } = useChannelCustomContext();
 
+    useEffect(() => {
+        setModalVisible(true);
+    }, [setModalVisible]);
 
-    useEffect(()=>{
-        setModalVisible(true)
-    },[setModalVisible])
+    const isFriendInGroup: FriendDetails[] = friends.filter(
+        (friend) => !currChannelMembersId.includes(friend._id)
+    );
 
-    const isFriendInGroup:FriendDetails[] = friends.filter(friend => !currChannelMembersId.includes(friend._id))
-
-    const handleInvite = async (e:React.MouseEvent<HTMLButtonElement>, friend:FriendDetails):Promise<void> => {
-        e.preventDefault()
-        setModalDisabled(true)
-        setLoadings(prevLoadings=>[...prevLoadings, `${friend._id}`])
-        setError(prevError=>{
-            return {isError:false, users:[...prevError.users].filter(user=>user!==`${friend._id}`)}
-        })
-        try{
-            const newTime = Date.now()
-            const res:AxiosResponse<{status:string}> = await inviteFriendtoGroup(newTime, channelId, friend._id)
-            if(res.data.status === 'success'){
-                if(channelNumber){
-                    channelsDispatch({type: ActionType.NewMember, payload:{channelNumber:Number(channelNumber), newTime}})
+    const handleInvite = async (
+        e: React.MouseEvent<HTMLButtonElement>,
+        friend: FriendDetails
+    ): Promise<void> => {
+        e.preventDefault();
+        setModalDisabled(true);
+        setLoadings((prevLoadings) => [...prevLoadings, `${friend._id}`]);
+        setError((prevError) => {
+            return {
+                isError: false,
+                users: [...prevError.users].filter((user) => user !== `${friend._id}`),
+            };
+        });
+        try {
+            const newTime = Date.now();
+            const res: AxiosResponse<{ status: string }> = await inviteFriendtoGroup(
+                newTime,
+                channelId,
+                friend._id
+            );
+            if (res.data.status === 'success') {
+                if (channelNumber) {
+                    channelsDispatch({
+                        type: ActionType.NewMember,
+                        payload: { channelNumber: Number(channelNumber), newTime },
+                    });
                 }
-                if(socket && channelId && channelNumber){
-                    socket.emit('user_invite_success', {inviteUser:friend._id, channelId, newTime,channelNumber:Number(channelNumber)})
+                if (socket && channelId && channelNumber) {
+                    socket.emit('user_invite_success', {
+                        inviteUser: friend._id,
+                        channelId,
+                        newTime,
+                        channelNumber: Number(channelNumber),
+                    });
                 }
-                setTimeout(()=>{
-                    setLoadings(prevLoadings=>{
-                        return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)
-                    })
-                }, 150)
+                setTimeout(() => {
+                    setLoadings((prevLoadings) => {
+                        return [...prevLoadings].filter((loading) => loading !== `${friend._id}`);
+                    });
+                }, 150);
             }
+        } catch (_err) {
+            setError((prevError) => {
+                return { isError: true, users: [...prevError.users, `${friend._id}`] };
+            });
+            setLoadings((prevLoadings) => {
+                return [...prevLoadings].filter((loading) => loading !== `${friend._id}`);
+            });
         }
-        catch(_err){
-            setError(prevError=>{
-                return {isError:true, users:[...prevError.users, `${friend._id}`]}
-            })
-            setLoadings(prevLoadings=>{
-                return [...prevLoadings].filter(loading=>loading!==`${friend._id}`)
-            })
+    };
+
+    useEffect(() => {
+        if (loadings.length === 0) {
+            setModalDisabled(false);
         }
-    }
+    }, [loadings, setModalDisabled]);
 
-    useEffect(()=>{
-        if(loadings.length===0){
-            setModalDisabled(false)
-        }
-    }, [loadings, setModalDisabled])
-
-
-    return(
-        <div className={`invite-modal-container channel-modal ${modalVisible?"visible":""}`}>
+    return (
+        <div className={`invite-modal-container channel-modal ${modalVisible ? 'visible' : ''}`}>
             <div className="modal-x-button-container">
-                <button className='modal-x-button' onClick={handleCloseButton} disabled={loadings.length>0}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" strokeWidth="1" 
-                    strokeLinecap="round" strokeLinejoin="round" className="x-img">
+                <button
+                    className="modal-x-button"
+                    onClick={handleCloseButton}
+                    disabled={loadings.length > 0}
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#b9b9b9"
+                        strokeWidth="1"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="x-img"
+                    >
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
@@ -81,30 +116,39 @@ const InviteUserModal:React.FC<InviteFriend>=({
             <div className="modal-text">Invite your friend to the group.</div>
             <div className="invite-modal-friend-list">
                 <ul className="invite-friend-list-containter">
-                    {isFriendInGroup.map((friend, index)=>(
+                    {isFriendInGroup.map((friend, index) => (
                         <li key={index} className="invite-friend-info">
-                            <img src={`${friend.photo==='default.jpeg'?'/img/default.jpeg':friend.photoUrl}`}
-                            alt={`friend ${friend.displayName} profile photo`}/>
+                            <img
+                                src={`${friend.photo === 'default.jpeg' ? '/img/default.jpeg' : friend.photoUrl}`}
+                                alt={`friend ${friend.displayName} profile photo`}
+                            />
                             <div className="friend-invite-display-name">{friend.displayName}</div>
-                            <button className={`${error.users.includes(`${friend._id}`)?
-                            "friend-invite-button-err"
-                            :"friend-invite-button"}`} 
-                            disabled={loadings.includes(friend._id)} onClick={(e)=>handleInvite(e, friend)}>
-                                {loadings.includes(friend._id)?
-                                <div className="invite-user-loading"></div>
-                                :
-                                "Invite"}
+                            <button
+                                className={`${
+                                    error.users.includes(`${friend._id}`)
+                                        ? 'friend-invite-button-err'
+                                        : 'friend-invite-button'
+                                }`}
+                                disabled={loadings.includes(friend._id)}
+                                onClick={(e) => handleInvite(e, friend)}
+                            >
+                                {loadings.includes(friend._id) ? (
+                                    <div className="invite-user-loading"></div>
+                                ) : (
+                                    'Invite'
+                                )}
                             </button>
                         </li>
                     ))}
                 </ul>
-                {
-                    error.isError&&
-                    <div className="invite-user-err">An error occurred. Please try again later.</div>
-                }
+                {error.isError && (
+                    <div className="invite-user-err">
+                        An error occurred. Please try again later.
+                    </div>
+                )}
             </div>
         </div>
-    )
-}   
+    );
+};
 
-export default InviteUserModal
+export default InviteUserModal;

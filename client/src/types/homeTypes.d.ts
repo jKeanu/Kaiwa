@@ -1,7 +1,7 @@
-import { Friend, FriendReq } from "./friendTypes"
+import { Friend, FriendReq } from './friendTypes';
 
-export type HomeSectionProps={
-    isFriendsOpen: boolean
-    friendReqs:FriendReq[]
-    friendChannels:Friend[],
-}
+export type HomeSectionProps = {
+    isFriendsOpen: boolean;
+    friendReqs: FriendReq[];
+    friendChannels: Friend[];
+};

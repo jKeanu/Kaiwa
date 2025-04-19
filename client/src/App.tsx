@@ -1,8 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
-import HomePage from './pages/Home'
-import './styles/main.sass'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
+import HomePage from './pages/Home';
+import './styles/main.sass';
 import AuthenticationPage from './pages/Auth';
-//Import other components as needed
+
+Sentry.init({
+    dsn: import.meta.env.SENTRY_DNS,
+    debug: import.meta.env.MODE === 'development',
+});
 
 const App = () => {
     return (
@@ -10,7 +15,7 @@ const App = () => {
             <Routes>
                 <Route path="/@me/*" element={<HomePage />} />
                 <Route path="/*" element={<AuthenticationPage />} />
-                <Route path="/" element={<Navigate replace to="/login"/>} />
+                <Route path="/" element={<Navigate replace to="/login" />} />
             </Routes>
         </Router>
     );

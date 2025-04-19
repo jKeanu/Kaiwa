@@ -1,257 +1,249 @@
-import { useParams, useNavigate, Link } from "react-router-dom"
-import React, { useState, useEffect, useRef, useMemo} from 'react'
-import { acceptFriend, addFriend, declineFriend } from "../api/friend"
-import { channelFetcher, messageFetcher } from "../api/channel"
-import ReactTextareaAutosize from "react-textarea-autosize"
-import useSWR, {useSWRConfig} from "swr"
-import LeaveGroupModal from "./modals/LeaveGroup"
-import DeleteGroupModal from "./modals/DeleteGroup"
-import InviteUserModal from "./modals/InviteUser"
-import axios, { AxiosResponse } from "axios"
-import UnfriendMemberModal from "./modals/UnfriendMember"
-import ChangeLeaderModal from "./modals/ChangeLeader"
-import throttle from 'lodash.throttle'
-import GroupSettingsModal from "./modals/GroupSettings"
-import { useChannelCustomContext } from "../context"
-import MessageLimitModal from "./modals/MessageLimit"
-import { ModalWindow, MemberModalSettings } from "../types/modalTypes"
-import { AddFriendStatus, AcceptFriendStatus, Friend } from "../types/friendTypes"
-import { ActionType } from "../types/channelTypes"
-import { 
-    ChannelMessage, 
-    CurrentChannel, ChannelSectionProps, 
-    ChannelMember, ChannelMessagesStatus } from "../types/channelTypes"
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import * as Sentry from '@sentry/react';
+import ReactTextareaAutosize from 'react-textarea-autosize';
+import useSWR, { useSWRConfig, mutate } from 'swr';
+import axios, { AxiosResponse } from 'axios';
+import throttle from 'lodash.throttle';
+import { acceptFriend, addFriend, declineFriend } from '../api/friend';
+import { channelFetcher, messageFetcher } from '../api/channel';
+import LeaveGroupModal from './modals/LeaveGroup';
+import DeleteGroupModal from './modals/DeleteGroup';
+import InviteUserModal from './modals/InviteUser';
+import UnfriendMemberModal from './modals/UnfriendMember';
+import ChangeLeaderModal from './modals/ChangeLeader';
+import GroupSettingsModal from './modals/GroupSettings';
+import { useChannelCustomContext } from '../context';
+import MessageLimitModal from './modals/MessageLimit';
+import { ModalWindow, MemberModalSettings } from '../types/modalTypes';
+import { AddFriendStatus, AcceptFriendStatus, Friend } from '../types/friendTypes';
+import { ActionType } from '../types/channelTypes';
+import {
+    ChannelMessage,
+    CurrentChannel,
+    ChannelSectionProps,
+    ChannelMember,
+    ChannelMessagesStatus,
+} from '../types/channelTypes';
+import safeMutate from '../utils/safeMutate';
+import {
+    ChannelMsgUpdate,
+    currChannelSeenUpdate,
+    sendChannelMsgUpdate,
+    sendContChannelMsgUpdate,
+    sentMsgVerifyUpdate,
+} from '../utils/updaters/channelUpdater';
 
-const ChannelSection:React.FC<ChannelSectionProps>=({
-        socket, 
-        currentUserData, 
-        sentReqs,
-        friendReqs, 
-        fIdAndChannelInfos, 
-        setSentReqs,
-        setFriendReqs,
-        handleNewFriendChannel,
-        formatToTodayIfCurrentDate,
-        setMessageLimit,
-        messageLimit})=>{
+const ChannelSection: React.FC<ChannelSectionProps> = ({
+    socket,
+    currentUserData,
+    sentReqs,
+    friendReqs,
+    fIdAndChannelInfos,
+    setSentReqs,
+    setFriendReqs,
+    handleNewFriendChannel,
+    formatToTodayIfCurrentDate,
+    setMessageLimit,
+    messageLimit,
+}) => {
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
-    const {photo, displayName, _id, friendTag, photoUrl} = currentUserData
-    const {channelNumber} = useParams()
-    const navigate = useNavigate()
+    const { photo, displayName, _id, friendTag, photoUrl } = currentUserData;
+    const { channelNumber } = useParams();
+    const navigate = useNavigate();
     //Messages
     const [inputMessage, setInputMessage] = useState<string>('');
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
-    const [messagesSkip, setMessagesSkip] = useState<number>(0)
-    const [allMessagesFetched, setAllMessagesFetched] = useState(false)
-    const [msgFetchLoading, setMsgFetchLoading] = useState(false)
-    const [notSentMessages, setNotSentMessages] = useState<string[]>([])
+    const [messagesSkip, setMessagesSkip] = useState<number>(0);
+    const [allMessagesFetched, setAllMessagesFetched] = useState(false);
+    const [msgFetchLoading, setMsgFetchLoading] = useState(false);
+    const [notSentMessages, setNotSentMessages] = useState<string[]>([]);
     //Channel
-    const [currentChannel, setCurrentChannel] = useState<CurrentChannel>()
-    const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([])
+    const [currentChannel, setCurrentChannel] = useState<CurrentChannel>();
+    const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([]);
     //Modal
-    const [modalWindow, setModalWindow] = useState<ModalWindow>({isOpen:false, window:''})
-    const [modalDisabled, setModalDisabled] = useState(false)
-    const [memberModal, setMemberModal] = useState<MemberModalSettings>
-    ({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
+    const [modalWindow, setModalWindow] = useState<ModalWindow>({ isOpen: false, window: '' });
+    const [modalDisabled, setModalDisabled] = useState(false);
+    const [memberModal, setMemberModal] = useState<MemberModalSettings>({
+        isOpen: false,
+        type: '',
+        ids: { memberId: '', channelId: '' },
+        displayName: '',
+        channelNumber: undefined,
+    });
     //PopUp
-    const [memberPopUp, setMemberPopUp] = useState('')
-    const [isPopUpBelow, setIsPopUpBelow] = useState(false)
+    const [memberPopUp, setMemberPopUp] = useState('');
+    const [isPopUpBelow, setIsPopUpBelow] = useState(false);
     //mobile animation
-    const [isVisible, setIsVisible] = useState(false)
-    const [isMemberVisible, setIsMemberVisible] = useState(false)
+    const [isVisible, setIsVisible] = useState(false);
+    const [isMemberVisible, setIsMemberVisible] = useState(false);
     //This is for mobile animation
-    const [activePopup, setActivePopup] = useState(false)
+    const [activePopup, setActivePopup] = useState(false);
     //sent indicator
-    const [messageSentStatus, setMessageSentStatus] = useState(true)
+    const [messageSentStatus, setMessageSentStatus] = useState(true);
     //Error
-    const [memberError, setMemberError] = useState('')
-    //This determines if we're connected to the socket room 
-    const {channelsDispatch} = useChannelCustomContext()
+    const [memberError, setMemberError] = useState('');
+    //This determines if we're connected to the socket room
+    const { channelsDispatch } = useChannelCustomContext();
 
+    const { cache } = useSWRConfig();
+    const messageCacheKey = `api/v1/channels/${channelNumber}/messages`;
+    const channelCacheKey = `api/v1/channels/${channelNumber}`;
+    const messagesLimit = 16;
 
-    const {cache, mutate} = useSWRConfig()
-    const messageCacheKey = `api/v1/channels/${channelNumber}/messages`
-    const channelCacheKey = `api/v1/channels/${channelNumber}`
-    const messagesLimit = 16
+    const membersId: string[] = useMemo(() => {
+        return [...currentChannelMembers].map((member) => member._id);
+    }, [currentChannelMembers]);
 
-    const membersId:string[] = useMemo(()=>{
-        return [...currentChannelMembers].map(member=>member._id)
-    }, [currentChannelMembers])
-
-    const sortedMembers:ChannelMember[] = useMemo(() => {
+    const sortedMembers: ChannelMember[] = useMemo(() => {
         return [...currentChannelMembers].sort((a, b) => {
-            return a.status === "Online" && b.status !== "Online" ? -1 : 1;
+            return a.status === 'Online' && b.status !== 'Online' ? -1 : 1;
         });
     }, [currentChannelMembers]);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const memberListRef =useRef<HTMLUListElement>(null)
+    const memberListRef = useRef<HTMLUListElement>(null);
 
-    const {setModalVisible} = useChannelCustomContext()
+    const { setModalVisible } = useChannelCustomContext();
 
-    //fetching channel data 
-    const {data:channelData, error: channelError} = useSWR<CurrentChannel>(
-        channelCacheKey, (endpoint:string) =>
-        channelFetcher(endpoint),
+    //fetching channel data
+    const { data: channelData, error: channelError } = useSWR<CurrentChannel>(
+        channelCacheKey,
+        (endpoint: string) => channelFetcher(endpoint),
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: true,
             revalidateIfStale: false,
         }
-    )
+    );
 
-    useEffect(()=>{
-        setIsVisible(true)
-    }, [])
+    useEffect(() => {
+        setIsVisible(true);
+    }, []);
 
-
-    useEffect(()=>{
-        return ()=>{
-            setMessagesSkip(0)
-            setMessageReceived([])
-            setMsgFetchLoading(false)
-            setAllMessagesFetched(false)
-            setNotSentMessages([])
-        }
-    }, [channelNumber])
+    useEffect(() => {
+        return () => {
+            setMessagesSkip(0);
+            setMessageReceived([]);
+            setMsgFetchLoading(false);
+            setAllMessagesFetched(false);
+            setNotSentMessages([]);
+        };
+    }, [channelNumber]);
 
     useEffect(() => {
         if (channelData) {
-            setCurrentChannel(channelData)
-            setCurrentChannelMembers(channelData.members)
-        }else if (channelError){
-            if(axios.isAxiosError(channelError)){
-                if(channelError.response?.status===404 || channelError.response?.status===401 || channelError.response?.status===500){
-                    navigate('/@me')
+            setCurrentChannel(channelData);
+            setCurrentChannelMembers(channelData.members);
+        } else if (channelError) {
+            if (axios.isAxiosError(channelError)) {
+                if (
+                    channelError.response?.status === 404 ||
+                    channelError.response?.status === 401 ||
+                    channelError.response?.status === 500
+                ) {
+                    navigate('/@me');
                 }
             }
         }
-    }, [channelData, channelError, navigate])
+    }, [channelData, channelError, navigate]);
 
-    const { data: messagesData, error: messagesError} = useSWR<ChannelMessagesStatus>(
-        //if there's already a data in the cache, we no longer need to fetch 
-        messageCacheKey, (endpoint:string) =>
-        messageFetcher(endpoint, 16, 0),
+    const { data: messagesData, error: messagesError } = useSWR<ChannelMessagesStatus>(
+        //if there's already a data in the cache, we no longer need to fetch
+        messageCacheKey,
+        (endpoint: string) => messageFetcher(endpoint, 16, 0),
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
             revalidateIfStale: false,
-            revalidateOnMount: !cache.get(messageCacheKey)?.data
+            revalidateOnMount: !cache.get(messageCacheKey)?.data,
         }
-    )
-
-    useEffect(()=>{
-        if(messagesData){
-            if(messageReceived.length===0&&messagesData.messages.length>0){
-                setMessageReceived([...messagesData.messages].slice(0, 16))
-                if(messagesData.notSentMessages){
-                    setNotSentMessages(messagesData.notSentMessages)
-                }
-            }
-        }
-    }, [messagesData, messageReceived])
-
-
-    useEffect(()=>{
-        if(messagesError){
-            if(axios.isAxiosError(messagesError)){
-                if(messagesError.response?.status===404 || messagesError.response?.status===401){
-                    navigate('/@me')
-                }
-            }
-        }
-    }, [messagesError, navigate])
-
+    );
 
     useEffect(() => {
-        if (socket && channelNumber){
+        if (messagesData) {
+            if (messageReceived.length === 0 && messagesData.messages.length > 0) {
+                setMessageReceived([...messagesData.messages].slice(0, 16));
+                if (messagesData.notSentMessages) {
+                    setNotSentMessages(messagesData.notSentMessages);
+                }
+            }
+        }
+    }, [messagesData, messageReceived]);
+
+    useEffect(() => {
+        if (messagesError) {
+            if (axios.isAxiosError(messagesError)) {
+                if (
+                    messagesError.response?.status === 404 ||
+                    messagesError.response?.status === 401
+                ) {
+                    navigate('/@me');
+                }
+            }
+        }
+    }, [messagesError, navigate]);
+
+    useEffect(() => {
+        if (socket && channelNumber) {
             // Join the room
             socket.emit('join_channel_room', channelNumber);
             // Handle socket disconnection or leaving the room when the component unmounts or changes
             return () => {
                 socket.emit('leave_channel_room', channelNumber);
-            }
+            };
         }
     }, [socket, channelNumber]);
 
-
-    useEffect(()=>{
-        if(socket && channelNumber){
-            socket.emit('join_channel_verify_message', channelNumber)
+    useEffect(() => {
+        if (socket && channelNumber) {
+            socket.emit('join_channel_verify_message', channelNumber);
             return () => {
                 socket.emit('leave_channel_verify_message', channelNumber);
-            }  
+            };
         }
-    }, [socket, channelNumber])
+    }, [socket, channelNumber]);
 
-
-
-    
     useEffect(() => {
         if (socket && channelNumber && currentChannel) {
-
             const handleReceiveMessage = (newMessage: ChannelMessage) => {
                 //Notify the server that you have seen the latest message
-                socket.emit('new_message_seen', {channelId:currentChannel._id})
-                if(newMessage.updated){
-                    setMessageReceived(prevMessages=>{
-                        const updatedMessages = [...prevMessages]
-                        updatedMessages[0] = newMessage
-                        return updatedMessages
-                    })
-                }else{
-                    setMessageReceived(prevMessages => {
+                socket.emit('new_message_seen', { channelId: currentChannel._id });
+                if (newMessage.updated) {
+                    setMessageReceived((prevMessages) => {
+                        const updatedMessages = [...prevMessages];
+                        updatedMessages[0] = newMessage;
+                        return updatedMessages;
+                    });
+                } else {
+                    setMessageReceived((prevMessages) => {
                         // If prevMessages is undefined, initialize it as an array with newMessage
                         // Otherwise, append newMessage to it
                         return [newMessage, ...prevMessages];
                     });
                 }
-                mutate(channelCacheKey, (currChannelCachedData: CurrentChannel | undefined)=>{
-                    if(!currChannelCachedData){
-                        return undefined
-                    }
-                    const updateChannelData = {...currChannelCachedData}
-                    updateChannelData.seen.push(_id)
-                    return updateChannelData
-                }, false)
-                mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) => {
-                    if (!currMsgCachedData){
-                      return undefined
-                    }
-                    //Clone the current data
-                    const updatedMessages = [...currMsgCachedData.messages]
-                    //Safely access messages, defaulting to an empty array if undefined
-                    if (newMessage.updated){
-                    //Update the last message or handle appropriately if the array is empty
-                      updatedMessages[0] = newMessage
-                      return {status:currMsgCachedData.status, messages:updatedMessages}
-                    }else{
-                    //Append new message
-                      updatedMessages.unshift(newMessage)
-                      return {status:currMsgCachedData.status, messages:updatedMessages}
-                    }
-                    // Update the messages array in the channel data
-                  }, false); // false tells the SWR to not re-fetch the data from the server after updating the cache
-                setMessageSentStatus(false)
+                safeMutate(channelCacheKey, currChannelSeenUpdate(_id));
+                safeMutate(messageCacheKey, ChannelMsgUpdate(newMessage));
+                setMessageSentStatus(false);
             };
             // Adding the listener
             socket.on('receive_message', handleReceiveMessage);
             // Cleanup function to remove the listener
             //We explicitly declare the return type of the cleanup function so
             //ts could understand that we're not trying to return anything from the cleanup func.
-            const cleanup = ():void  =>{
+            const cleanup = (): void => {
                 socket.removeListener('receive_message', handleReceiveMessage);
-            }
-            return cleanup
+            };
+            return cleanup;
         }
-    }, [socket, channelNumber, currentChannel, channelCacheKey, _id, messageCacheKey, mutate]);
+    }, [socket, channelNumber, currentChannel, channelCacheKey, _id, messageCacheKey]);
 
-    useEffect(()=>{
-        if(textareaRef.current){
-            textareaRef.current.focus()
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.focus();
         }
-    }, [channelNumber])
+    }, [channelNumber]);
 
     const messageBoxRef = useRef<HTMLDivElement>(null);
 
@@ -262,7 +254,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
             //scrollHeight indicates the total height of the scrollable content in pixels
             messageBoxRef.current.scrollTop = 0;
         }
-      }, [channelNumber]);
+    }, [channelNumber]);
 
     function formatDate(timestamp: number): string {
         const date = new Date(timestamp);
@@ -271,7 +263,7 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         const month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() returns 0-11
         const year = date.getFullYear(); // Full year
         // Formatting the time
-        let hours:number|string = date.getHours();
+        let hours: number | string = date.getHours();
         const minutes = date.getMinutes().toString().padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
@@ -279,256 +271,248 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
         return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
     }
 
-    useEffect(()=>{
-        if(messageReceived.length>0&&messageReceived[0].sender._id===_id){
-            const sentTimeoutId = setTimeout(()=>{
-                setMessageSentStatus(true)
-            }, 500)
-            return ()=>{
-                clearTimeout(sentTimeoutId)
-            }
+    useEffect(() => {
+        if (messageReceived.length > 0 && messageReceived[0].sender._id === _id) {
+            const sentTimeoutId = setTimeout(() => {
+                setMessageSentStatus(true);
+            }, 500);
+            return () => {
+                clearTimeout(sentTimeoutId);
+            };
         }
-    },
-    [messageReceived, _id])
+    }, [messageReceived, _id]);
 
-
-    const sendMessage = ():void =>{
-        if(!socket){
-            return
+    const sendMessage = (): void => {
+        if (!socket) {
+            return;
         }
-        if(!currentChannel){
-            return navigate('/@me')
+        if (!currentChannel) {
+            return navigate('/@me');
         }
-        if(messageLimit>5 || notSentMessages.length>5){
-            setModalWindow({isOpen:true, window:'messageLimit'})
-            textareaRef.current?.blur()
-            return
+        if (messageLimit > 5 || notSentMessages.length > 5) {
+            setModalWindow({ isOpen: true, window: 'messageLimit' });
+            textareaRef.current?.blur();
+            return;
         }
-        setMessageLimit(prevLimit=>prevLimit+1)
-        setMessageSentStatus(false)
-        const timestamp = Date.now()
-        const prevMessageDate:Date = new Date(messageReceived[0]?.time??0)
-        const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime()
-        //If the sent more then one message within one minute since the first message, we're just going to 
+        setMessageLimit((prevLimit) => prevLimit + 1);
+        setMessageSentStatus(false);
+        const timestamp = Date.now();
+        const prevMessageDate: Date = new Date(messageReceived[0]?.time ?? 0);
+        const timeDifference = new Date(timestamp).getTime() - prevMessageDate.getTime();
+        //If the sent more then one message within one minute since the first message, we're just going to
         //add the content of the message from the previous message.
-        if(messageReceived.length>0&&messageReceived[0].sender._id === _id && timeDifference <= 60*1000){
+        if (
+            messageReceived.length > 0 &&
+            messageReceived[0].sender._id === _id &&
+            timeDifference <= 60 * 1000
+        ) {
             //We won't change the formattedDate since, to have more user-friendly approach
             //Since we base the date of the  message on the first message content.
-            socket.emit("continue_message",
-            {
+            socket.emit('continue_message', {
                 //we need to convert it to this format since that is the time format in the DB
-                prevTime:messageReceived[0].time,
-                sender:{photo, displayName, _id:_id, friendTag, photoUrl},
-                channel:currentChannel._id,
+                prevTime: messageReceived[0].time,
+                sender: { photo, displayName, _id: _id, friendTag, photoUrl },
+                channel: currentChannel._id,
                 content: inputMessage,
                 newTime: timestamp,
                 channelNumber,
-                channelType: currentChannel.channelType
-            })
-            setMessageReceived((prevMessages)=>{
-                const updatedMessages = [...prevMessages]
+                channelType: currentChannel.channelType,
+            });
+            setMessageReceived((prevMessages) => {
+                const updatedMessages = [...prevMessages];
                 //Append the input message to the content array of the last message.
-                updatedMessages[0]={
+                updatedMessages[0] = {
                     ...updatedMessages[0],
-                    time:timestamp,
-                    content:[
-                        ...updatedMessages[0].content,
-                        inputMessage
-                    ]
-                }
-                return updatedMessages
-            })
-            mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
-                if (!currMsgCachedData) {
-                    return undefined;
-                }
-                const updatedMessages = [...currMsgCachedData.messages]
-                updatedMessages[0]={
-                    ...updatedMessages[0],
-                    time:timestamp,
-                    content:[
-                        ...updatedMessages[0].content,
-                        inputMessage
-                    ]
-                }
-                return {status:currMsgCachedData.status, messages:updatedMessages, 
-                    notSentMessages: [inputMessage, ...(currMsgCachedData.notSentMessages || [])]}
-            }, false)
-        }else{
-            const messageContents:ChannelMessage = {
-                content:[inputMessage],
-                channel:currentChannel._id,
+                    time: timestamp,
+                    content: [...updatedMessages[0].content, inputMessage],
+                };
+                return updatedMessages;
+            });
+            safeMutate(messageCacheKey, sendContChannelMsgUpdate(timestamp, inputMessage));
+        } else {
+            const messageContents: ChannelMessage = {
+                content: [inputMessage],
+                channel: currentChannel._id,
                 time: timestamp,
-                formattedDate:formatDate(timestamp),
-                sender:{
-                    photo, displayName, _id:_id, friendTag, photoUrl
-            }}
-            socket.emit("send_message", {
+                formattedDate: formatDate(timestamp),
+                sender: {
+                    photo,
+                    displayName,
+                    _id: _id,
+                    friendTag,
+                    photoUrl,
+                },
+            };
+            socket.emit('send_message', {
                 ...messageContents,
                 channelNumber,
-                channelType: currentChannel.channelType
-            })
+                channelType: currentChannel.channelType,
+            });
             setMessageReceived((prevMessages) => {
-                return [messageContents, ...prevMessages]
-            })
+                return [messageContents, ...prevMessages];
+            });
             //Since in the message that we sent, the socket only sends
-            //the message to the user besides the sender, we 
+            //the message to the user besides the sender, we
             //update the MessageReceived manually.
-            mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
-                if (!currMsgCachedData) {
-                    return undefined;
-                }
-                const updatedMessages = [...currMsgCachedData.messages]
-                updatedMessages.unshift(messageContents)
-                return {status:currMsgCachedData.status, messages:updatedMessages, 
-                    notSentMessages: [inputMessage, ...(currMsgCachedData.notSentMessages || [])]}
-            }, false)
+            safeMutate(messageCacheKey, sendChannelMsgUpdate(messageContents, inputMessage));
         }
-        setNotSentMessages((prevNotSent)=>{
-            const updatedMessages = [...prevNotSent]
-            return [...updatedMessages, inputMessage]
-        })
-        setInputMessage('')
-    }
-    
+        setNotSentMessages((prevNotSent) => {
+            const updatedMessages = [...prevNotSent];
+            return [...updatedMessages, inputMessage];
+        });
+        setInputMessage('');
+    };
 
-    useEffect(()=>{
-        if(socket){
-            const handleVerifiedMessage = (data:{sentContent:string})=>{
-                setNotSentMessages(prevMessage=>{
-                    const updateMessage = [...prevMessage]
-                    updateMessage.filter(message=>message!==data.sentContent)
-                    return updateMessage.filter(message=>message!==data.sentContent)
-                })
-                mutate(messageCacheKey, (currMsgCachedData: ChannelMessagesStatus | undefined) =>{
-                    if (!currMsgCachedData) {
-                        return undefined;
-                    }
-                    return {status:currMsgCachedData.status, messages:currMsgCachedData.messages, 
-                        notSentMessages: [...(currMsgCachedData.notSentMessages||[]).filter(message=>message!==data.sentContent)]}
-                }, false)
-            }
-            socket.on('message_verified', handleVerifiedMessage)
-            const cleanup = ():void  =>{
+    useEffect(() => {
+        if (socket) {
+            const handleVerifiedMessage = (data: { sentContent: string }) => {
+                setNotSentMessages((prevMessage) => {
+                    const updateMessage = [...prevMessage];
+                    updateMessage.filter((message) => message !== data.sentContent);
+                    return updateMessage.filter((message) => message !== data.sentContent);
+                });
+                safeMutate(messageCacheKey, sentMsgVerifyUpdate(data.sentContent));
+            };
+            socket.on('message_verified', handleVerifiedMessage);
+            const cleanup = (): void => {
                 socket.removeListener('message_verified', handleVerifiedMessage);
-            }
-            return cleanup
+            };
+            return cleanup;
         }
-    }, [socket, messageCacheKey, mutate])
+    }, [socket, messageCacheKey]);
 
-    const handleNavButtonClick = (e:React.MouseEvent<HTMLButtonElement>, action:string):void =>{
-        e.preventDefault()
-        setModalWindow({isOpen:true, window:action})
-    }
-    
-    const handleModalWindowClick = (e:React.MouseEvent<HTMLDialogElement>):void =>{
-        if (e.button===0 && e.target === e.currentTarget) {
-            if(!modalDisabled){
-                setModalVisible(false)
-                if(modalWindow.isOpen){
-                    setModalWindow({isOpen: false, window: ''});
-                }else if(memberModal.isOpen){
-                    setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
+    const handleNavButtonClick = (e: React.MouseEvent<HTMLButtonElement>, action: string): void => {
+        e.preventDefault();
+        setModalWindow({ isOpen: true, window: action });
+    };
+
+    const handleModalWindowClick = (e: React.MouseEvent<HTMLDialogElement>): void => {
+        if (e.button === 0 && e.target === e.currentTarget) {
+            if (!modalDisabled) {
+                setModalVisible(false);
+                if (modalWindow.isOpen) {
+                    setModalWindow({ isOpen: false, window: '' });
+                } else if (memberModal.isOpen) {
+                    setMemberModal({
+                        isOpen: false,
+                        type: '',
+                        ids: { memberId: '', channelId: '' },
+                        displayName: '',
+                        channelNumber: undefined,
+                    });
                 }
             }
         }
-    }
-    
-    const handleCloseButton = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        setModalVisible(false)
+    };
+
+    const handleCloseButton = (e: React.MouseEvent<HTMLButtonElement>): void => {
+        e.preventDefault();
+        setModalVisible(false);
         setTimeout(() => {
-            if(modalWindow.isOpen){
-                setModalWindow({isOpen: false, window: ''})
-            }else if(memberModal.isOpen){
-                setMemberModal({isOpen:false, type:"",ids:{memberId:'', channelId:''}, displayName:'', channelNumber:undefined})
-            }    
-        }, 150)
-    }
+            if (modalWindow.isOpen) {
+                setModalWindow({ isOpen: false, window: '' });
+            } else if (memberModal.isOpen) {
+                setMemberModal({
+                    isOpen: false,
+                    type: '',
+                    ids: { memberId: '', channelId: '' },
+                    displayName: '',
+                    channelNumber: undefined,
+                });
+            }
+        }, 150);
+    };
 
-
-    function handleKeyDown(event:React.KeyboardEvent<HTMLTextAreaElement>):void{
-    // Check if the Enter key was pressed (key code 13)
+    function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>): void {
+        // Check if the Enter key was pressed (key code 13)
         if (event.key === 'Enter' && !event.shiftKey && inputMessage && socket?.connected) {
             event.preventDefault();
             // Call the sendMessage function or any other action
             sendMessage();
+        } else if (event.key === 'Enter' && !inputMessage) {
+            event.preventDefault();
         }
-        else if(event.key === 'Enter' && !inputMessage){
-            event.preventDefault() 
-        }       
     }
-    //Popup 
-    const handlePopUp = (e:React.MouseEvent<HTMLButtonElement>, memberId:string):void=>{
-        e.preventDefault()
-        if(memberListRef.current){
+    //Popup
+    const handlePopUp = (e: React.MouseEvent<HTMLButtonElement>, memberId: string): void => {
+        e.preventDefault();
+        if (memberListRef.current) {
             //this is for mobile
-            if(memberId===memberPopUp){
-                setActivePopup(false)
-                setMemberPopUp('')
-                if(isPopUpBelow){
-                    setIsPopUpBelow(false)
+            if (memberId === memberPopUp) {
+                setActivePopup(false);
+                setMemberPopUp('');
+                if (isPopUpBelow) {
+                    setIsPopUpBelow(false);
                 }
-            }else{
-                setActivePopup(false)
-                setMemberPopUp(memberId)
-                if(e.clientY > memberListRef.current.clientHeight - 150 ) setIsPopUpBelow(true)
-                else if (isPopUpBelow) setIsPopUpBelow(false)
+            } else {
+                setActivePopup(false);
+                setMemberPopUp(memberId);
+                if (e.clientY > memberListRef.current.clientHeight - 150) setIsPopUpBelow(true);
+                else if (isPopUpBelow) setIsPopUpBelow(false);
                 setTimeout(() => {
                     // This delay allows the popup to render before the animation class is added
                     setActivePopup(true);
-                  }, 10)
+                }, 10);
             }
         }
-    }
-
+    };
 
     //this returns the channel number of the user if the user is in our friend list
-    const findMemberId = (userId:string):undefined|{channelNumber:number, channelId:string}=>{
-        const friendInfo = fIdAndChannelInfos.find(friendIdAndCN=>friendIdAndCN.friendId===userId)
-        if(friendInfo){
-            return {channelNumber:friendInfo.channelNumber, channelId:friendInfo.channelId}
-        }else{
-            return 
+    const findMemberId = (
+        userId: string
+    ): undefined | { channelNumber: number; channelId: string } => {
+        const friendInfo = fIdAndChannelInfos.find(
+            (friendIdAndCN) => friendIdAndCN.friendId === userId
+        );
+        if (friendInfo) {
+            return { channelNumber: friendInfo.channelNumber, channelId: friendInfo.channelId };
+        } else {
+            return;
         }
-    }
+    };
 
-    const alreadyAdded = (memberId:string):boolean=>{
-        const isSent = [...sentReqs].find(sentReq => sentReq.friend._id === memberId)
-        if(isSent){
-            return true
-        }else{
-            return false
+    const alreadyAdded = (memberId: string): boolean => {
+        const isSent = [...sentReqs].find((sentReq) => sentReq.friend._id === memberId);
+        if (isSent) {
+            return true;
+        } else {
+            return false;
         }
-    }
+    };
 
     //the isPending._id is the id of an object that contains your status with the other user,
     //and userInfo
-    const alreadyPending = (memberId:string):false|string=>{
-        const isPending = [...friendReqs].find(friendReq => friendReq.friend._id===memberId)
-        if(isPending){
-            return isPending._id
-        }else{
-            return false
+    const alreadyPending = (memberId: string): false | string => {
+        const isPending = [...friendReqs].find((friendReq) => friendReq.friend._id === memberId);
+        if (isPending) {
+            return isPending._id;
+        } else {
+            return false;
         }
-    }
-    
+    };
+
     useEffect(() => {
         // Only add the event listener if a popup is open
         if (memberPopUp) {
-            const handleOutsideClick = (event:MouseEvent) => {
-                const popupElement = document.querySelector('.member-popup-container') as HTMLElement;
+            const handleOutsideClick = (event: MouseEvent) => {
+                const popupElement = document.querySelector(
+                    '.member-popup-container'
+                ) as HTMLElement;
                 const buttonClicked = (event.target as HTMLElement).closest('.member-popup-button');
-                if (popupElement && !popupElement.contains(event.target as Node) && !buttonClicked) {
-                    setTimeout(()=>{
-                        setMemberPopUp('')
+                if (
+                    popupElement &&
+                    !popupElement.contains(event.target as Node) &&
+                    !buttonClicked
+                ) {
+                    setTimeout(() => {
+                        setMemberPopUp('');
                     }, 100);
-                    setActivePopup(false)
+                    setActivePopup(false);
                 }
             };
             document.addEventListener('mousedown', handleOutsideClick);
             //In normal circumstances we don't need the channel number as dependency for a popup, but since when we click the send
-            //message it changes the channel, but won't cause an unmount, which will cause the MemberPopUp to still have its previous 
+            //message it changes the channel, but won't cause an unmount, which will cause the MemberPopUp to still have its previous
             //value.
             return () => {
                 document.removeEventListener('mousedown', handleOutsideClick);
@@ -539,586 +523,920 @@ const ChannelSection:React.FC<ChannelSectionProps>=({
     //we need this useEffect since, if we clicked send message on the member popup, it changes channel, yes, but it does not
     //cause an unmount; this won't delete the previous value of the state variable.
     //when we go back to the previous group channel, the popup will show if we don't implement this.
-    useEffect(()=>{
-        if(channelNumber){
-            setMemberPopUp('')
+    useEffect(() => {
+        if (channelNumber) {
+            setMemberPopUp('');
         }
-    }, [channelNumber])
+    }, [channelNumber]);
 
-    const handleMemberSelect = (e:React.MouseEvent<HTMLButtonElement>, channelNumber:number|undefined, memberId:string, displayName:string, type:string):void => {
-        e.preventDefault()
-        if(currentChannel&&channelNumber){
-            setMemberPopUp('')
-            setActivePopup(false)
-            const channelInfo = findMemberId(memberId)
-            if(channelInfo&&type==='unfriend'){
-                setMemberModal({isOpen:true, type, ids:{memberId, channelId:channelInfo.channelId}, displayName, channelNumber})
-            }else if(type==='changeLeader'){
-                setMemberModal({isOpen:true, type, ids:{memberId, channelId:currentChannel._id}, displayName, channelNumber}) 
+    const handleMemberSelect = (
+        e: React.MouseEvent<HTMLButtonElement>,
+        channelNumber: number | undefined,
+        memberId: string,
+        displayName: string,
+        type: string
+    ): void => {
+        e.preventDefault();
+        if (currentChannel && channelNumber) {
+            setMemberPopUp('');
+            setActivePopup(false);
+            const channelInfo = findMemberId(memberId);
+            if (channelInfo && type === 'unfriend') {
+                setMemberModal({
+                    isOpen: true,
+                    type,
+                    ids: { memberId, channelId: channelInfo.channelId },
+                    displayName,
+                    channelNumber,
+                });
+            } else if (type === 'changeLeader') {
+                setMemberModal({
+                    isOpen: true,
+                    type,
+                    ids: { memberId, channelId: currentChannel._id },
+                    displayName,
+                    channelNumber,
+                });
             }
         }
-    }
+    };
 
-    const handleAddFriendMember = async(e:React.MouseEvent<HTMLButtonElement>, displayName:string, friendTag:string):Promise<void>=>{
-        e.preventDefault()
-        setMemberError('')
-        setMemberPopUp('')
-        setActivePopup(false)
-        try{
-            const res:AxiosResponse<AddFriendStatus> = await addFriend(displayName, friendTag)
-            if(res.data.status==='success'){
-                if(socket){
-                    setSentReqs(prevSentReqs=>[...prevSentReqs, res.data.sentRequestDetails])
-                    socket.emit('friend_request_sent', 
-                    {requestedUserId:res.data.sentRequestDetails.friend._id,
-                     requestDetails:res.data.pendingRequestDetails})
+    const handleAddFriendMember = async (
+        e: React.MouseEvent<HTMLButtonElement>,
+        displayName: string,
+        friendTag: string
+    ): Promise<void> => {
+        e.preventDefault();
+        setMemberError('');
+        setMemberPopUp('');
+        setActivePopup(false);
+        try {
+            const res: AxiosResponse<AddFriendStatus> = await addFriend(displayName, friendTag);
+            if (res.data.status === 'success') {
+                if (socket) {
+                    setSentReqs((prevSentReqs) => [...prevSentReqs, res.data.sentRequestDetails]);
+                    socket.emit('friend_request_sent', {
+                        requestedUserId: res.data.sentRequestDetails.friend._id,
+                        requestDetails: res.data.pendingRequestDetails,
+                    });
                 }
             }
-        }catch(_err){
-            setMemberError('An error occurred while sending a friend request.')
+        } catch (_err) {
+            setMemberError('An error occurred while sending a friend request.');
         }
-    }
+    };
 
     //friendId is the object that contains the channel info and the user info and your status with that user
-    const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string, friendId:string|false):Promise<void>=>{
-        e.preventDefault()
-        setMemberPopUp('')
-        setActivePopup(false)
-        setMemberError('')
-        if(friendId){
-            try{
-                const res:AxiosResponse<AcceptFriendStatus>= await acceptFriend(memberId)
-                if(res.data.status==="success"){
-                    const fetchedNewChannelData = {...res.data.newChannel}
+    const handleAcceptRequest = async (
+        e: React.MouseEvent<HTMLButtonElement>,
+        memberId: string,
+        friendId: string | false
+    ): Promise<void> => {
+        e.preventDefault();
+        setMemberPopUp('');
+        setActivePopup(false);
+        setMemberError('');
+        if (friendId) {
+            try {
+                const res: AxiosResponse<AcceptFriendStatus> = await acceptFriend(memberId);
+                if (res.data.status === 'success') {
+                    const fetchedNewChannelData = { ...res.data.newChannel };
                     //we sort it this way to make the pending user always on the index 0
-                    const sortMembers = fetchedNewChannelData.members.sort((a,b)=>{
-                        return (a._id === memberId && b._id !== memberId)?-1:1
-                    })
-                    const newChannel:Friend = {
-                        channel:{
-                            channelType:fetchedNewChannelData.channelType,
-                            channelNumber:fetchedNewChannelData.channelNumber,
-                            lastMessage:fetchedNewChannelData.lastMessage,
-                            _id:fetchedNewChannelData._id,
+                    const sortMembers = fetchedNewChannelData.members.sort((a, b) => {
+                        return a._id === memberId && b._id !== memberId ? -1 : 1;
+                    });
+                    const newChannel: Friend = {
+                        channel: {
+                            channelType: fetchedNewChannelData.channelType,
+                            channelNumber: fetchedNewChannelData.channelNumber,
+                            lastMessage: fetchedNewChannelData.lastMessage,
+                            _id: fetchedNewChannelData._id,
                             id: fetchedNewChannelData.id,
                             formattedLastMessage: fetchedNewChannelData.formattedLastMessage,
-                            seen: fetchedNewChannelData.seen
+                            seen: fetchedNewChannelData.seen,
                         },
-                        friend:{
-                            ...sortMembers[0]
+                        friend: {
+                            ...sortMembers[0],
                         },
-                        status:"Friend",
-                        _id:friendId
-                    }
-                    handleNewFriendChannel(newChannel)
-                    setFriendReqs(prevUserReqs=>{
-                        const updateUserReqs = [...prevUserReqs]
-                        return updateUserReqs.filter(userReqs=>userReqs.friend._id!==memberId)
-                    })
-                    if(socket){
+                        status: 'Friend',
+                        _id: friendId,
+                    };
+                    handleNewFriendChannel(newChannel);
+                    setFriendReqs((prevUserReqs) => {
+                        const updateUserReqs = [...prevUserReqs];
+                        return updateUserReqs.filter(
+                            (userReqs) => userReqs.friend._id !== memberId
+                        );
+                    });
+                    if (socket) {
                         socket.emit('accepted_pending_friend_request', {
                             newChannelInfo: newChannel.channel,
                             pendingUserId: memberId,
-                            newFriendId: _id
-                        })
+                            newFriendId: _id,
+                        });
                     }
                 }
-            }catch(_err){
-                setMemberError('An error occurred while accepting the friend request.')
+            } catch (_err) {
+                setMemberError('An error occurred while accepting the friend request.');
             }
         }
-        }
-    
-    const handleDeclineRequest = async (e:React.MouseEvent<HTMLButtonElement>, memberId:string):Promise<void>=>{
-        e.preventDefault()
-        setMemberPopUp('')
-        setMemberError('')
-        setActivePopup(false)
-        try{
-            const res:AxiosResponse<void>=await declineFriend(memberId)
-            if(res.status===204){
-                setFriendReqs(prevUserReqs=>{
-                    const updateUserReqs = [...prevUserReqs]
-                    return updateUserReqs.filter(userReqs=>userReqs.friend._id!==memberId)
-                })
-                if(socket){
-                    socket.emit("declined_pending_friend_request", {declinedUser: memberId, userId:_id})
+    };
+
+    const handleDeclineRequest = async (
+        e: React.MouseEvent<HTMLButtonElement>,
+        memberId: string
+    ): Promise<void> => {
+        e.preventDefault();
+        setMemberPopUp('');
+        setMemberError('');
+        setActivePopup(false);
+        try {
+            const res: AxiosResponse<void> = await declineFriend(memberId);
+            if (res.status === 204) {
+                setFriendReqs((prevUserReqs) => {
+                    const updateUserReqs = [...prevUserReqs];
+                    return updateUserReqs.filter((userReqs) => userReqs.friend._id !== memberId);
+                });
+                if (socket) {
+                    socket.emit('declined_pending_friend_request', {
+                        declinedUser: memberId,
+                        userId: _id,
+                    });
                 }
             }
-        }catch(_err){
-            setMemberError('An error occurred while declining the friend request.')
+        } catch (_err) {
+            setMemberError('An error occurred while declining the friend request.');
         }
-    }
+    };
 
-    const handleChannelBack = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        setIsVisible(false)
+    const handleChannelBack = (e: React.MouseEvent<HTMLButtonElement>): void => {
+        e.preventDefault();
+        setIsVisible(false);
         setTimeout(() => {
             navigate('/@me');
-        }, 150)
-    }
+        }, 150);
+    };
 
-    const handleMembersBack = (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        setIsMemberVisible(false)
-    }
+    const handleMembersBack = (e: React.MouseEvent<HTMLButtonElement>): void => {
+        e.preventDefault();
+        setIsMemberVisible(false);
+    };
 
-    const handleChannelToMembers= (e:React.MouseEvent<HTMLButtonElement>):void=>{
-        e.preventDefault()
-        setIsMemberVisible(true)
-    }
+    const handleChannelToMembers = (e: React.MouseEvent<HTMLButtonElement>): void => {
+        e.preventDefault();
+        setIsMemberVisible(true);
+    };
 
     const handleScroll = throttle(() => {
         const container = messageBoxRef.current;
         if (container && !msgFetchLoading && !allMessagesFetched && messagesData) {
-            const gap = Math.abs(container.scrollHeight - (Math.abs(container.scrollTop) + container.clientHeight));
-            const isTop = gap <= container.clientHeight/2 || Math.abs(container.scrollTop) + container.clientHeight >= container.scrollHeight;
+            const gap = Math.abs(
+                container.scrollHeight - (Math.abs(container.scrollTop) + container.clientHeight)
+            );
+            const isTop =
+                gap <= container.clientHeight / 2 ||
+                Math.abs(container.scrollTop) + container.clientHeight >= container.scrollHeight;
             if (isTop) {
-                if(messagesData.messages.length - messageReceived.length > 0){
-                    setMessageReceived(prevMessages=>{
-                        const updateMessage = [...prevMessages]
-                        updateMessage.push(...messagesData.messages.slice(prevMessages.length, prevMessages.length+15))
-                        return updateMessage
-                    })
-                }else{
+                if (messagesData.messages.length - messageReceived.length > 0) {
+                    setMessageReceived((prevMessages) => {
+                        const updateMessage = [...prevMessages];
+                        updateMessage.push(
+                            ...messagesData.messages.slice(
+                                prevMessages.length,
+                                prevMessages.length + 15
+                            )
+                        );
+                        return updateMessage;
+                    });
+                } else {
                     // Perform the action when scrolled to the top
-                    setMessagesSkip(messageReceived.length)
+                    setMessagesSkip(messageReceived.length);
                 }
             }
         }
-    }, 300)
+    }, 300);
 
+    useEffect(() => {
+        const fetchMoreMessages = (): void => {
+            if (messagesSkip > 0 && messageBoxRef.current) {
+                setMsgFetchLoading(true);
+                mutate(
+                    messageCacheKey,
+                    async (prevMessageData: ChannelMessagesStatus | undefined) => {
+                        if (!prevMessageData) {
+                            return undefined;
+                        }
+                        try {
+                            const newMessagesData = await messageFetcher(
+                                messageCacheKey,
+                                messagesLimit,
+                                messagesSkip
+                            );
+                            if (newMessagesData.messages.length < messagesLimit) {
+                                setAllMessagesFetched(true);
+                            }
+                            setMessageReceived([
+                                ...prevMessageData.messages,
+                                ...newMessagesData.messages,
+                            ]);
+                            setMsgFetchLoading(false);
+                            return {
+                                status: prevMessageData.status,
+                                messages: [
+                                    ...prevMessageData.messages,
+                                    ...newMessagesData.messages,
+                                ],
+                            };
+                        } catch (_err) {
+                            return {
+                                status: prevMessageData.status,
+                                messages: [...prevMessageData.messages],
+                            };
+                        }
+                    },
+                    false
+                    // If an error occurred most of the time it would already be caught inside the mutate,
+                    // but in case that the error wasn't caught, we stop the fetching.
+                ).catch((err) => {
+                    if (import.meta.env.MODE === 'development') {
+                        console.error('safeMutate error:', err);
+                    }
+                    // Always log to Sentry
+                    Sentry.captureException(err, {
+                        tags: { function: 'safeMutate' },
+                        extra: {
+                            errMessage: err?.message,
+                        },
+                    });
+                });
+            }
+        };
+        fetchMoreMessages();
+    }, [messagesSkip, messageCacheKey]);
 
-    useEffect(()=>{
-        const fetchMoreMessages = ():void =>{
-            if(messagesSkip > 0 && messageBoxRef.current){
-                setMsgFetchLoading(true)
-                mutate(messageCacheKey, async (prevMessageData:ChannelMessagesStatus|undefined)=>{
-                    if(!prevMessageData){
-                        return undefined
-                    }
-                    try{
-                        const newMessagesData = await messageFetcher(
-                            messageCacheKey,
-                            messagesLimit,
-                            messagesSkip)
-                        if(newMessagesData.messages.length < messagesLimit){
-                            setAllMessagesFetched(true)
-                        }       
-                        setMessageReceived([...prevMessageData.messages, ...newMessagesData.messages])
-                        setMsgFetchLoading(false)
-                        return {status:prevMessageData.status,
-                            messages:[...prevMessageData.messages, ...newMessagesData.messages]}
-                    }catch(_err){
-                        return {status:prevMessageData.status, messages:[...prevMessageData.messages]}
-                    }
-                }, false)
+    useEffect(() => {
+        if (socket && currentChannel && _id) {
+            if (!currentChannel.seen.includes(_id)) {
+                socket.emit('new_message_seen', { channelId: currentChannel._id });
+                channelsDispatch({
+                    type: ActionType.Seen,
+                    payload: { channelId: currentChannel._id, currUserId: _id },
+                });
+                safeMutate(channelCacheKey, currChannelSeenUpdate(_id));
             }
         }
-        fetchMoreMessages()
-    }, [messagesSkip, messageCacheKey, mutate])
-
-
-    useEffect(()=>{
-        if(socket && currentChannel && _id){
-            if(!currentChannel.seen.includes(_id)){
-                socket.emit('new_message_seen', {channelId:currentChannel._id})
-                channelsDispatch({type:ActionType.Seen, payload:{channelId:currentChannel._id, currUserId:_id}})
-                mutate(channelCacheKey, (currChannelCachedData: CurrentChannel | undefined)=>{
-                    if(!currChannelCachedData){
-                        return undefined
-                    }
-                    const updateChannelData = {...currChannelCachedData}
-                    updateChannelData.seen.push(_id)
-                    return updateChannelData
-                }, false)
-            }
-        }
-    }, [socket, currentChannel, channelCacheKey, _id, channelsDispatch, mutate])
+    }, [socket, currentChannel, channelCacheKey, _id, channelsDispatch]);
 
     return (
         <>
-        {(currentChannel&&messagesData)?
-        <section className={`channel-section ${isVisible?'channel-section-mob':''}`}>
-        {(modalWindow.isOpen||memberModal.isOpen)&&
-            <dialog className='modal-window-container' onMouseDown={handleModalWindowClick}>
-                    {(modalWindow.window==='messageLimit')&&
-                    <MessageLimitModal handleCloseButton={handleCloseButton}/>}
-                    {(modalWindow.window==='groupSettings')
-                    &&currentChannel.photo&&currentChannel.photoUrl&&currentChannel.channelName&&
-                    <GroupSettingsModal 
-                        setModalWindow={setModalWindow}
-                        setModalDisabled={setModalDisabled}
-                        handleCloseButton={handleCloseButton}
-                        socket={socket}
-                        channelId={currentChannel._id}
-                        channelName={currentChannel.channelName}
-                        setCurrentChannel={setCurrentChannel}
-                        groupPhoto={currentChannel.photo}
-                        groupPhotoUrl={currentChannel.photoUrl}
-                    />
-                    }
-                    {(modalWindow.window==='leaveGroup')
-                    &&
-                    <LeaveGroupModal 
-                        channelId={currentChannel._id} 
-                        socket={socket}
-                        currUserId={_id} 
-                        channelNumber={channelNumber}
-                        handleCloseButton={handleCloseButton} 
-                        setModalDisabled={setModalDisabled}/>
-                    }
-                    {(modalWindow.window==='inviteUser')
-                    &&
-                    <InviteUserModal
-                        handleCloseButton={handleCloseButton}
-                        channelId={currentChannel._id}
-                        currChannelMembersId={membersId} 
-                        socket={socket}
-                        channelNumber={channelNumber}
-                        modalDisabled={modalDisabled}
-                        setModalDisabled={setModalDisabled}/>}
-                    {(modalWindow.window==='deleteGroup')
-                    &&
-                    <DeleteGroupModal 
-                        channelId={currentChannel._id} 
-                        channelNumber={channelNumber}
-                        handleCloseButton={handleCloseButton} 
-                        socket={socket}
-                        membersId={membersId}
-                        setModalDisabled={setModalDisabled}
-                    />}
-                    {memberModal.type==='unfriend'&&
-                    <UnfriendMemberModal
-                        setModalSettings={setMemberModal}
-                        socket={socket}
-                        displayName={memberModal.displayName}
-                        handleCloseButton={handleCloseButton}
-                        channelNumber={memberModal.channelNumber}
-                        setModalDisabled={setModalDisabled}
-                        {...memberModal.ids}
-                        />}
-                    {memberModal.type==='changeLeader'&&
-                    <ChangeLeaderModal 
-                        setModalSettings={setMemberModal}
-                        socket={socket}
-                        displayName={memberModal.displayName}
-                        channelNumber={memberModal.channelNumber}
-                        handleCloseButton={handleCloseButton}
-                        setModalDisabled={setModalDisabled}
-                        {...memberModal.ids}
-                    />}
-            </dialog>}
-            <div className="channel-container">
-                <nav className="channel-nav">
-                    <div className={`member-error-notice ${memberError?'visible':''}`}>
-                        {memberError}
-                    </div>
-                    <button className="channel-back-to-home-button" onClick={isMemberVisible?handleMembersBack:handleChannelBack}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
-                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                    </button>
-                        {
-                            currentChannel?.channelType==='Friend'?
-                            <div className="channel-nav-info-container">
-                                <img className="channel-nav-photo"
-                                src={`${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[0].photoUrl
-                                :currentChannel.members[1].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[1].photoUrl}`}
-                                alt={currentChannel.channelName+" mini profile photo"}/>
-                                <h2 className="channel-nav-header">
-                                    {currentChannel.members[0]._id!==_id?currentChannel.members[0].displayName:currentChannel.members[1].displayName}
-                                </h2>
+            {currentChannel && messagesData ? (
+                <section className={`channel-section ${isVisible ? 'channel-section-mob' : ''}`}>
+                    {(modalWindow.isOpen || memberModal.isOpen) && (
+                        <dialog
+                            className="modal-window-container"
+                            onMouseDown={handleModalWindowClick}
+                        >
+                            {modalWindow.window === 'messageLimit' && (
+                                <MessageLimitModal handleCloseButton={handleCloseButton} />
+                            )}
+                            {modalWindow.window === 'groupSettings' &&
+                                currentChannel.photo &&
+                                currentChannel.photoUrl &&
+                                currentChannel.channelName && (
+                                    <GroupSettingsModal
+                                        setModalWindow={setModalWindow}
+                                        setModalDisabled={setModalDisabled}
+                                        handleCloseButton={handleCloseButton}
+                                        socket={socket}
+                                        channelId={currentChannel._id}
+                                        channelName={currentChannel.channelName}
+                                        setCurrentChannel={setCurrentChannel}
+                                        groupPhoto={currentChannel.photo}
+                                        groupPhotoUrl={currentChannel.photoUrl}
+                                    />
+                                )}
+                            {modalWindow.window === 'leaveGroup' && (
+                                <LeaveGroupModal
+                                    channelId={currentChannel._id}
+                                    socket={socket}
+                                    currUserId={_id}
+                                    channelNumber={channelNumber}
+                                    handleCloseButton={handleCloseButton}
+                                    setModalDisabled={setModalDisabled}
+                                />
+                            )}
+                            {modalWindow.window === 'inviteUser' && (
+                                <InviteUserModal
+                                    handleCloseButton={handleCloseButton}
+                                    channelId={currentChannel._id}
+                                    currChannelMembersId={membersId}
+                                    socket={socket}
+                                    channelNumber={channelNumber}
+                                    modalDisabled={modalDisabled}
+                                    setModalDisabled={setModalDisabled}
+                                />
+                            )}
+                            {modalWindow.window === 'deleteGroup' && (
+                                <DeleteGroupModal
+                                    channelId={currentChannel._id}
+                                    channelNumber={channelNumber}
+                                    handleCloseButton={handleCloseButton}
+                                    socket={socket}
+                                    membersId={membersId}
+                                    setModalDisabled={setModalDisabled}
+                                />
+                            )}
+                            {memberModal.type === 'unfriend' && (
+                                <UnfriendMemberModal
+                                    setModalSettings={setMemberModal}
+                                    socket={socket}
+                                    displayName={memberModal.displayName}
+                                    handleCloseButton={handleCloseButton}
+                                    channelNumber={memberModal.channelNumber}
+                                    setModalDisabled={setModalDisabled}
+                                    {...memberModal.ids}
+                                />
+                            )}
+                            {memberModal.type === 'changeLeader' && (
+                                <ChangeLeaderModal
+                                    setModalSettings={setMemberModal}
+                                    socket={socket}
+                                    displayName={memberModal.displayName}
+                                    channelNumber={memberModal.channelNumber}
+                                    handleCloseButton={handleCloseButton}
+                                    setModalDisabled={setModalDisabled}
+                                    {...memberModal.ids}
+                                />
+                            )}
+                        </dialog>
+                    )}
+                    <div className="channel-container">
+                        <nav className="channel-nav">
+                            <div className={`member-error-notice ${memberError ? 'visible' : ''}`}>
+                                {memberError}
                             </div>
-                            :
-                            <div className="channel-nav-info-container">
-                                <img className="channel-nav-photo" src={`${currentChannel.photo==='default.jpeg'?'/img/default.jpeg':currentChannel.photoUrl}`}
-                                alt={currentChannel.channelName+" mini profile photo"}/>
-                                <h2 className="channel-nav-header">{currentChannel.channelName}</h2>
-                            </div>
-                        }
-                        {
-                            currentChannel?.channelType==='Friend'?
-                            <div className="channel-nav-info-mob-container">
-                                <img className="channel-nav-photo"
-                                src={`${currentChannel.members[0]._id!==_id?currentChannel.members[0].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[0].photoUrl
-                                :currentChannel.members[1].photo==='default.jpeg'?'/img/default.jpeg':currentChannel.members[1].photoUrl}`}
-                                alt={currentChannel.channelName+" mobile profile photo"}/>
-                                <h2 className="channel-nav-header">
-                                    {currentChannel.members[0]._id!==_id?currentChannel.members[0].displayName:currentChannel.members[1].displayName}
-                                </h2>
-                            </div>
-                            :
-                            <button className="channel-nav-info-button" onClick={(e)=>handleNavButtonClick(e, 'groupSettings')}>
-                                <img className="channel-nav-photo" src={`${currentChannel.photo==='default.jpeg'?'/img/default.jpeg':currentChannel.photoUrl}`}
-                                alt={currentChannel.channelName + " profile photo button"}/>
-                                <h2 className="channel-nav-header">{currentChannel.channelName}</h2>
-                            </button>
-                        }
-                        <div className={`nav-button-container ${isMemberVisible&&'nav-button-container-0'}`}>
-                            {currentChannel.channelType==='Group'&&
-                            <button className="channel-to-member-button" onClick={handleChannelToMembers}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                                    stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
-                                    className="channel-to-group-image nav-button">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
-                                        </path>
-                                        <circle cx="9" cy="7" r="4">
-                                        </circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87">
-                                        </path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75">
-                                        </path>
+                            <button
+                                className="channel-back-to-home-button"
+                                onClick={isMemberVisible ? handleMembersBack : handleChannelBack}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#b9b9b9 "
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="feather feather-arrow-left"
+                                >
+                                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                                    <polyline points="12 19 5 12 12 5"></polyline>
                                 </svg>
-                            </button>}
-                            {currentChannel.groupLeader===_id&&
-                            <button className="nav-button group-settings-button" onClick={(e)=>handleNavButtonClick(e, 'groupSettings')}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
-                                strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="group-settings-image">
-                                    <circle cx="12" cy="12" r="3" fill="">
-                                    </circle>
-                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 
+                            </button>
+                            {currentChannel?.channelType === 'Friend' ? (
+                                <div className="channel-nav-info-container">
+                                    <img
+                                        className="channel-nav-photo"
+                                        src={`${
+                                            currentChannel.members[0]._id !== _id
+                                                ? currentChannel.members[0].photo === 'default.jpeg'
+                                                    ? '/img/default.jpeg'
+                                                    : currentChannel.members[0].photoUrl
+                                                : currentChannel.members[1].photo === 'default.jpeg'
+                                                  ? '/img/default.jpeg'
+                                                  : currentChannel.members[1].photoUrl
+                                        }`}
+                                        alt={currentChannel.channelName + ' mini profile photo'}
+                                    />
+                                    <h2 className="channel-nav-header">
+                                        {currentChannel.members[0]._id !== _id
+                                            ? currentChannel.members[0].displayName
+                                            : currentChannel.members[1].displayName}
+                                    </h2>
+                                </div>
+                            ) : (
+                                <div className="channel-nav-info-container">
+                                    <img
+                                        className="channel-nav-photo"
+                                        src={`${currentChannel.photo === 'default.jpeg' ? '/img/default.jpeg' : currentChannel.photoUrl}`}
+                                        alt={currentChannel.channelName + ' mini profile photo'}
+                                    />
+                                    <h2 className="channel-nav-header">
+                                        {currentChannel.channelName}
+                                    </h2>
+                                </div>
+                            )}
+                            {currentChannel?.channelType === 'Friend' ? (
+                                <div className="channel-nav-info-mob-container">
+                                    <img
+                                        className="channel-nav-photo"
+                                        src={`${
+                                            currentChannel.members[0]._id !== _id
+                                                ? currentChannel.members[0].photo === 'default.jpeg'
+                                                    ? '/img/default.jpeg'
+                                                    : currentChannel.members[0].photoUrl
+                                                : currentChannel.members[1].photo === 'default.jpeg'
+                                                  ? '/img/default.jpeg'
+                                                  : currentChannel.members[1].photoUrl
+                                        }`}
+                                        alt={currentChannel.channelName + ' mobile profile photo'}
+                                    />
+                                    <h2 className="channel-nav-header">
+                                        {currentChannel.members[0]._id !== _id
+                                            ? currentChannel.members[0].displayName
+                                            : currentChannel.members[1].displayName}
+                                    </h2>
+                                </div>
+                            ) : (
+                                <button
+                                    className="channel-nav-info-button"
+                                    onClick={(e) => handleNavButtonClick(e, 'groupSettings')}
+                                >
+                                    <img
+                                        className="channel-nav-photo"
+                                        src={`${currentChannel.photo === 'default.jpeg' ? '/img/default.jpeg' : currentChannel.photoUrl}`}
+                                        alt={currentChannel.channelName + ' profile photo button'}
+                                    />
+                                    <h2 className="channel-nav-header">
+                                        {currentChannel.channelName}
+                                    </h2>
+                                </button>
+                            )}
+                            <div
+                                className={`nav-button-container ${isMemberVisible && 'nav-button-container-0'}`}
+                            >
+                                {currentChannel.channelType === 'Group' && (
+                                    <button
+                                        className="channel-to-member-button"
+                                        onClick={handleChannelToMembers}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="#b9b9b9 "
+                                            strokeWidth="1"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            className="channel-to-group-image nav-button"
+                                        >
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="9" cy="7" r="4"></circle>
+                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                        </svg>
+                                    </button>
+                                )}
+                                {currentChannel.groupLeader === _id && (
+                                    <button
+                                        className="nav-button group-settings-button"
+                                        onClick={(e) => handleNavButtonClick(e, 'groupSettings')}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="#b9b9b9"
+                                            strokeWidth="1"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            className="group-settings-image"
+                                        >
+                                            <circle cx="12" cy="12" r="3" fill=""></circle>
+                                            <path
+                                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 
                                         1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 
                                         2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 
                                         4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 
                                         1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 
-                                        1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                                        </path>
-                                    </svg>
-                                <div className='channel-nav-button-tooltip'>
-                                    <span className='channel-nav-button-tooltip-text'>
-                                        Group Settings
-                                    </span>
-                                </div>
-                            </button>}
-                            {currentChannel.channelType==='Group'&&
-                            <button className="nav-button" onClick={(e)=>handleNavButtonClick(e, 'inviteUser')}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
-                                strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="invite-user-img">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="8.5" cy="7" r="4"></circle>
-                                    <line x1="20" y1="8" x2="20" y2="14"></line>
-                                    <line x1="23" y1="11" x2="17" y2="11"></line>
-                                </svg>
-                                <div className='channel-nav-button-tooltip'>
-                                    <span className='channel-nav-button-tooltip-text'>
-                                        Invite Friend
-                                    </span>
-                                </div>
-                            </button>
-                            }
-                            {(currentChannel.channelType==="Group"&&currentChannel?.groupLeader!==_id)&&
-                            <button onClick={(e)=>handleNavButtonClick(e, 'leaveGroup')} className="nav-button last-nav-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " strokeWidth="1" strokeLinecap="round" 
-                                strokeLinejoin="round" className="leave-group-img">
-                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                    <polyline points="16 17 21 12 16 7"></polyline>
-                                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                                </svg>
-                                <div className='channel-nav-button-tooltip'>
-                                    <span className='channel-nav-button-tooltip-text'>
-                                        Leave Group
-                                    </span>
-                                </div>
-                            </button>}
-                            {(
-                            currentChannel.channelType==="Group"
-                            &&currentChannel.groupLeader===_id)
-                            &&
-                            <button onClick={(e)=>handleNavButtonClick(e, 'deleteGroup')} className="nav-button disband-group-button last-nav-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                                stroke="#b9b9b9" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" 
-                                className="feather feather-trash-2">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    <line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
-                                </svg>
-                                <div className='channel-nav-button-tooltip'>
-                                    <span className='channel-nav-button-tooltip-text'>
-                                        Disband Group
-                                    </span>
-                                </div>
-                            </button>
-                        }
-                        </div>
-                </nav>
-                <section className="message-section">
-                    <div className="message-box" ref={messageBoxRef} onScroll={handleScroll}>
-                        {messageReceived.length>0&&messageReceived[0].sender._id===_id&&
-                        <div className="sent-indicator-container">
-                            <span className={`sent-indicator ${(messageSentStatus)?'sent-visible':''}`}>
-                                {
-                                    notSentMessages.length===0?'Sent \u2713' :'Sending...'
-                                }
-                            </span>
-                        </div>}
-                        {
-                        messageReceived?
-                            messageReceived.map((message, index)=>(
-                                <div 
-                                    className={message.sender._id===_id?"my-message-info-container user-message-info-container"
-                                    :"user-message-info-container"} 
-                                    key={index}>
-                                    <img className='sender-photo' alt={message.sender.displayName + " mini profile photo"}
-                                    src={`${message.sender.photo==='default.jpeg'?'/img/default.jpeg':message.sender.photoUrl}`}/>
-                                    <div className="message-info">
-                                        <div className="message-date-displayname">
-                                            <span className="message-sender">
-                                                {message.sender.displayName}
-                                            </span>
-                                            <span className="message-date">
-                                                {formatToTodayIfCurrentDate(message.formattedDate.toString())}
+                                        1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                                            ></path>
+                                        </svg>
+                                        <div className="channel-nav-button-tooltip">
+                                            <span className="channel-nav-button-tooltip-text">
+                                                Group Settings
                                             </span>
                                         </div>
-                                        <div className="message-content-container">
-                                            {
-                                            message.content.map((m, i)=>(
-                                                <div key={i} className="message-content">
-                                                    {m.split('\n').map((line, index)=>(
-                                                        <React.Fragment key={index}>
-                                                            {line}
-                                                            {index < line.length -1 && <br/>}
-                                                        </React.Fragment>
+                                    </button>
+                                )}
+                                {currentChannel.channelType === 'Group' && (
+                                    <button
+                                        className="nav-button"
+                                        onClick={(e) => handleNavButtonClick(e, 'inviteUser')}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="#b9b9b9"
+                                            strokeWidth="1"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            className="invite-user-img"
+                                        >
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="8.5" cy="7" r="4"></circle>
+                                            <line x1="20" y1="8" x2="20" y2="14"></line>
+                                            <line x1="23" y1="11" x2="17" y2="11"></line>
+                                        </svg>
+                                        <div className="channel-nav-button-tooltip">
+                                            <span className="channel-nav-button-tooltip-text">
+                                                Invite Friend
+                                            </span>
+                                        </div>
+                                    </button>
+                                )}
+                                {currentChannel.channelType === 'Group' &&
+                                    currentChannel?.groupLeader !== _id && (
+                                        <button
+                                            onClick={(e) => handleNavButtonClick(e, 'leaveGroup')}
+                                            className="nav-button last-nav-button"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="#b9b9b9 "
+                                                strokeWidth="1"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="leave-group-img"
+                                            >
+                                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                                <polyline points="16 17 21 12 16 7"></polyline>
+                                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                                            </svg>
+                                            <div className="channel-nav-button-tooltip">
+                                                <span className="channel-nav-button-tooltip-text">
+                                                    Leave Group
+                                                </span>
+                                            </div>
+                                        </button>
+                                    )}
+                                {currentChannel.channelType === 'Group' &&
+                                    currentChannel.groupLeader === _id && (
+                                        <button
+                                            onClick={(e) => handleNavButtonClick(e, 'deleteGroup')}
+                                            className="nav-button disband-group-button last-nav-button"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="#b9b9b9"
+                                                strokeWidth="1"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="feather feather-trash-2"
+                                            >
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                                            </svg>
+                                            <div className="channel-nav-button-tooltip">
+                                                <span className="channel-nav-button-tooltip-text">
+                                                    Disband Group
+                                                </span>
+                                            </div>
+                                        </button>
+                                    )}
+                            </div>
+                        </nav>
+                        <section className="message-section">
+                            <div
+                                className="message-box"
+                                ref={messageBoxRef}
+                                onScroll={handleScroll}
+                            >
+                                {messageReceived.length > 0 &&
+                                    messageReceived[0].sender._id === _id && (
+                                        <div className="sent-indicator-container">
+                                            <span
+                                                className={`sent-indicator ${messageSentStatus ? 'sent-visible' : ''}`}
+                                            >
+                                                {notSentMessages.length === 0
+                                                    ? 'Sent \u2713'
+                                                    : 'Sending...'}
+                                            </span>
+                                        </div>
+                                    )}
+                                {messageReceived ? (
+                                    messageReceived.map((message, index) => (
+                                        <div
+                                            className={
+                                                message.sender._id === _id
+                                                    ? 'my-message-info-container user-message-info-container'
+                                                    : 'user-message-info-container'
+                                            }
+                                            key={index}
+                                        >
+                                            <img
+                                                className="sender-photo"
+                                                alt={
+                                                    message.sender.displayName +
+                                                    ' mini profile photo'
+                                                }
+                                                src={`${message.sender.photo === 'default.jpeg' ? '/img/default.jpeg' : message.sender.photoUrl}`}
+                                            />
+                                            <div className="message-info">
+                                                <div className="message-date-displayname">
+                                                    <span className="message-sender">
+                                                        {message.sender.displayName}
+                                                    </span>
+                                                    <span className="message-date">
+                                                        {formatToTodayIfCurrentDate(
+                                                            message.formattedDate.toString()
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <div className="message-content-container">
+                                                    {message.content.map((m, i) => (
+                                                        <div key={i} className="message-content">
+                                                            {m.split('\n').map((line, index) => (
+                                                                <React.Fragment key={index}>
+                                                                    {line}
+                                                                    {index < line.length - 1 && (
+                                                                        <br />
+                                                                    )}
+                                                                </React.Fragment>
+                                                            ))}
+                                                        </div>
                                                     ))}
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )):
-                            <div></div>
-                        }
-                    <div className="top-message-gap">
-                        <div className="fetch-message-loading">
-                        { msgFetchLoading&&
-                        <div className="fetch-message-loading">
-                            </div>}
-                        </div>
-                    </div>
-                    </div>
-                    <div className="message-input-container">
-                        <ReactTextareaAutosize 
-                            name="message-text-area"
-                            ref={textareaRef}
-                            value={inputMessage} 
-                            placeholder="Send a message..."
-                            onKeyDown={handleKeyDown}
-                            onChange={(event)=>setInputMessage(event.target.value)} 
-                            className="message-input"
-                            maxLength={320}
-                            autoFocus
-                        />
-                    </div>
-                </section>
-                <section className={`channel-members-section ${isMemberVisible&&'mob-member-visible'}`}>
-                    {currentChannel.channelType==='Group'?
-                        <ul className="member-list" ref={memberListRef}>
-                        {
-                            sortedMembers.map((member, i)=>(
-                                <li className='member-container member-popup' key={`member-${i}`}>
-                                    <button className="member-popup-button" onClick={(e)=>handlePopUp(e, member._id)}>
-                                        <div className="member-profile-status">
-                                            <img className='member-profile-photo' alt={member.displayName + " mini profile photo"}
-                                            src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`}/>
-                                            <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}></div>
-                                        </div>
-                                        <span className="member-name">{member.displayName}</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9" 
-                                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" 
-                                        className="member-more">
-                                            <circle cx="12" cy="12" r="1">
-                                            </circle>
-                                            <circle cx="19" cy="12" r="1">
-                                            </circle>
-                                            <circle cx="5" cy="12" r="1"></circle>
-                                        </svg>
-                                    </button>
-                                    {memberPopUp===member._id&&member._id!==_id&&
-                                    <div style={{'bottom':`${isPopUpBelow?'100%':'none'}`, 'top':`${isPopUpBelow?'none':'100%'}`}}
-                                    className={`member-popup-container ${activePopup?'member-popup-active':''}`}>
-                                        <div className="popup-member-info-container">
-                                            <img src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`} 
-                                            alt={member.displayName + " mini profile photo"}/>
-                                            <div className="popup-member-info">
-                                                <span className="popup-member-name">{member.displayName}</span>
-                                                <span className="popup-member-friend-tag">#{member.friendTag}</span>
                                             </div>
                                         </div>
-                                        {findMemberId(member._id)?
-                                        <>
-                                            <Link to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`} className="member-message-link" 
-                                            aria-label={`Message friend ${member.displayName}`}>
-                                                Send Message
-                                            </Link>
-                                            <button onClick={(e)=>handleMemberSelect(e, findMemberId(member._id)?.channelNumber, member._id, member.displayName, 'unfriend')} className="member-unfriend-button">
-                                                Remove Friend
-                                            </button>
-                                        </>
-                                        :
-                                        alreadyAdded(member._id)?
-                                        <div className="req-sent-text">Request Sent</div>
-                                        :
-                                        alreadyPending(member._id)?
-                                        <>
-                                            <button className="member-accept-friend-request" onClick={(e)=>handleAcceptRequest(e, member._id, alreadyPending(member._id))}>
-                                                Accept Request
-                                            </button>
-                                            <button className="member-decline-friend-request" onClick={(e)=>handleDeclineRequest(e, member._id)}>
-                                                Decline Request
-                                            </button>
-                                        </>:
-                                        <button className="member-add-friend" onClick={(e)=>handleAddFriendMember(e, member.displayName, member.friendTag)}>
-                                            Add Friend
-                                        </button>
-                                        }
-                                        {currentChannel.groupLeader===_id&&
-                                        <button className="member-set-leader" onClick={(e)=>handleMemberSelect(e, currentChannel.channelNumber, member._id, member.displayName, 'changeLeader')}>
-                                            Set as Group Leader
-                                        </button>}
-                                    </div>}
-                                </li>  
-                            ))
-                            }
-                        </ul>
-                        :
-                        <ul className='member-list'>
-                            {sortedMembers.map((member, i)=>(
-                                <li key={`member-${i}`} className="member-container friend-member-container">
-                                    <div className="member-profile-status">
-                                        <img className='member-profile-photo' alt={member.displayName + " mini profile photo"}
-                                        src={`${member.photo==='default.jpeg'?'/img/default.jpeg':member.photoUrl}`}/>
-                                        <div className='member-status' style={{backgroundColor:member.status==='Online'?'green':'#959595'}}>
-                                        </div>
+                                    ))
+                                ) : (
+                                    <div></div>
+                                )}
+                                <div className="top-message-gap">
+                                    <div className="fetch-message-loading">
+                                        {msgFetchLoading && (
+                                            <div className="fetch-message-loading"></div>
+                                        )}
                                     </div>
-                                    <span className="member-name">{member.displayName}</span>
-                                </li>
-                            ))}
-                        </ul>}
+                                </div>
+                            </div>
+                            <div className="message-input-container">
+                                <ReactTextareaAutosize
+                                    name="message-text-area"
+                                    ref={textareaRef}
+                                    value={inputMessage}
+                                    placeholder="Send a message..."
+                                    onKeyDown={handleKeyDown}
+                                    onChange={(event) => setInputMessage(event.target.value)}
+                                    className="message-input"
+                                    maxLength={320}
+                                    autoFocus
+                                />
+                            </div>
+                        </section>
+                        <section
+                            className={`channel-members-section ${isMemberVisible && 'mob-member-visible'}`}
+                        >
+                            {currentChannel.channelType === 'Group' ? (
+                                <ul className="member-list" ref={memberListRef}>
+                                    {sortedMembers.map((member, i) => (
+                                        <li
+                                            className="member-container member-popup"
+                                            key={`member-${i}`}
+                                        >
+                                            <button
+                                                className="member-popup-button"
+                                                onClick={(e) => handlePopUp(e, member._id)}
+                                            >
+                                                <div className="member-profile-status">
+                                                    <img
+                                                        className="member-profile-photo"
+                                                        alt={
+                                                            member.displayName +
+                                                            ' mini profile photo'
+                                                        }
+                                                        src={`${member.photo === 'default.jpeg' ? '/img/default.jpeg' : member.photoUrl}`}
+                                                    />
+                                                    <div
+                                                        className="member-status"
+                                                        style={{
+                                                            backgroundColor:
+                                                                member.status === 'Online'
+                                                                    ? 'green'
+                                                                    : '#959595',
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                                <span className="member-name">
+                                                    {member.displayName}
+                                                </span>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="#b9b9b9"
+                                                    strokeWidth="1"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="member-more"
+                                                >
+                                                    <circle cx="12" cy="12" r="1"></circle>
+                                                    <circle cx="19" cy="12" r="1"></circle>
+                                                    <circle cx="5" cy="12" r="1"></circle>
+                                                </svg>
+                                            </button>
+                                            {memberPopUp === member._id && member._id !== _id && (
+                                                <div
+                                                    style={{
+                                                        bottom: `${isPopUpBelow ? '100%' : 'none'}`,
+                                                        top: `${isPopUpBelow ? 'none' : '100%'}`,
+                                                    }}
+                                                    className={`member-popup-container ${activePopup ? 'member-popup-active' : ''}`}
+                                                >
+                                                    <div className="popup-member-info-container">
+                                                        <img
+                                                            src={`${member.photo === 'default.jpeg' ? '/img/default.jpeg' : member.photoUrl}`}
+                                                            alt={
+                                                                member.displayName +
+                                                                ' mini profile photo'
+                                                            }
+                                                        />
+                                                        <div className="popup-member-info">
+                                                            <span className="popup-member-name">
+                                                                {member.displayName}
+                                                            </span>
+                                                            <span className="popup-member-friend-tag">
+                                                                #{member.friendTag}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {findMemberId(member._id) ? (
+                                                        <>
+                                                            <Link
+                                                                to={`/@me/channels/${findMemberId(member._id)?.channelNumber}`}
+                                                                className="member-message-link"
+                                                                aria-label={`Message friend ${member.displayName}`}
+                                                            >
+                                                                Send Message
+                                                            </Link>
+                                                            <button
+                                                                onClick={(e) =>
+                                                                    handleMemberSelect(
+                                                                        e,
+                                                                        findMemberId(member._id)
+                                                                            ?.channelNumber,
+                                                                        member._id,
+                                                                        member.displayName,
+                                                                        'unfriend'
+                                                                    )
+                                                                }
+                                                                className="member-unfriend-button"
+                                                            >
+                                                                Remove Friend
+                                                            </button>
+                                                        </>
+                                                    ) : alreadyAdded(member._id) ? (
+                                                        <div className="req-sent-text">
+                                                            Request Sent
+                                                        </div>
+                                                    ) : alreadyPending(member._id) ? (
+                                                        <>
+                                                            <button
+                                                                className="member-accept-friend-request"
+                                                                onClick={(e) =>
+                                                                    handleAcceptRequest(
+                                                                        e,
+                                                                        member._id,
+                                                                        alreadyPending(member._id)
+                                                                    )
+                                                                }
+                                                            >
+                                                                Accept Request
+                                                            </button>
+                                                            <button
+                                                                className="member-decline-friend-request"
+                                                                onClick={(e) =>
+                                                                    handleDeclineRequest(
+                                                                        e,
+                                                                        member._id
+                                                                    )
+                                                                }
+                                                            >
+                                                                Decline Request
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <button
+                                                            className="member-add-friend"
+                                                            onClick={(e) =>
+                                                                handleAddFriendMember(
+                                                                    e,
+                                                                    member.displayName,
+                                                                    member.friendTag
+                                                                )
+                                                            }
+                                                        >
+                                                            Add Friend
+                                                        </button>
+                                                    )}
+                                                    {currentChannel.groupLeader === _id && (
+                                                        <button
+                                                            className="member-set-leader"
+                                                            onClick={(e) =>
+                                                                handleMemberSelect(
+                                                                    e,
+                                                                    currentChannel.channelNumber,
+                                                                    member._id,
+                                                                    member.displayName,
+                                                                    'changeLeader'
+                                                                )
+                                                            }
+                                                        >
+                                                            Set as Group Leader
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <ul className="member-list">
+                                    {sortedMembers.map((member, i) => (
+                                        <li
+                                            key={`member-${i}`}
+                                            className="member-container friend-member-container"
+                                        >
+                                            <div className="member-profile-status">
+                                                <img
+                                                    className="member-profile-photo"
+                                                    alt={member.displayName + ' mini profile photo'}
+                                                    src={`${member.photo === 'default.jpeg' ? '/img/default.jpeg' : member.photoUrl}`}
+                                                />
+                                                <div
+                                                    className="member-status"
+                                                    style={{
+                                                        backgroundColor:
+                                                            member.status === 'Online'
+                                                                ? 'green'
+                                                                : '#959595',
+                                                    }}
+                                                ></div>
+                                            </div>
+                                            <span className="member-name">
+                                                {member.displayName}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                    </div>
                 </section>
-            </div>
-        </section>:
-        <section className={`channel-section ${isVisible?"channel-section-mob":''}`}>
-            <div className="channel-container">
-                <nav className="channel-nav">
-                    <button className="channel-back-to-home-button" onClick={isMemberVisible?handleMembersBack:handleChannelBack}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9b9b9 " 
-                        strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                    </button>
-                </nav>
-                <section className="message-section">
+            ) : (
+                <section className={`channel-section ${isVisible ? 'channel-section-mob' : ''}`}>
+                    <div className="channel-container">
+                        <nav className="channel-nav">
+                            <button
+                                className="channel-back-to-home-button"
+                                onClick={isMemberVisible ? handleMembersBack : handleChannelBack}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#b9b9b9 "
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className=""
+                                >
+                                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                                    <polyline points="12 19 5 12 12 5"></polyline>
+                                </svg>
+                            </button>
+                        </nav>
+                        <section className="message-section"></section>
+                        <section className="channel-members-section"></section>
+                    </div>
                 </section>
-                <section className="channel-members-section">
-                </section>
-            </div>
-        </section>}
+            )}
         </>
-    )
-}
+    );
+};
 
-export default ChannelSection
-
+export default ChannelSection;

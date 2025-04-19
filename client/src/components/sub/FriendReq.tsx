@@ -1,144 +1,191 @@
-import { useState } from "react"
-import { FriendReqProps, AcceptFriendStatus, Friend } from "../../types/friendTypes"
-import { AxiosResponse } from "axios"
-import { acceptFriend, declineFriend } from "../../api/friend"
-import { useHomeCustomContext } from "../../context"
+import { useState } from 'react';
+import { FriendReqProps, AcceptFriendStatus, Friend } from '../../types/friendTypes';
+import { AxiosResponse } from 'axios';
+import { acceptFriend, declineFriend } from '../../api/friend';
+import { useHomeCustomContext } from '../../context';
 
+const FriendReq: React.FC<FriendReqProps> = ({ pendingRequests, currComponent }) => {
+    const [loading, setLoading] = useState(['']);
+    const [error, setError] = useState(['']);
+    const { socket, handleNewFriendChannel, setFriendReqs, currUserId } = useHomeCustomContext();
 
-const FriendReq:React.FC<FriendReqProps>=({pendingRequests, currComponent})=>{
-    const [loading, setLoading] = useState([''])
-    const [error, setError] = useState([''])
-    const {socket, handleNewFriendChannel, setFriendReqs, currUserId} = useHomeCustomContext()
-    
     //friendId is the object that contains the user info and your status with that user
-    const handleAcceptRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string, friendId:string):Promise<void>=>{
-        e.preventDefault()
-        setLoading(prevLoading=>[...prevLoading, `req-${pendingUserId}`])
-        setError(prevError=>{
-            const updateError = [...prevError]
-            return updateError.filter(error=>error!==`error-${pendingUserId}`)
-        })  
-        try{
-            const res:AxiosResponse<AcceptFriendStatus> = await acceptFriend( pendingUserId)
-            if(res.data.status==='success'){
-                const fetchedNewChannelData = {...res.data.newChannel}
+    const handleAcceptRequest = async (
+        e: React.MouseEvent<HTMLButtonElement>,
+        pendingUserId: string,
+        friendId: string
+    ): Promise<void> => {
+        e.preventDefault();
+        setLoading((prevLoading) => [...prevLoading, `req-${pendingUserId}`]);
+        setError((prevError) => {
+            const updateError = [...prevError];
+            return updateError.filter((error) => error !== `error-${pendingUserId}`);
+        });
+        try {
+            const res: AxiosResponse<AcceptFriendStatus> = await acceptFriend(pendingUserId);
+            if (res.data.status === 'success') {
+                const fetchedNewChannelData = { ...res.data.newChannel };
                 //we sort it this way to make the pending user always on the index 0
-                const sortMembers = fetchedNewChannelData.members.sort((a,b)=>{
-                    return (a._id === pendingUserId && b._id !== pendingUserId)?-1:1
-                })
+                const sortMembers = fetchedNewChannelData.members.sort((a, b) => {
+                    return a._id === pendingUserId && b._id !== pendingUserId ? -1 : 1;
+                });
                 //We need it in this format so we can update the friendChannels
-                const newChannel:Friend = {
-                    channel:{
-                        channelType:fetchedNewChannelData.channelType,
-                        channelNumber:fetchedNewChannelData.channelNumber,
-                        lastMessage:fetchedNewChannelData.lastMessage,
-                        _id:fetchedNewChannelData._id,
+                const newChannel: Friend = {
+                    channel: {
+                        channelType: fetchedNewChannelData.channelType,
+                        channelNumber: fetchedNewChannelData.channelNumber,
+                        lastMessage: fetchedNewChannelData.lastMessage,
+                        _id: fetchedNewChannelData._id,
                         id: fetchedNewChannelData.id,
                         formattedLastMessage: fetchedNewChannelData.formattedLastMessage,
-                        seen: fetchedNewChannelData.seen
+                        seen: fetchedNewChannelData.seen,
                     },
-                    friend:{
-                        ...sortMembers[0]
+                    friend: {
+                        ...sortMembers[0],
                     },
-                    status:"Friend",
-                    _id:friendId
-                }
-                handleNewFriendChannel(newChannel)
-                setFriendReqs(prevUserReqs=>{
-                    const updateUserReqs = [...prevUserReqs]
-                    return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
-                })
-                setLoading(prevLoading=>{
-                    const updateLoading = [...prevLoading]
-                    return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
-                })
-                if(socket){
+                    status: 'Friend',
+                    _id: friendId,
+                };
+                handleNewFriendChannel(newChannel);
+                setFriendReqs((prevUserReqs) => {
+                    const updateUserReqs = [...prevUserReqs];
+                    return updateUserReqs.filter(
+                        (userReqs) => userReqs.friend._id !== pendingUserId
+                    );
+                });
+                setLoading((prevLoading) => {
+                    const updateLoading = [...prevLoading];
+                    return updateLoading.filter((loading) => loading !== `req-${pendingUserId}`);
+                });
+                if (socket) {
                     socket.emit('accepted_pending_friend_request', {
                         newChannelInfo: newChannel.channel,
                         pendingUserId: sortMembers[0]._id,
-                        newFriendId: currUserId
-                    })
+                        newFriendId: currUserId,
+                    });
                 }
             }
-        }catch(_err : unknown){  
-            setLoading(prevLoading=>{
-                const updateLoading = [...prevLoading]
-                return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
-            })
-            setError(prevError=>[...prevError, `error-${pendingUserId}`])  
+        } catch (_err: unknown) {
+            setLoading((prevLoading) => {
+                const updateLoading = [...prevLoading];
+                return updateLoading.filter((loading) => loading !== `req-${pendingUserId}`);
+            });
+            setError((prevError) => [...prevError, `error-${pendingUserId}`]);
         }
-    }
+    };
 
-    const handleRejectRequest = async (e:React.MouseEvent<HTMLButtonElement>, pendingUserId:string):Promise<void>=>{
-        e.preventDefault()
-        setLoading(prevLoading=>[...prevLoading, `req-${pendingUserId}`])
-        setError(prevError=>{
-            const updateError = [...prevError]
-            return updateError.filter(error=>error!==`error-${pendingUserId}`)
-        })  
-        try{
-            const res:AxiosResponse<void>= await declineFriend(pendingUserId)
-            if(res.status===204){
-                setFriendReqs(prevUserReqs=>{
-                    const updateUserReqs = [...prevUserReqs]
-                    return updateUserReqs.filter(userReqs=>userReqs.friend._id!==pendingUserId)
-                })
-                setLoading(prevLoading=>{
-                    const updateLoading = [...prevLoading]
-                    return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
-                })
-                if(socket){
-                    socket.emit("declined_pending_friend_request", {declinedUser: pendingUserId, userId:currUserId})
+    const handleRejectRequest = async (
+        e: React.MouseEvent<HTMLButtonElement>,
+        pendingUserId: string
+    ): Promise<void> => {
+        e.preventDefault();
+        setLoading((prevLoading) => [...prevLoading, `req-${pendingUserId}`]);
+        setError((prevError) => {
+            const updateError = [...prevError];
+            return updateError.filter((error) => error !== `error-${pendingUserId}`);
+        });
+        try {
+            const res: AxiosResponse<void> = await declineFriend(pendingUserId);
+            if (res.status === 204) {
+                setFriendReqs((prevUserReqs) => {
+                    const updateUserReqs = [...prevUserReqs];
+                    return updateUserReqs.filter(
+                        (userReqs) => userReqs.friend._id !== pendingUserId
+                    );
+                });
+                setLoading((prevLoading) => {
+                    const updateLoading = [...prevLoading];
+                    return updateLoading.filter((loading) => loading !== `req-${pendingUserId}`);
+                });
+                if (socket) {
+                    socket.emit('declined_pending_friend_request', {
+                        declinedUser: pendingUserId,
+                        userId: currUserId,
+                    });
                 }
+            }
+        } catch (_err) {
+            setLoading((prevLoading) => {
+                const updateLoading = [...prevLoading];
+                return updateLoading.filter((loading) => loading !== `req-${pendingUserId}`);
+            });
+            setError((prevError) => [...prevError, `error-${pendingUserId}`]);
         }
-        }catch(_err){
-            setLoading(prevLoading=>{
-                const updateLoading = [...prevLoading]
-                return updateLoading.filter(loading => loading!==`req-${pendingUserId}`)
-            })
-            setError(prevError=>[...prevError, `error-${pendingUserId}`])  
-        }}
+    };
 
-    return(
-        <section className={`pending-request-section ${currComponent==='friendReq'&&'pending-request-section-active'}`}>
+    return (
+        <section
+            className={`pending-request-section ${currComponent === 'friendReq' && 'pending-request-section-active'}`}
+        >
             <ul className="pending-request">
-                {pendingRequests.map((request, index)=>(
+                {pendingRequests.map((request, index) => (
                     <li className="pending-user-container" key={index}>
-                        <div className="pending-user-information" >
-                            <img src={`${request.friend.photo==='default.jpeg'?'/img/default.jpeg':request.friend.photoUrl}`}
-                            alt={`friend request user ${request.friend.displayName} profile photo`}/>
+                        <div className="pending-user-information">
+                            <img
+                                src={`${request.friend.photo === 'default.jpeg' ? '/img/default.jpeg' : request.friend.photoUrl}`}
+                                alt={`friend request user ${request.friend.displayName} profile photo`}
+                            />
                             <span>{request.friend.displayName}</span>
                         </div>
                         <div className="pending-request-button-container">
-                            {loading.includes(`req-${request.friend._id}`)?
-                            <div className="friend-req-button-loading"></div>
-                            :
-                            <>
-                                {error.includes(`error-${request.friend._id}`)&&
-                                <span className="pending-request-error">An error occurred</span>}
-                                <button className="accept-friend-request-button" 
-                                onClick={(e)=>handleAcceptRequest(e, request.friend._id, request._id)}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
-                                        fill="none" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" 
-                                        className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </button>
-                                <button className="decline-friend-request-button" 
-                                onClick={(e)=>handleRejectRequest(e, request.friend._id)}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                                    stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-                                    </svg>
-                                </button>
-                            </>
-                            }
+                            {loading.includes(`req-${request.friend._id}`) ? (
+                                <div className="friend-req-button-loading"></div>
+                            ) : (
+                                <>
+                                    {error.includes(`error-${request.friend._id}`) && (
+                                        <span className="pending-request-error">
+                                            An error occurred
+                                        </span>
+                                    )}
+                                    <button
+                                        className="accept-friend-request-button"
+                                        onClick={(e) =>
+                                            handleAcceptRequest(e, request.friend._id, request._id)
+                                        }
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="white"
+                                            strokeWidth="1"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            className="feather feather-check"
+                                        >
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        className="decline-friend-request-button"
+                                        onClick={(e) => handleRejectRequest(e, request.friend._id)}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="white"
+                                            strokeWidth="1"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            className=""
+                                        >
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </li>
                 ))}
             </ul>
         </section>
-    )
-}
+    );
+};
 
-
-export default FriendReq
+export default FriendReq;

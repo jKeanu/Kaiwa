@@ -1,76 +1,114 @@
-import { AddFriendProps, AddFriendStatus } from "../../types/friendTypes";
-import { addFriend } from "../../api/friend";
-import { useState } from "react";
-import axios, { AxiosResponse } from "axios";
-import { useHomeCustomContext } from "../../context";
+import { AddFriendProps, AddFriendStatus } from '../../types/friendTypes';
+import { addFriend } from '../../api/friend';
+import { useState } from 'react';
+import axios, { AxiosResponse } from 'axios';
+import { useHomeCustomContext } from '../../context';
 
+const AddFriend: React.FC<AddFriendProps> = ({ currComponent }) => {
+    const [displayName, setDisplayName] = useState('');
+    const [friendTag, setFriendTag] = useState('');
+    const [requestStatus, setRequestStatus] = useState<{ type: string; message: string }>();
+    const [isSending, setIsSending] = useState(false);
+    const { socket, setSentReqs } = useHomeCustomContext();
 
-const AddFriend:React.FC<AddFriendProps>=({currComponent})=>{
-    const [displayName, setDisplayName] = useState('')
-    const [friendTag, setFriendTag] = useState('')
-    const [requestStatus, setRequestStatus] = useState<{type:string, message:string}>()
-    const [isSending, setIsSending] = useState(false)
-    const {socket, setSentReqs} = useHomeCustomContext()
-    
-    
-    const handleAddFriend = async (e:React.FormEvent<HTMLFormElement>):Promise<void>=>{
-        e.preventDefault()
-        setRequestStatus({type:'', message:''})
-        setIsSending(true)
-        try{
-            const res:AxiosResponse<AddFriendStatus> = await addFriend(displayName, friendTag)
-            if(res.data.status==='success'){
-                setRequestStatus({type:'success', message:'Successfully sent the request!'})
-                setDisplayName('')
-                setFriendTag('')
-                setIsSending(false)
-                setSentReqs(prevSentReqs=>[...prevSentReqs, res.data.sentRequestDetails])
-                if(socket){
-                    socket.emit('friend_request_sent', 
-                    {requestedUserId:res.data.sentRequestDetails.friend._id,
-                     requestDetails:res.data.pendingRequestDetails})
+    const handleAddFriend = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        e.preventDefault();
+        setRequestStatus({ type: '', message: '' });
+        setIsSending(true);
+        try {
+            const res: AxiosResponse<AddFriendStatus> = await addFriend(displayName, friendTag);
+            if (res.data.status === 'success') {
+                setRequestStatus({ type: 'success', message: 'Successfully sent the request!' });
+                setDisplayName('');
+                setFriendTag('');
+                setIsSending(false);
+                setSentReqs((prevSentReqs) => [...prevSentReqs, res.data.sentRequestDetails]);
+                if (socket) {
+                    socket.emit('friend_request_sent', {
+                        requestedUserId: res.data.sentRequestDetails.friend._id,
+                        requestDetails: res.data.pendingRequestDetails,
+                    });
                 }
             }
-        }catch(err:unknown){
-            if(axios.isAxiosError(err)){
-                if(err.response){
-                    if(err.response.status===400 || err.response.status===404 
-                        || err.response.status===409 || err.response.status===429
-                        || err.response.status===403){
-                        setRequestStatus({type:'error', message:err.response.data.message})
-                    }else{
-                        setRequestStatus({type:'error', message:`There was an error sending the friend request.`})
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                if (err.response) {
+                    if (
+                        err.response.status === 400 ||
+                        err.response.status === 404 ||
+                        err.response.status === 409 ||
+                        err.response.status === 403
+                    ) {
+                        setRequestStatus({ type: 'error', message: err.response.data.message });
+                    } else if (err.response.status === 429) {
+                        setRequestStatus({
+                            type: 'error',
+                            message: 'Too many friend request sent, try again later.',
+                        });
+                    } else {
+                        setRequestStatus({
+                            type: 'error',
+                            message: `There was an error sending the friend request.`,
+                        });
                     }
-                }else{
-                    setRequestStatus({type:'error', message:`An unknown error occurred. Please try again later.`})
+                } else {
+                    setRequestStatus({
+                        type: 'error',
+                        message: `An unknown error occurred. Please try again later.`,
+                    });
                 }
-            }else{
-                setRequestStatus({type:'error', message:`An unknown error occurred. Please try again later.`})
+            } else {
+                setRequestStatus({
+                    type: 'error',
+                    message: `An unknown error occurred. Please try again later.`,
+                });
             }
-            setIsSending(false)
+            setIsSending(false);
         }
-    }
-    return(
-        <section className={`add-friend-section ${currComponent==='addFriend'&&'add-friend-section-active'}`}
-        style={{left:`${currComponent==='friendReq'?'-110%':''}`}}>
+    };
+    return (
+        <section
+            className={`add-friend-section ${currComponent === 'addFriend' && 'add-friend-section-active'}`}
+            style={{ left: `${currComponent === 'friendReq' ? '-110%' : ''}` }}
+        >
             <form className="add-friend-form" onSubmit={handleAddFriend}>
                 <div className="add-friend-input-container">
                     <label htmlFor="add-friend-displayName">Display Name</label>
-                    <input autoComplete='off' maxLength={10} value={displayName} onChange={(e)=>setDisplayName(e.target.value)} id="add-friend-displayName" className="displayName-input"/>
+                    <input
+                        autoComplete="off"
+                        maxLength={10}
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        id="add-friend-displayName"
+                        className="displayName-input"
+                    />
                     <label htmlFor="add-friend-friendTag">#</label>
-                    <input maxLength={6} autoComplete="off" value={friendTag} onChange={(e)=>setFriendTag(e.target.value.toUpperCase())} type="text"  id="add-friend-friendTag"
-                    className="friendTag-input"/>
+                    <input
+                        maxLength={6}
+                        autoComplete="off"
+                        value={friendTag}
+                        onChange={(e) => setFriendTag(e.target.value.toUpperCase())}
+                        type="text"
+                        id="add-friend-friendTag"
+                        className="friendTag-input"
+                    />
                 </div>
                 <div className="add-friend-button-container">
-                    <button type="submit" className="add-friend-submit-button">{isSending?'Sending...':'Send Friend Request'}</button>
+                    <button type="submit" className="add-friend-submit-button">
+                        {isSending ? 'Sending...' : 'Send Friend Request'}
+                    </button>
                 </div>
             </form>
-            {requestStatus&&
-            <span className="request-status" style={{color: `${requestStatus.type==='success'?'green':'#c93a3a'}`}}>
-                {requestStatus.message}
-            </span>}
+            {requestStatus && (
+                <span
+                    className="request-status"
+                    style={{ color: `${requestStatus.type === 'success' ? 'green' : '#c93a3a'}` }}
+                >
+                    {requestStatus.message}
+                </span>
+            )}
         </section>
-    )
-}
+    );
+};
 
-export default AddFriend
+export default AddFriend;

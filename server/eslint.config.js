@@ -6,7 +6,6 @@ import prettierPlugin from 'eslint-plugin-prettier';
 
 export default [
     js.configs.recommended,
-    eslintConfigPrettier,
     {
         files: ['**/*.{js,mjs,cjs}'],
         languageOptions: {
@@ -47,4 +46,5 @@ export default [
             ],
         },
     },
+    eslintConfigPrettier,
 ];
