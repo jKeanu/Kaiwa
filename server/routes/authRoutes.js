@@ -33,9 +33,15 @@ const resetPasswordLimiter = rateLimit({
 });
 
 const authCheckLimit = rateLimit({
-    max: 80,
+    max: 50,
     windowMs: 1000 * 60 * 60 * 6,
     message: 'Too many request attempts, please try again later.',
+});
+
+const refreshLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5,
+    message: 'Too many refresh attempts, please try again later.',
 });
 
 router.post('/register', registerLimiter, authController.signup);
@@ -47,5 +53,5 @@ router.post('/forgotPassword', forgotPasswordLimiter, authController.forgotPassw
 router.patch('/resetPassword/:token', resetPasswordLimiter, authController.resetPassword);
 
 router.get('/check', authCheckLimit, verifyRefresh, isLoggedIn);
-router.post('/refresh', verifyRefresh, authController.tokenRefresh);
+router.post('/refresh', refreshLimiter, verifyRefresh, authController.tokenRefresh);
 export default router;
