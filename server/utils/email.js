@@ -43,7 +43,10 @@ export class Email {
             url: this.url,
             displayName: this.displayName,
             subject,
-            subDomain: process.env.SERVER_SUB_DOMAIN_PROD,
+            subDomain:
+                process.env.NODE_ENV === 'production'
+                    ? process.env.SERVER_DOMAIN_PROD
+                    : process.env.SERVER_DOMAIN_DEV,
         });
         const mailOptions = {
             from: this.from,
