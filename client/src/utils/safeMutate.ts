@@ -9,15 +9,15 @@ function safeMutate<T>(
     mutate(cacheKey, updater, revalidate).catch((err) => {
         if (import.meta.env.MODE === 'development') {
             console.error('safeMutate error:', err);
+        } else {
+            Sentry.captureException(err, {
+                tags: { function: 'safeMutate' },
+                extra: {
+                    cacheKey,
+                    errMessage: err?.message,
+                },
+            });
         }
-        // Always log to Sentry
-        Sentry.captureException(err, {
-            tags: { function: 'safeMutate' },
-            extra: {
-                cacheKey,
-                errMessage: err?.message,
-            },
-        });
     });
 }
 

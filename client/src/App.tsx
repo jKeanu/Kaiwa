@@ -5,8 +5,7 @@ import './styles/main.sass';
 import AuthenticationPage from './pages/Auth';
 
 Sentry.init({
-    dsn: import.meta.env.SENTRY_DNS,
-    debug: import.meta.env.MODE === 'development',
+    dsn: import.meta.env.VITE_SENTRY_DNS,
 });
 
 const App = () => {

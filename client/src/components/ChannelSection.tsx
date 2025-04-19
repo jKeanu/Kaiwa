@@ -760,14 +760,14 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                 ).catch((err) => {
                     if (import.meta.env.MODE === 'development') {
                         console.error('safeMutate error:', err);
+                    } else {
+                        Sentry.captureException(err, {
+                            tags: { function: 'safeMutate' },
+                            extra: {
+                                errMessage: err?.message,
+                            },
+                        });
                     }
-                    // Always log to Sentry
-                    Sentry.captureException(err, {
-                        tags: { function: 'safeMutate' },
-                        extra: {
-                            errMessage: err?.message,
-                        },
-                    });
                 });
             }
         };
