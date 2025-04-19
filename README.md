@@ -31,7 +31,8 @@ A real-time chat app where users can message friends privately or in groups, cus
 ### Prerequisites
 - Node.js (v18+)  
 - MongoDB Atlas  
-- AWS Account (for S3/CloudFront/CloudWatch)  
+- AWS Account (for S3/CloudFront/CloudWatch)
+- Sentry Account (for front-end error monitoring)
 - SMTP/Mailjet for emails
 
 ### ⚙️ Configuration
