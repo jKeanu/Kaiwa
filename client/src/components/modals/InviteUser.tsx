@@ -112,7 +112,7 @@ const InviteUserModal: React.FC<InviteFriend> = ({
                     </svg>
                 </button>
             </div>
-            <h2 className="modal-header">Invite a Friend</h2>
+            <div className="modal-header">Invite a Friend</div>
             <div className="modal-text">Invite your friend to the group.</div>
             <div className="invite-modal-friend-list">
                 <ul className="invite-friend-list-containter">

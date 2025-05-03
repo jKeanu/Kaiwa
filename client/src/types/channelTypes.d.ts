@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io-client';
 import { User } from './userTypes';
 import { FIdChannelInfo, Friend, FriendReq, SentReq } from './friendTypes';
-import { SetStateAction } from 'react';
+import React, { SetStateAction } from 'react';
 
 export type ChannelSectionProps = {
     socket: Socket | undefined;
@@ -15,6 +15,8 @@ export type ChannelSectionProps = {
     formatToTodayIfCurrentDate: (dateStr: string) => string;
     setMessageLimit: React.Dispatch<SetStateAction<number>>;
     messageLimit: number;
+    isChannelVisible: boolean;
+    setIsChannelVisible: React.Dispatch<SetStateAction<boolean>>;
 };
 
 //This is our ideal format for the channels

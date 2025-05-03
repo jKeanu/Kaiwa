@@ -51,7 +51,7 @@ const DeleteGroupModal: React.FC<DeleteGroup> = ({
         <div
             className={`delete-group-modal-container channel-modal s-modal ${modalVisible ? 'visible' : ''}`}
         >
-            <h2 className="modal-header">Delete Group</h2>
+            <div className="modal-header">Delete Group</div>
             <div className="modal-text">Are you sure you want to delete this Channel?</div>
             <div className="delete-group-buttons-container s-modal-button-container channel-modal-button-container">
                 <button onClick={handleGroupDelete} className="confirm-button" disabled={loading}>

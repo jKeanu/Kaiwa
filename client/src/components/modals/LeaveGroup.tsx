@@ -73,7 +73,7 @@ const LeaveGroupModal: React.FC<LeaveGroup> = ({
         <div
             className={`leave-group-modal-container s-modal channel-modal ${modalVisible ? 'visible' : ''}`}
         >
-            <h2 className="modal-header">Leave Group</h2>
+            <div className="modal-header">Leave Group</div>
             <div className="modal-text">Are you sure you want to leave the group?</div>
             <div className="leave-group-buttons-container s-modal-button-container channel-modal-button-container">
                 <button className="confirm-button" onClick={handleLeaveGroup} disabled={isLoading}>

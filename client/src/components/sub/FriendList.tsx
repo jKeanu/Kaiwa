@@ -180,7 +180,7 @@ const FriendList: React.FC<FriendListProps> = ({ friends, setIsFriendConnection 
                             <polyline points="12 19 5 12 12 5"></polyline>
                         </svg>
                     </button>
-                    <h2 className="friends-header">Friends</h2>
+                    <div className="friends-header">Friends</div>
                     <button
                         className="friend-list-to-more-button friend-list-mob-button"
                         onClick={openFriendConnection}
@@ -203,7 +203,7 @@ const FriendList: React.FC<FriendListProps> = ({ friends, setIsFriendConnection 
                     </button>
                 </div>
 
-                <h2 className="friends-header">Friends</h2>
+                <div className="friends-header">Friends</div>
                 <input
                     className="friend-list-search-input"
                     placeholder="Search friends..."

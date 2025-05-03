@@ -1,17 +1,17 @@
-import { useState, useEffect, useCallback, useReducer } from 'react';
+import React, { useState, useEffect, useCallback, useReducer, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import useSWR from 'swr';
 import LeftSection from '../components/LeftSection';
-import ChannelSection from '../components/ChannelSection';
+import HomeSection from '../components/HomeSection';
+import NoticeModal from '../components/modals/Notice';
+import ChannelLoader from '../components/loadings/ChannelLoader';
 import { User, UserDataStatus } from '../types/userTypes';
 import { Friend, FriendReq, SentReq } from '../types/friendTypes';
 import { Channel, LastMessageUpdate, ChannelAction, ActionType } from '../types/channelTypes';
 import { NoticeModalSettings } from '../types/modalTypes';
-import HomeSection from '../components/HomeSection';
 import { getCurrUserFetcher } from '../api/currentUser';
 import axios from 'axios';
-import NoticeModal from '../components/modals/Notice';
 import { ChannelSectionContext, HomeSectionContext, LeftSectionContext } from '../context';
 import LoadingScreen from '../components/loadings/LoadingScreen';
 import useFriendInfo from '../hooks/useFriendInfo';
@@ -25,29 +25,33 @@ import { verifyToken } from '../api/socket';
 import safeMutate from '../utils/safeMutate';
 import { awayChannelMsgUpdate, channelSeenUpdate } from '../utils/updaters/channelUpdater';
 
+const ChannelSection = lazy(() => import('../components/ChannelSection'));
+
 const HomePage: React.FC = () => {
-    //We use this to navigate from pages to pages
+    // We use this to navigate from pages to pages
     const navigate = useNavigate();
-    //This is where we saved the fetched current logged in user's data
+    // This is where we saved the fetched current logged in user's data
     const [userData, setUserData] = useState<User>();
-    //The logged in users channels
-    //if we left the initial value of the state to be blank ()
-    //the type would be Channel[] | undefined
+    // The logged in users channels
+    // if we left the initial value of the state to be blank ()
+    // the type would be Channel[] | undefined
     const [socket, setSocket] = useState<Socket>();
     const [friendChannels, setFriendChannels] = useState<Friend[]>([]);
     const [friendReqs, setFriendReqs] = useState<FriendReq[]>([]);
     const [sentReqs, setSentReqs] = useState<SentReq[]>([]);
     const [isFriendsOpen, setIsFriendsOpen] = useState<boolean>(false);
-    //Modal
+    // Modal
     const [noticeModal, setNoticeModal] = useState<NoticeModalSettings>({
         isOpen: false,
         channelId: '',
         type: '',
     });
     const [modalVisible, setModalVisible] = useState(false);
-    //connection
+    // Connection
     const [isOnline, setIsOnline] = useState(true);
-    //Message Limit
+    // Channel section
+    const [isChannelVisible, setIsChannelVisible] = useState(false);
+    // Message Limit
     const [messageLimit, setMessageLimit] = useState<number>(0);
     const [channels, channelsDispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(
         channelReducer,
@@ -55,16 +59,16 @@ const HomePage: React.FC = () => {
     );
     const location = useLocation();
 
-    //Custom hooks
+    // Custom hooks
     const { friendChannelIds, myFriends, fIdAndChannelInfos } = useFriendInfo(friendChannels);
     const { channelIds, channelNumberAndIds } = useChannelInfo(channels);
-    //Live updates
+    // Live updates
     useChannelUpdate(socket, channelsDispatch);
     useFriendStatusUpdate(socket, friendChannelIds, setFriendChannels);
     useGroupUpdate(socket, channelsDispatch, setNoticeModal);
 
-    //We need this function specifically when we acccept a friend request, or someone accepted ours,
-    //to create a new channel
+    // We need this function specifically when we acccept a friend request, or someone accepted ours,
+    // to create a new channel
     const handleNewFriendChannel = useCallback((friendInfo: Friend): void => {
         const convertChannel: Channel = {
             channelName: friendInfo.friend.displayName,
@@ -155,7 +159,7 @@ const HomePage: React.FC = () => {
     });
     useEffect(() => {
         if (currUserData) {
-            //Save the logged in user's data to a state
+            // Save the logged in user's data to a state
             setUserData(currUserData.user);
             const groupChannels: Channel[] = [...(currUserData.user.groups ?? [])];
             const friendReqData: FriendReq[] =
@@ -166,8 +170,8 @@ const HomePage: React.FC = () => {
             setSentReqs(sentReqData);
             const friendChannels: Friend[] =
                 currUserData.user?.friends?.filter((friend) => friend.status === 'Friend') ?? [];
-            //Since the implementation of channels of friend channel is different to group channel is different
-            //we need to change the structure of the friends array to match group array so we could use sort.
+            // Since the implementation of channels of friend channel is different to group channel is different
+            // we need to change the structure of the friends array to match group array so we could use sort.
             const newFriendChannels: Channel[] = friendChannels.map((friend: Friend) => {
                 return {
                     channelNumber: friend.channel.channelNumber,
@@ -182,10 +186,10 @@ const HomePage: React.FC = () => {
                     seen: friend.channel.seen,
                 };
             });
-            //In this case, we only need the friend information, not including the channel.
-            //Since
+            // In this case, we only need the friend information, not including the channel.
+            // Since
             setFriendChannels(friendChannels);
-            //Combine all friend and group channels.
+            // Combine all friend and group channels.
             const allChannels: Channel[] = [...newFriendChannels, ...groupChannels];
             const sortedChannels: Channel[] = allChannels.sort((a, b) => {
                 const dateA = new Date(a.lastMessage).getTime(); // Convert to milliseconds
@@ -213,7 +217,7 @@ const HomePage: React.FC = () => {
         }
     }, [currUserDataError, navigate]);
 
-    //When we remove a friend from a friend list, or someone did remove us.
+    // When we remove a friend from a friend list, or someone did remove us.
     const handleFriendChannelDelete = useCallback((channelId: string): void => {
         setFriendChannels((prevFriendChannels) => {
             return [...prevFriendChannels].filter(
@@ -223,7 +227,7 @@ const HomePage: React.FC = () => {
         channelsDispatch({ type: ActionType.DeleteChannel, payload: { channelId: channelId } });
     }, []);
 
-    //LIVE UPDATES
+    // LIVE UPDATES
     useEffect(() => {
         if (socket && userData) {
             socket.emit('personal_live_update');
@@ -242,7 +246,7 @@ const HomePage: React.FC = () => {
         }
     }, [socket, channelIds]);
 
-    //If someone sends a message on a channel, this updates the order of the channel list
+    // If someone sends a message on a channel, this updates the order of the channel list
     useEffect(() => {
         if (socket && userData) {
             const handleLastMsgUpdate = (data: LastMessageUpdate): void => {
@@ -386,19 +390,30 @@ const HomePage: React.FC = () => {
                                         handleFriendChannelDelete,
                                     }}
                                 >
-                                    <ChannelSection
-                                        setMessageLimit={setMessageLimit}
-                                        messageLimit={messageLimit}
-                                        friendReqs={friendReqs}
-                                        sentReqs={sentReqs}
-                                        setFriendReqs={setFriendReqs}
-                                        setSentReqs={setSentReqs}
-                                        handleNewFriendChannel={handleNewFriendChannel}
-                                        fIdAndChannelInfos={fIdAndChannelInfos}
-                                        socket={socket}
-                                        currentUserData={userData}
-                                        formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}
-                                    />
+                                    <Suspense
+                                        fallback={
+                                            <ChannelLoader
+                                                setIsChannelVisible={setIsChannelVisible}
+                                                isChannelVisible={isChannelVisible}
+                                            />
+                                        }
+                                    >
+                                        <ChannelSection
+                                            isChannelVisible={isChannelVisible}
+                                            setIsChannelVisible={setIsChannelVisible}
+                                            setMessageLimit={setMessageLimit}
+                                            messageLimit={messageLimit}
+                                            friendReqs={friendReqs}
+                                            sentReqs={sentReqs}
+                                            setFriendReqs={setFriendReqs}
+                                            setSentReqs={setSentReqs}
+                                            handleNewFriendChannel={handleNewFriendChannel}
+                                            fIdAndChannelInfos={fIdAndChannelInfos}
+                                            socket={socket}
+                                            currentUserData={userData}
+                                            formatToTodayIfCurrentDate={formatToTodayIfCurrentDate}
+                                        />
+                                    </Suspense>
                                 </ChannelSectionContext.Provider>
                             }
                         />

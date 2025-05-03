@@ -42,6 +42,7 @@
             .friend-container
                 .friend-more-pop-up-container
                     .friend-pop-up-link
+                        font-family: monospace
                         display: none
                 .friend-link
                     display: none !important
@@ -98,7 +99,6 @@
                         border: none
                         color: variables.$error-message
                         font-size: 0.8rem
-                        font-family: 'Open Sans', sans-serif
         .modal-window-container
             @include mixins.modal-container
             .unfriend-modal-container
@@ -171,13 +171,13 @@
                     z-index: 1
                     width: 6.4rem
                     overflow: hidden
-                    font-family: 'Raleway', sans-serif
                     .friend-pop-up-link
                         padding: 6px 0
                         text-align: center
                         text-decoration: none
                         width: 100%
                         font-size: 0.8rem
+                        font-family: monospace !important
                         &:hover
                             background-color: #3a4b62
                     .remove-friend-button

@@ -55,7 +55,7 @@ const Unfriend: React.FC<UnfriendProps> = ({
     }, [setModalVisible]);
     return (
         <div className={`unfriend-modal-container s-modal ${modalVisible ? 'visible' : ''}`}>
-            <h2 className="modal-header">Remove Friend</h2>
+            <div className="modal-header">Remove Friend</div>
             <div className="modal-text">Are you sure you want to unfriend {displayName}</div>
             <div className="unfriend-buttons-container s-modal-button-container">
                 <button

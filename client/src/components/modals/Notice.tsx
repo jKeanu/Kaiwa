@@ -11,7 +11,7 @@ const NoticeModal: React.FC<Notice> = ({ handleModalConfirm }) => {
 
     return (
         <div className={`notice-modal-container ${modalVisible ? 'visible' : ''}`}>
-            <h2 className="modal-header">Notice</h2>
+            <div className="modal-header">Notice</div>
             <div className="modal-text">This channel is no longer accessible.</div>
             <div className="notice-modal-button-container">
                 <button className="confirm-button" onClick={(e) => handleModalConfirm(e)}>

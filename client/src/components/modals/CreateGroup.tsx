@@ -149,7 +149,7 @@ const CreateGroupModal: React.FC<CreateGroup> = ({
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
-                    <h2 className="create-group-mob-header">Create Group</h2>
+                    <div className="create-group-mob-header">Create Group</div>
                     <button
                         className="create-group-button"
                         onClick={handleCreateGroup}
@@ -181,7 +181,7 @@ const CreateGroupModal: React.FC<CreateGroup> = ({
                     </svg>
                 </button>
             </div>
-            <h2 className="modal-header">Create Group</h2>
+            <div className="modal-header">Create Group</div>
             <div
                 className={`create-group-sections ${field === 'memberSelect' ? 'member-select-section' : 'group-name-section'}`}
             >

@@ -17,9 +17,10 @@
     height: 100dvh
     background-color: rgba(0, 0, 0, 0.2)
     display: block
-    z-index: 500
+    z-index: 500 
 
 @mixin modal-mobile()
+    font-family: monospace !important
     position: absolute
     top: 40%
     left: 50%
@@ -48,11 +49,9 @@
                 transition: all 0.05s ease-in-out
     .modal-header
         margin: 0.5rem 0
-        font-family: 'Raleway', sans-serif
         font-size: 1rem
     .modal-text 
         font-size: 0.8rem 
-        font-family: 'Raleway', sans-serif
 
 @mixin modal($border-radius)
     position: absolute
@@ -64,6 +63,7 @@
     min-width: 25rem
     left: 50%
     transform: translate(-50%, -50%)
+    font-family: monospace !important
     transition: all 0.15s ease-in
     &.visible
         top: 50%
@@ -82,10 +82,7 @@
                 transition: all 0.05s ease-in-out
     .modal-header
         margin: 0.5rem 0
-        font-family: 'Raleway', sans-serif
         font-size: 1.2rem
-    .modal-text  
-        font-family: 'Raleway', sans-serif
         
 @mixin modal-button-container
     display: flex
@@ -100,7 +97,6 @@
         height: 2rem
         width: 7.5rem
         padding: 0.3rem 0.6rem
-        font-family: 'Open Sans', sans-serif
         font-size: 0.9rem
         font-weight: 300
         background-color: transparent
@@ -119,7 +115,6 @@
         border: 1px solid variables.$white-text
         background-color: transparent
         padding: 0 0.6rem
-        font-family: 'Open Sans', sans-serif
         font-size: 0.9rem
         transition: background-color 0.1s ease-in, color 0.1s ease-in
         &:hover
@@ -184,7 +179,6 @@
         left: 0
         transition: all 0.3s ease
         pointer-events: none
-        font-family: 'Raleway', sans-serif
         will-change: top, font-size
     .input-highlight
         position: absolute

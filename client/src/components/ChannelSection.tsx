@@ -33,6 +33,9 @@ import {
     sendContChannelMsgUpdate,
     sentMsgVerifyUpdate,
 } from '../utils/updaters/channelUpdater';
+import MessageTemplate from './templates/Message';
+import MessageLoader from './loadings/MessageLoader';
+import MemberListLoader from './loadings/MemberListLoader';
 
 const ChannelSection: React.FC<ChannelSectionProps> = ({
     socket,
@@ -46,6 +49,8 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
     formatToTodayIfCurrentDate,
     setMessageLimit,
     messageLimit,
+    setIsChannelVisible,
+    isChannelVisible,
 }) => {
     //Since currentUserData consists of many information
     //we can destructure it so we can just use what info we need.
@@ -59,6 +64,8 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
     const [allMessagesFetched, setAllMessagesFetched] = useState(false);
     const [msgFetchLoading, setMsgFetchLoading] = useState(false);
     const [notSentMessages, setNotSentMessages] = useState<string[]>([]);
+    // sent indicator
+    const [messageSentStatus, setMessageSentStatus] = useState(true);
     //Channel
     const [currentChannel, setCurrentChannel] = useState<CurrentChannel>();
     const [currentChannelMembers, setCurrentChannelMembers] = useState<ChannelMember[]>([]);
@@ -76,12 +83,9 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
     const [memberPopUp, setMemberPopUp] = useState('');
     const [isPopUpBelow, setIsPopUpBelow] = useState(false);
     //mobile animation
-    const [isVisible, setIsVisible] = useState(false);
     const [isMemberVisible, setIsMemberVisible] = useState(false);
     //This is for mobile animation
     const [activePopup, setActivePopup] = useState(false);
-    //sent indicator
-    const [messageSentStatus, setMessageSentStatus] = useState(true);
     //Error
     const [memberError, setMemberError] = useState('');
     //This determines if we're connected to the socket room
@@ -119,8 +123,8 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
     );
 
     useEffect(() => {
-        setIsVisible(true);
-    }, []);
+        setIsChannelVisible(true);
+    }, [setIsChannelVisible]);
 
     useEffect(() => {
         return () => {
@@ -671,7 +675,7 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
 
     const handleChannelBack = (e: React.MouseEvent<HTMLButtonElement>): void => {
         e.preventDefault();
-        setIsVisible(false);
+        setIsChannelVisible(false);
         setTimeout(() => {
             navigate('/@me');
         }, 150);
@@ -790,7 +794,9 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
     return (
         <>
             {currentChannel && messagesData ? (
-                <section className={`channel-section ${isVisible ? 'channel-section-mob' : ''}`}>
+                <section
+                    className={`channel-section ${isChannelVisible ? 'channel-section-mob' : ''}`}
+                >
                     {(modalWindow.isOpen || memberModal.isOpen) && (
                         <dialog
                             className="modal-window-container"
@@ -910,11 +916,11 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                                         }`}
                                         alt={currentChannel.channelName + ' mini profile photo'}
                                     />
-                                    <h2 className="channel-nav-header">
+                                    <div className="channel-nav-header">
                                         {currentChannel.members[0]._id !== _id
                                             ? currentChannel.members[0].displayName
                                             : currentChannel.members[1].displayName}
-                                    </h2>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="channel-nav-info-container">
@@ -923,9 +929,9 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                                         src={`${currentChannel.photo === 'default.jpeg' ? '/img/default.jpeg' : currentChannel.photoUrl}`}
                                         alt={currentChannel.channelName + ' mini profile photo'}
                                     />
-                                    <h2 className="channel-nav-header">
+                                    <div className="channel-nav-header">
                                         {currentChannel.channelName}
-                                    </h2>
+                                    </div>
                                 </div>
                             )}
                             {currentChannel?.channelType === 'Friend' ? (
@@ -943,11 +949,11 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                                         }`}
                                         alt={currentChannel.channelName + ' mobile profile photo'}
                                     />
-                                    <h2 className="channel-nav-header">
+                                    <div className="channel-nav-header">
                                         {currentChannel.members[0]._id !== _id
                                             ? currentChannel.members[0].displayName
                                             : currentChannel.members[1].displayName}
-                                    </h2>
+                                    </div>
                                 </div>
                             ) : (
                                 <button
@@ -959,9 +965,9 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                                         src={`${currentChannel.photo === 'default.jpeg' ? '/img/default.jpeg' : currentChannel.photoUrl}`}
                                         alt={currentChannel.channelName + ' profile photo button'}
                                     />
-                                    <h2 className="channel-nav-header">
+                                    <div className="channel-nav-header">
                                         {currentChannel.channelName}
-                                    </h2>
+                                    </div>
                                 </button>
                             )}
                             <div
@@ -1133,55 +1139,17 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                                             </span>
                                         </div>
                                     )}
-                                {messageReceived ? (
-                                    messageReceived.map((message, index) => (
-                                        <div
-                                            className={
-                                                message.sender._id === _id
-                                                    ? 'my-message-info-container user-message-info-container'
-                                                    : 'user-message-info-container'
-                                            }
-                                            key={index}
-                                        >
-                                            <img
-                                                className="sender-photo"
-                                                alt={
-                                                    message.sender.displayName +
-                                                    ' mini profile photo'
-                                                }
-                                                src={`${message.sender.photo === 'default.jpeg' ? '/img/default.jpeg' : message.sender.photoUrl}`}
-                                            />
-                                            <div className="message-info">
-                                                <div className="message-date-displayname">
-                                                    <span className="message-sender">
-                                                        {message.sender.displayName}
-                                                    </span>
-                                                    <span className="message-date">
-                                                        {formatToTodayIfCurrentDate(
-                                                            message.formattedDate.toString()
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="message-content-container">
-                                                    {message.content.map((m, i) => (
-                                                        <div key={i} className="message-content">
-                                                            {m.split('\n').map((line, index) => (
-                                                                <React.Fragment key={index}>
-                                                                    {line}
-                                                                    {index < line.length - 1 && (
-                                                                        <br />
-                                                                    )}
-                                                                </React.Fragment>
-                                                            ))}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div></div>
-                                )}
+                                {messageReceived.map((message, index) => (
+                                    <MessageTemplate
+                                        key={index}
+                                        message={message}
+                                        index={index}
+                                        currId={_id}
+                                        formattedDate={formatToTodayIfCurrentDate(
+                                            message.formattedDate.toString()
+                                        )}
+                                    />
+                                ))}
                                 <div className="top-message-gap">
                                     <div className="fetch-message-loading">
                                         {msgFetchLoading && (
@@ -1406,7 +1374,7 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                     </div>
                 </section>
             ) : (
-                <section className={`channel-section ${isVisible ? 'channel-section-mob' : ''}`}>
+                <div className={`channel-section ${isChannelVisible ? 'channel-section-mob' : ''}`}>
                     <div className="channel-container">
                         <nav className="channel-nav">
                             <button
@@ -1430,10 +1398,21 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                                 </svg>
                             </button>
                         </nav>
-                        <section className="message-section"></section>
-                        <section className="channel-members-section"></section>
+                        <div className="message-section">
+                            <div className="message-box">
+                                <MessageLoader />
+                            </div>
+                            <div className="message-input-container">
+                                <div className="message-input-load"></div>
+                            </div>
+                        </div>
+                        <div
+                            className={`channel-members-section ${isMemberVisible && 'mob-member-visible'}`}
+                        >
+                            <MemberListLoader />
+                        </div>
                     </div>
-                </section>
+                </div>
             )}
         </>
     );
