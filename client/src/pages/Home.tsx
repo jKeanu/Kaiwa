@@ -49,8 +49,6 @@ const HomePage: React.FC = () => {
     const [modalVisible, setModalVisible] = useState(false);
     // Connection
     const [isOnline, setIsOnline] = useState(true);
-    // Channel section
-    const [isChannelVisible, setIsChannelVisible] = useState(false);
     // Message Limit
     const [messageLimit, setMessageLimit] = useState<number>(0);
     const [channels, channelsDispatch] = useReducer<React.Reducer<Channel[], ChannelAction>>(
@@ -390,17 +388,8 @@ const HomePage: React.FC = () => {
                                         handleFriendChannelDelete,
                                     }}
                                 >
-                                    <Suspense
-                                        fallback={
-                                            <ChannelLoader
-                                                setIsChannelVisible={setIsChannelVisible}
-                                                isChannelVisible={isChannelVisible}
-                                            />
-                                        }
-                                    >
+                                    <Suspense fallback={<ChannelLoader />}>
                                         <ChannelSection
-                                            isChannelVisible={isChannelVisible}
-                                            setIsChannelVisible={setIsChannelVisible}
                                             setMessageLimit={setMessageLimit}
                                             messageLimit={messageLimit}
                                             friendReqs={friendReqs}

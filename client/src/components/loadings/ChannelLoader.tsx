@@ -1,20 +1,10 @@
-import React, { SetStateAction, useEffect } from 'react';
+import React from 'react';
 import MessageLoader from './MessageLoader';
 import MemberListLoader from './MemberListLoader';
 
-const ChannelLoader: React.FC<{
-    isChannelVisible: boolean;
-    setIsChannelVisible: React.Dispatch<SetStateAction<boolean>>;
-}> = ({ isChannelVisible, setIsChannelVisible }) => {
-    useEffect(() => {
-        setIsChannelVisible(true);
-    }, [setIsChannelVisible]);
-
+const ChannelLoader: React.FC = () => {
     return (
-        <div
-            className={`channel-section ${isChannelVisible ? 'channel-section-fallback-mob' : ''}`}
-            style={{ zIndex: '500' }}
-        >
+        <div className={`channel-section channel-section-load`}>
             <div className="channel-container">
                 <nav className="channel-nav"></nav>
                 <div className="message-section">

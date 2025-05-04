@@ -15,8 +15,6 @@ export type ChannelSectionProps = {
     formatToTodayIfCurrentDate: (dateStr: string) => string;
     setMessageLimit: React.Dispatch<SetStateAction<number>>;
     messageLimit: number;
-    isChannelVisible: boolean;
-    setIsChannelVisible: React.Dispatch<SetStateAction<boolean>>;
 };
 
 //This is our ideal format for the channels
