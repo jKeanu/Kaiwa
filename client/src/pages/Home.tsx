@@ -161,13 +161,13 @@ const HomePage: React.FC = () => {
             setUserData(currUserData.user);
             const groupChannels: Channel[] = [...(currUserData.user.groups ?? [])];
             const friendReqData: FriendReq[] =
-                currUserData.user?.friends?.filter((friend) => friend.status === 'Pending') ?? [];
+                currUserData.user.friends.filter((friend) => friend.status === 'Pending') ?? [];
             setFriendReqs(friendReqData);
             const sentReqData: SentReq[] =
-                currUserData.user?.friends?.filter((friend) => friend.status === 'Sent') ?? [];
+                currUserData.user.friends.filter((friend) => friend.status === 'Sent') ?? [];
             setSentReqs(sentReqData);
             const friendChannels: Friend[] =
-                currUserData.user?.friends?.filter((friend) => friend.status === 'Friend') ?? [];
+                currUserData.user.friends.filter((friend) => friend.status === 'Friend') ?? [];
             // Since the implementation of channels of friend channel is different to group channel is different
             // we need to change the structure of the friends array to match group array so we could use sort.
             const newFriendChannels: Channel[] = friendChannels.map((friend: Friend) => {

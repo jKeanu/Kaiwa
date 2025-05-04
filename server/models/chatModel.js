@@ -8,6 +8,7 @@ const chatSchema = new mongoose.Schema({
     channel: {
         type: mongoose.Schema.ObjectId,
         ref: 'Channel',
+        index: true,
     },
     content: {
         type: [String],
