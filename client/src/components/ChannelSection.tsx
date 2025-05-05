@@ -124,7 +124,7 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
 
     useEffect(() => {
         setIsChannelVisible(true);
-    }, [setIsChannelVisible]);
+    }, []);
 
     useEffect(() => {
         return () => {
