@@ -123,7 +123,9 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
     );
 
     useEffect(() => {
-        setIsChannelVisible(true);
+        requestAnimationFrame(() => {
+            setIsChannelVisible(true);
+        });
     }, []);
 
     useEffect(() => {
