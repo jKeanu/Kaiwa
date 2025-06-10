@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as Sentry from '@sentry/react';
 import ReactTextareaAutosize from 'react-textarea-autosize';
+import EmojiPicker, { EmojiStyle } from 'emoji-picker-react';
 import useSWR, { useSWRConfig, mutate } from 'swr';
 import axios, { AxiosResponse } from 'axios';
 import throttle from 'lodash.throttle';
@@ -59,6 +60,7 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
     const [isChannelVisible, setIsChannelVisible] = useState(false);
     //Messages
     const [inputMessage, setInputMessage] = useState<string>('');
+    const [isEmojiOpen, setIsEmojiOpen] = useState(false);
     const [messageReceived, setMessageReceived] = useState<ChannelMessage[]>([]);
     const [messagesSkip, setMessagesSkip] = useState<number>(0);
     const [allMessagesFetched, setAllMessagesFetched] = useState(false);
@@ -107,6 +109,7 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
     }, [currentChannelMembers]);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const emojiWrapperRef = useRef<HTMLDivElement>(null);
     const memberListRef = useRef<HTMLUListElement>(null);
 
     const { setModalVisible } = useChannelCustomContext();
@@ -793,6 +796,26 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
         }
     }, [socket, currentChannel, channelCacheKey, _id, channelsDispatch]);
 
+    // Outside click detection for emoji selection menu
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                emojiWrapperRef.current &&
+                !emojiWrapperRef.current.contains(event.target as Node)
+            ) {
+                setIsEmojiOpen(false);
+            }
+        };
+
+        if (isEmojiOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isEmojiOpen]);
+
     return (
         <section className={`channel-section ${isChannelVisible ? 'channel-section-mob' : ''}`}>
             {currentChannel && (modalWindow.isOpen || memberModal.isOpen) && (
@@ -1151,17 +1174,44 @@ const ChannelSection: React.FC<ChannelSectionProps> = ({
                             </div>
                         </div>
                         <div className="message-input-container">
-                            <ReactTextareaAutosize
-                                name="message-text-area"
-                                ref={textareaRef}
-                                value={inputMessage}
-                                placeholder="Send a message..."
-                                onKeyDown={handleKeyDown}
-                                onChange={(event) => setInputMessage(event.target.value)}
-                                className="message-input"
-                                maxLength={320}
-                                autoFocus
-                            />
+                            <div className="message-inputs">
+                                <ReactTextareaAutosize
+                                    name="message-text-area"
+                                    ref={textareaRef}
+                                    value={inputMessage}
+                                    placeholder="Send a message..."
+                                    onKeyDown={handleKeyDown}
+                                    onChange={(event) => setInputMessage(event.target.value)}
+                                    className="message-input"
+                                    maxLength={320}
+                                    minRows={1}
+                                    autoFocus
+                                />
+                                <div className="emoji-select-container" ref={emojiWrapperRef}>
+                                    {isEmojiOpen && (
+                                        <EmojiPicker
+                                            onEmojiClick={(emojiData) =>
+                                                setInputMessage((prev) => prev + emojiData.emoji)
+                                            }
+                                            searchDisabled
+                                            skinTonesDisabled
+                                            width={300}
+                                            height={250}
+                                            previewConfig={{ showPreview: false }}
+                                            emojiStyle={EmojiStyle.NATIVE}
+                                            lazyLoadEmojis
+                                            reactionsDefaultOpen
+                                            className="emoji-input"
+                                        />
+                                    )}
+                                    <button
+                                        className="emoji-button"
+                                        onClick={() => setIsEmojiOpen((prev) => !prev)}
+                                    >
+                                        😊
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </section>
                     <section
