@@ -5,7 +5,6 @@ import Channel from './models/channelModel.js';
 import mongoose from 'mongoose';
 import { errLogger } from './utils/cloudwatchConfig.js';
 import verifyToken from './utils/verifyToken.js';
-import redisClient from './utils/redisClient.js';
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME;
 
@@ -51,48 +50,6 @@ export default (httpServer) => {
 
     io.on('connection', async (socket) => {
         const verifiedCurrentUserId = socket.user;
-        //err
-        try {
-            const incrStatusCount = await redisClient.incr(
-                `user:${verifiedCurrentUserId}:connections`
-            );
-            if (incrStatusCount === 1) {
-                const currentUserData = await User.findByIdAndUpdate(
-                    verifiedCurrentUserId,
-                    { status: 'Online' },
-                    { new: true }
-                )
-                    .select('friends groups')
-                    .populate({ path: 'friends.friend', select: 'status' })
-                    .populate({ path: 'friends.channel', select: 'channelNumber' })
-                    .populate({ path: 'groups', select: 'channelNumber' });
-                const filteredFriends = [...currentUserData.friends].filter(
-                    (friend) => friend.status === 'Friend'
-                );
-                const friendChannels = filteredFriends.map((friend) => friend.channel);
-                friendChannels.forEach((channel) => {
-                    io.to(`channel-${channel._id}`).emit(`user_status_update_online`, {
-                        userId: currentUserData._id,
-                        channelId: channel._id,
-                        channelNumber: channel.channelNumber,
-                        type: 'Friend',
-                    });
-                });
-                const groupChannels = [...currentUserData.groups];
-                groupChannels.forEach((channel) => {
-                    io.to(`channel-${channel.id}`).emit(`user_status_update_online`, {
-                        userId: currentUserData._id,
-                        channelId: channel._id,
-                        channelNumber: channel.channelNumber,
-                    });
-                });
-            }
-        } catch (err) {
-            errLogger.error('User Status Icrement Error', {
-                error: err instanceof Error ? err.stack : err,
-            });
-        }
-
         async function joinRoom(roomId) {
             try {
                 await socket.join(roomId);
@@ -405,49 +362,6 @@ export default (httpServer) => {
                     channelNumber: channelNumberAndId.channelNumber,
                 });
             });
-        });
-
-        socket.on('disconnect', async () => {
-            try {
-                const decrStatusCount = await redisClient.decr(
-                    `user:${verifiedCurrentUserId}:connections`
-                );
-                if (decrStatusCount <= 0) {
-                    await redisClient.del(`user:${verifiedCurrentUserId}:connections`);
-                    const currentUserData = await User.findByIdAndUpdate(
-                        verifiedCurrentUserId,
-                        { status: 'Offline' },
-                        { new: true }
-                    )
-                        .populate({ path: 'friends.friend', select: 'status' })
-                        .populate({ path: 'friends.channel', select: 'channelNumber' })
-                        .populate({ path: 'groups', select: 'channelNumber' });
-                    const filteredFriends = [...currentUserData.friends].filter(
-                        (friend) => friend.status === 'Friend'
-                    );
-                    const friendChannels = filteredFriends.map((friend) => friend.channel);
-                    friendChannels.forEach((channel) => {
-                        socket.to(`channel-${channel.id}`).emit(`user_status_update_offline`, {
-                            userId: currentUserData._id,
-                            channelId: channel._id,
-                            channelNumber: channel.channelNumber,
-                            type: 'Friend',
-                        });
-                    });
-                    const groupChannels = [...currentUserData.groups];
-                    groupChannels.forEach((channel) => {
-                        socket.to(`channel-${channel.id}`).emit(`user_status_update_offline`, {
-                            userId: currentUserData._id,
-                            channelId: channel._id,
-                            channelNumber: channel.channelNumber,
-                        });
-                    });
-                }
-            } catch (err) {
-                errLogger.error('User Status Decrement Error', {
-                    error: err instanceof Error ? err.stack : err,
-                });
-            }
         });
     });
 };
