@@ -1,0 +1,9 @@
+{
+  "name": "kaiwa",
+  "version": "1.0.0",
+  "scripts": {
+    "docker:dev": "docker-compose up --build",
+    "docker:prod": "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build",
+    "down": "docker-compose down"
+  }
+}

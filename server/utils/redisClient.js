@@ -18,11 +18,19 @@ const redisConfig = isProduction
       }
     : {
           // Default configuration for development (local Redis server)
-          host: 'localhost',
+          host: 'redis',
           port: 6379,
       };
 
 const redisClient = new Redis(redisConfig);
+
+redisClient.on('connect', () => {
+    infoLogger.info('Connected to Redis');
+});
+
+redisClient.on('error', (err) => {
+    errLogger.error('Redis Client Error', { error: err instanceof Error ? err.stack : err });
+});
 
 // Flush all data during server restart.
 // Since we only use redis for updating user status, this works.

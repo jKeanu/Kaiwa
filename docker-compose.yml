@@ -1,0 +1,25 @@
+services:
+  client:
+    build:
+      # directory where Docker starts the build process.
+      context: ./client
+    ports:
+      - "5173:5173"  # Host:Container (Vite)
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    env_file:
+      - ./client/.env
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: ./server
+    ports:
+      - "3001:3001"  # Host:Container (Express)
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    env_file:
+      - ./server/.env

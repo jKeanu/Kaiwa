@@ -3,19 +3,11 @@ import User from './models/userModel.js';
 import Chat from './models/chatModel.js';
 import Channel from './models/channelModel.js';
 import mongoose from 'mongoose';
-import { errLogger, infoLogger } from './utils/cloudwatchConfig.js';
+import { errLogger } from './utils/cloudwatchConfig.js';
 import verifyToken from './utils/verifyToken.js';
 import redisClient from './utils/redisClient.js';
 
 const cloudfrontDomainName = process.env.CLOUDFRONT_DOMAIN_NAME;
-
-redisClient.on('connect', () => {
-    infoLogger.info('Connected to Redis');
-});
-
-redisClient.on('error', (err) => {
-    errLogger.error('Redis Client Error', { error: err instanceof Error ? err.stack : err });
-});
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // Manage connections

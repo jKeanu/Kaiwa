@@ -1,0 +1,25 @@
+services:
+  client:
+    build:
+      target: development
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
+  server:
+    build:
+      target: development
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    command: npm run dev
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
