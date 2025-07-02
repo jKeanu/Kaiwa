@@ -25,7 +25,7 @@ A real-time chat app where users can message friends privately or in groups, cus
 - **Cloud**:  
   - **AWS**: S3, CloudFront, CloudWatch, Route 53  
   - **Google Cloud**: Memorystore (Redis), Compute Engine  
-- **Tools**: Mailjet, Postman  
+- **Utilities**: Mailjet, Postman  
 
 ## 🚀 Quick Start
 ### Prerequisites
@@ -50,3 +50,18 @@ cd client && npm install && npm run dev
 
 # Backend (in new terminal)
 cd server && npm install && npm run dev
+```
+
+## 🐳 Running with Docker
+
+### Prerequisites
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+### 📦 Development
+```bash
+docker-compose up --build
+```
+This will:
+- Run the Vite + React frontend at [http://localhost:5173](http://localhost:5173)
+- Run the Express + Socket.IO backend at [http://localhost:3001](http://localhost:3001)
