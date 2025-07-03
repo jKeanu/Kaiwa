@@ -61,7 +61,7 @@ cd server && npm install && npm run dev
 
 ### 📦 Development
 ```bash
-docker-compose up --build
+npm run docker:prev
 ```
 This will:
 - Run the Vite + React frontend at [http://localhost:5173](http://localhost:5173)
