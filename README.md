@@ -70,6 +70,6 @@ This will:
 
 ## Real-Time User Status (Redis)
 
-This app originally supported real-time user presence tracking using Redis (e.g., online/offline status in chat). Due to the high cost of running Redis in production environments like Google Cloud Memorystore, this feature is **disabled in the main branch**.
+This app originally supported real-time user presence tracking using Redis (e.g., online/offline status in chat). Due to the high cost of running Redis in production environments, this feature is **disabled in the main branch**.
 
 ➡️ To see the full implementation, switch to the [`feature/user-status-redis`](https://github.com/jKeanu/kaiwa/tree/feature/user-status-redis) branch.
