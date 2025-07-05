@@ -12,8 +12,6 @@ services:
   server:
     build:
       target: development
-    ports:
-      - "3001:3001"
     volumes:
       - ./server:/app
       - /app/node_modules

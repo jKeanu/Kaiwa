@@ -9,6 +9,4 @@ services:
   server:
     build:
       target: production
-    ports:
-      - "3001:3001"
     command: npm start

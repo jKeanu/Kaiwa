@@ -4,8 +4,5 @@ node_modules
 # Ignore dist folder
 dist
 
-# Ignore .env
-.env
-
-# Ignore .env for sentry configuration
-.env.sentry-build-plugin
+# Exclude all env files by default including examples
+.env*

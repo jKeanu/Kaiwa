@@ -22,10 +22,7 @@ interface QueueItem {
     reject: (reason?: any) => void;
 }
 
-const baseUrl =
-    import.meta.env.MODE === 'production'
-        ? import.meta.env.VITE_API_URL_PROD
-        : import.meta.env.VITE_API_URL_DEV;
+const baseUrl = import.meta.env.VITE_API_URL;
 
 const axiosInstance = axios.create({
     baseURL: baseUrl, // Replace with your API's base URL

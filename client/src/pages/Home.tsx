@@ -104,10 +104,7 @@ const HomePage: React.FC = () => {
                 // Verify the first before connecting to the socket.
                 const resStatus = await verifyToken();
                 if (resStatus === 204) {
-                    const url =
-                        import.meta.env.MODE === 'production'
-                            ? import.meta.env.VITE_API_URL_PROD
-                            : import.meta.env.VITE_API_URL_DEV;
+                    const url = import.meta.env.VITE_API_URL;
                     socketConn = io(url, { withCredentials: true }); // Remove 'const' here
                     setSocket(socketConn);
                 }

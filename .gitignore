@@ -2,10 +2,10 @@
 /client/node_modules/
 
 # Ignore .env files in the client directory
-/client/*.env
+/client/.env*
 
-# Ignore .env for sentry configuration
-/client/.env.sentry-build-plugin
+# Except env examples
+!/client/.env*.example
 
 # Ignore dist folder
 /client/dist
