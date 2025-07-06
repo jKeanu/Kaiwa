@@ -14,7 +14,11 @@ export default (httpServer) => {
     const io = new Server(httpServer, {
         cors: {
             origin: function (origin, callback) {
-                const allowedOrigins = [process.env.CLIENT_URL_PROD, process.env.CLIENT_URL_DEV];
+                const allowedOrigins = [
+                    process.env.CLIENT_URL_PROD,
+                    process.env.SUB_CLIENT_URL_PROD,
+                    process.env.CLIENT_URL_DEV,
+                ];
                 if (!origin || allowedOrigins.includes(origin)) {
                     callback(null, true);
                 } else {
