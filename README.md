@@ -25,7 +25,6 @@ A real-time chat app where users can message friends privately or in groups, cus
 - **Database**: MongoDB  
 - **Cloud**:  
   - **AWS**: S3, CloudFront, CloudWatch, Route 53  
-  - **Google Cloud**: Memorystore (Redis), Compute Engine  
 - **Utilities**: Mailjet, Postman  
 
 ## 🚀 Quick Start
