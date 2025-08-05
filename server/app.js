@@ -30,11 +30,19 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+const allowedOrigins =
+    process.env.NODE_ENV === 'production'
+        ? [process.env.CLIENT_URL_PROD, process.env.SUB_CLIENT_URL_PROD]
+        : [process.env.CLIENT_URL_DEV];
+
 const corsOptions = {
-    origin:
-        process.env.NODE_ENV === 'production'
-            ? [process.env.CLIENT_URL_PROD, process.env.SUB_CLIENT_URL_PROD]
-            : process.env.CLIENT_URL_DEV,
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
